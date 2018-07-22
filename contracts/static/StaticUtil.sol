@@ -1,5 +1,7 @@
 /*
 
+    StaticUtil - static call utility contract
+
 */
 
 pragma solidity 0.4.24;
