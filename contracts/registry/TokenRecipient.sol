@@ -10,7 +10,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 /**
  * @title TokenRecipient
- * @author Project Wyvern Developers
+ * @author Wyvern Protocol Developers
  */
 contract TokenRecipient {
     event ReceivedEther(address indexed sender, uint amount);

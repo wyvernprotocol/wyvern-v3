@@ -12,7 +12,7 @@ import "./proxy/OwnedUpgradeabilityStorage.sol";
 
 /**
  * @title AuthenticatedProxy
- * @author Project Wyvern Developers
+ * @author Wyvern Protocol Developers
  */
 contract AuthenticatedProxy is TokenRecipient, OwnedUpgradeabilityStorage {
 

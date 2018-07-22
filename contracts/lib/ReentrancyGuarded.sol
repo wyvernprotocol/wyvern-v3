@@ -8,7 +8,7 @@ pragma solidity 0.4.24;
 
 /**
  * @title ReentrancyGuarded
- * @author Project Wyvern Developers
+ * @author Wyvern Protocol Developers
  */
 contract ReentrancyGuarded {
 

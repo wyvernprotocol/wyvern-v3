@@ -11,7 +11,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 /**
  * @title ArrayUtils
- * @author Project Wyvern Developers
+ * @author Wyvern Protocol Developers
  */
 library ArrayUtils {
 

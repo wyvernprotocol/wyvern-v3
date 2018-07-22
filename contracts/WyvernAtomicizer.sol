@@ -10,7 +10,7 @@ pragma solidity 0.4.24;
 
 /**
  * @title WyvernAtomicizer
- * @author Project Wyvern Developers
+ * @author Wyvern Protocol Developers
  */
 library WyvernAtomicizer {
 
