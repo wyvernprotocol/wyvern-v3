@@ -18,7 +18,7 @@ contract WyvernExchange is Exchange {
   
     string public constant version = "3.0";
 
-    string public constant codename = "";
+    string public constant codename = "Ancalagon";
 
     /**
      */

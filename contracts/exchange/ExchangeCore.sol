@@ -3,6 +3,7 @@ pragma solidity 0.4.24;
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "../lib/ArrayUtils.sol";
+import "../lib/StaticCaller.sol";
 import "../lib/ReentrancyGuarded.sol";
 import "../registry/ProxyRegistry.sol";
 import "../registry/AuthenticatedProxy.sol";
@@ -11,7 +12,7 @@ import "../registry/AuthenticatedProxy.sol";
  * @title ExchangeCore
  * @author Wyvern Protocol Developers
  */
-contract ExchangeCore is ReentrancyGuarded {
+contract ExchangeCore is ReentrancyGuarded, StaticCaller {
 
     /* Registry. */
     ProxyRegistry public registry;
@@ -65,24 +66,13 @@ contract ExchangeCore is ReentrancyGuarded {
     event OrderCancelled  (bytes32 indexed hash);
     event OrdersMatched   (bytes32 firstHash, bytes32 secondHash, address indexed firstMaker, address indexed secondMaker, bytes32 indexed metadata);
 
-    function staticCall(address target, bytes memory calldata)
-        internal
-        view
-        returns (bool result)
-    {
-        assembly {
-            result := staticcall(gas, target, add(calldata, 0x20), mload(calldata), mload(0x40), 0)
-        }
-        return result;
-    }
-
     function hashOrder(Order memory order)
         internal
         pure
         returns (bytes32 hash)
     {
         /* Hash all fields in the order. */
-        return keccak256(abi.encodePacked(order.exchange, orer.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt));
+        return keccak256(abi.encodePacked(order.exchange, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt));
     }
 
     function hashToSign(bytes32 orderHash)
@@ -117,7 +107,7 @@ contract ExchangeCore is ReentrancyGuarded {
         }
 
         /* Order must be listed and not be expired. */
-        if (order.listingTime > now || order.expirationTime <= now) {
+        if (order.listingTime > block.timestamp || order.expirationTime <= block.timestamp) {
             return false;
         }
 
@@ -179,19 +169,7 @@ contract ExchangeCore is ReentrancyGuarded {
         view
         returns (bool)
     {
-        return staticCall(order.staticTarget, abi.encodePacked(
-            order.staticExtradata,
-            caller,
-            call.target,
-            call.howToCall,
-            call.calldata,
-            counterparty,
-            countercall.target,
-            countercall.howToCall,
-            countercall.calldata,
-            matcher,
-            value
-        ));
+        return staticCall(order.staticTarget, abi.encodePacked(order.staticExtradata, caller, call.target, call.howToCall, call.calldata, counterparty, countercall.target, countercall.howToCall, countercall.calldata, matcher, value));
     }
 
     function atomicMatch(Order memory firstOrder, Sig memory firstSig, Call memory firstCall, Order memory secondOrder, Sig memory secondSig, Call memory secondCall, bytes32 metadata)
