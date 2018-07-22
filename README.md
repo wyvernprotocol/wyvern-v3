@@ -1,4 +1,4 @@
 Wyvern v3
 ---------
 
-Coming soon...
+README coming soon; see [DESIGN](DESIGN.md).
