@@ -42,7 +42,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         /* Order static target. */
         address staticTarget;
         /* Order static extradata. */
-        address staticExtradata;
+        bytes staticExtradata;
         /* Order listing timestamp. */
         uint listingTime;
         /* Order expiration timestamp - 0 for no expiry. */
@@ -62,7 +62,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
     }
 
     /* Events */
-    event OrderApproved   (bytes32 indexed hash);
+    event OrderApproved   (bytes32 indexed hash, address indexed maker, address staticTarget, bytes staticExtradata, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired);
     event OrderCancelled  (bytes32 indexed hash);
     event OrdersMatched   (bytes32 firstHash, bytes32 secondHash, address indexed firstMaker, address indexed secondMaker, bytes32 indexed metadata);
 
@@ -137,11 +137,19 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         }
     
         /* (b): ECDSA-signed by maker. */
-        if (ecrecover(hash, sig.v, sig.r, sig.s) == maker) {
+        if (ecrecover(hashToSign(hash), sig.v, sig.r, sig.s) == maker) {
             return true;
         }
 
         return false;
+    }
+
+    function executeStaticCall(Order memory order, address caller, Call memory call, address counterparty, Call memory countercall, address matcher, uint value)
+        internal
+        view
+        returns (bool)
+    {
+        return staticCall(order.staticTarget, abi.encodePacked(order.staticExtradata, caller, call.target, call.howToCall, call.calldata, counterparty, countercall.target, countercall.howToCall, countercall.calldata, matcher, value));
     }
 
     function executeCall(address maker, Call call)
@@ -164,12 +172,27 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         return proxy.proxy(call.target, call.howToCall, call.calldata);
     }
 
-    function executeStaticCall(Order memory order, address caller, Call memory call, address counterparty, Call memory countercall, address matcher, uint value)
+    function approveOrder(Order memory order, bool orderbookInclusionDesired)
         internal
-        view
-        returns (bool)
     {
-        return staticCall(order.staticTarget, abi.encodePacked(order.staticExtradata, caller, call.target, call.howToCall, call.calldata, counterparty, countercall.target, countercall.howToCall, countercall.calldata, matcher, value));
+        /* CHECKS */
+
+        /* Assert sender is authorized to approve order. */
+        require(order.maker == msg.sender);
+
+        /* Calculate order hash. */
+        bytes32 hash = hashOrder(order);
+
+        /* Assert order has not already been approved. */
+        require(!approvedOrders[hash]);
+
+        /* EFFECTS */
+
+        /* Mark order as approved. */
+        approvedOrders[hash] = true;
+
+        /* Log approval event. */
+        emit OrderApproved(hash, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt, orderbookInclusionDesired);
     }
 
     function atomicMatch(Order memory firstOrder, Sig memory firstSig, Call memory firstCall, Order memory secondOrder, Sig memory secondSig, Call memory secondCall, bytes32 metadata)
@@ -186,7 +209,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
 
         /* Check first order authorization. */
         if (firstOrder.maker != msg.sender) {
-            require(validateOrderAuthorization(hashToSign(firstHash), firstOrder.maker, firstSig));
+            require(validateOrderAuthorization(firstHash, firstOrder.maker, firstSig));
         }
 
         /* Calculate second order hash. */
@@ -197,7 +220,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
 
         /* Check second order authorization. */
         if (secondOrder.maker != msg.sender) {
-            require(validateOrderAuthorization(hashToSign(secondHash), secondOrder.maker, secondSig));
+            require(validateOrderAuthorization(secondHash, secondOrder.maker, secondSig));
         }
 
         /* Prevent self-matching (necessary?). */
@@ -217,12 +240,14 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         
         /* INTERACTIONS */
 
-        /* Transfer any msg.value. */
+        /* Transfer any msg.value.
+           This is the first "asymmetric" part of order matching: if an order requires Ether, it must be the first order. */
         if (msg.value > 0) {
             firstOrder.maker.transfer(msg.value);
         }
 
-        /* Execute first call, assert success. */
+        /* Execute first call, assert success.
+           This is the second "asymmetric" part of order matching: execution of the second order can depend on state changes in the first order, but not vice-versa. */
         assert(executeCall(firstOrder.maker, firstCall));
 
         /* Execute second call, assert success. */
