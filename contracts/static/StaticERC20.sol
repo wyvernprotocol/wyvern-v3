@@ -14,7 +14,31 @@ import "../registry/AuthenticatedProxy.sol";
 
 contract StaticERC20 {
 
-    function swap(address[2] tokenGiveGet, uint[4] amountGiveGetDesiredRealized, address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address, uint)
+    function swapByRateCapped(address[2] tokenGiveGet, uint[4] amountGiveGetDesiredRealized, address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address, uint)
+        internal
+        pure
+    {
+
+        /* Assert not past specified desired amount. */
+        require(SafeMath.sub(amountGiveGetDesiredRealized[1], amountGiveGetDesiredRealized[0]) >= 0);
+
+        /* Assert rate: amountGet / amountGive == desiredAmountGet / desiredAmountGive.
+           Calculated as amountGet * desiredAmountGive / amountGive == desiredAmountGet. */
+        require(SafeMath.div(SafeMath.mul(amountGiveGetDesiredRealized[3], amountGiveGetDesiredRealized[0]), amountGiveGetDesiredRealized[1]) == amountGiveGetDesiredRealized[2]);
+
+        /* Assert call is correct. */
+        require(call.target == tokenGiveGet[0]);
+        require(call.howToCall == AuthenticatedProxy.HowToCall.Call);
+        require(ArrayUtils.arrayEq(call.calldata, abi.encodeWithSignature("transfer(address,uint256)", counterparty, amountGiveGetDesiredRealized[1])));
+
+        /* Assert counter-call is correct. */
+        require(countercall.target == tokenGiveGet[1]);
+        require(countercall.howToCall == AuthenticatedProxy.HowToCall.Call);
+        require(ArrayUtils.arrayEq(countercall.calldata, abi.encodeWithSignature("transfer(address,uint256)", caller, amountGiveGetDesiredRealized[3])));
+
+    }
+
+    function swapByRateNoCap(address[2] tokenGiveGet, uint[4] amountGiveGetDesiredRealized, address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address, uint)
         internal
         pure
     {
@@ -32,6 +56,23 @@ contract StaticERC20 {
         require(countercall.target == tokenGiveGet[1]);
         require(countercall.howToCall == AuthenticatedProxy.HowToCall.Call);
         require(ArrayUtils.arrayEq(countercall.calldata, abi.encodeWithSignature("transfer(address,uint256)", caller, amountGiveGetDesiredRealized[3])));
+
+    }
+
+    function swapExact(address[2] tokenGiveGet, uint[2] amountGiveGet, address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address, uint)
+        internal
+        pure
+    {
+
+        /* Assert call is correct. */
+        require(call.target == tokenGiveGet[0]);
+        require(call.howToCall == AuthenticatedProxy.HowToCall.Call);
+        require(ArrayUtils.arrayEq(call.calldata, abi.encodeWithSignature("transfer(address,uint256)", counterparty, amountGiveGet[0])));
+
+        /* Assert counter-call is correct. */
+        require(countercall.target == tokenGiveGet[1]);
+        require(countercall.howToCall == AuthenticatedProxy.HowToCall.Call);
+        require(ArrayUtils.arrayEq(countercall.calldata, abi.encodeWithSignature("transfer(address,uint256)", caller, amountGiveGet[1])));
 
     }
 
