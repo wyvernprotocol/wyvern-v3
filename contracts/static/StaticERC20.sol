@@ -14,6 +14,8 @@ import "../registry/AuthenticatedProxy.sol";
 
 contract StaticERC20 {
 
+    /* This can be more efficient (no duplicated parameters) once https://github.com/ethereum/solidity/issues/3876 is implemented. */
+
     function swapByRateCapped(address[2] tokenGiveGet, uint[4] amountGiveGetDesiredRealized, address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address, uint)
         internal
         pure
