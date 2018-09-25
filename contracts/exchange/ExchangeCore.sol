@@ -149,7 +149,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         view
         returns (bool)
     {
-        return staticCall(order.staticTarget, abi.encodePacked(order.staticExtradata, caller, call.target, call.howToCall, call.calldata, counterparty, countercall.target, countercall.howToCall, countercall.calldata, matcher, value));
+        return staticCall(order.staticTarget, abi.encodePacked(order.staticExtradata, caller, call.target, call.howToCall, call.calldata, counterparty, countercall.target, countercall.howToCall, countercall.calldata, matcher, value, order.listingTime, order.expirationTime));
     }
 
     function executeCall(address maker, Call call)

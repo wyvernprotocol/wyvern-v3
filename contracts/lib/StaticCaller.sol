@@ -2,6 +2,13 @@ pragma solidity 0.4.24;
 
 contract StaticCaller {
 
+    struct StaticSpec {
+        /* target */
+        address target;
+        /* extradata */
+        bytes extradata;
+    }
+
     function staticCall(address target, bytes memory calldata)
         internal
         view

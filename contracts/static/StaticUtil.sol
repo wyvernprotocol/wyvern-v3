@@ -21,6 +21,23 @@ contract StaticUtil is StaticCaller {
            Might be more efficient to implement in ExchangeCore. */
     }
 
+    function split(address staticTargetForCall, bytes extradataForCall, address staticTargetForCounterCall, bytes extradataForCounterCall, address staticTargetForMatcherValue, bytes extradataForMatcherValue,
+                   address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address matcher, uint value)
+        internal
+        view
+    {
+        /* Split into three static calls: one for the call, one for the counter-call, and one for the matcher/value. */
+
+        /* Static call to check the call. */
+        require(staticCall(staticTargetForCall, abi.encodePacked(extradataForCall, caller, call.target, call.howToCall, call.calldata)));
+
+        /* Static call to check the counter-call. */
+        require(staticCall(staticTargetForCounterCall, abi.encodePacked(extradataForCounterCall, counterparty, countercall.target, countercall.howToCall, countercall.calldata)));
+
+        /* Static call to check the matcher & value. */
+        require(staticCall(staticTargetForMatcherValue, abi.encodePacked(extradataForMatcherValue, matcher, value)));
+    }
+
     function and(address[] addrs, uint[] extradataLengths, bytes extradatas, address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address matcher, uint value)
         internal 
         view
