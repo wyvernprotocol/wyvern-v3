@@ -5,6 +5,7 @@
 */
 
 pragma solidity >= 0.4.9;
+pragma experimental ABIEncoderV2;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -190,6 +191,9 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         internal
         returns (bool)
     {
+        /* Assert target exists. */
+        require(exists(call.target));
+
         /* Retrieve delegate proxy contract. */
         OwnableDelegateProxy delegateProxy = registry.proxies(maker);
       

@@ -81,7 +81,7 @@ contract StaticUtil is StaticCaller {
         internal
         view
     {
-        /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly (TODO).
+        /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly.
            e.g. transferring two CryptoKitties in sequence. */
 
         require(addrs.length == extradataLengths.length);
@@ -90,17 +90,23 @@ contract StaticUtil is StaticCaller {
 
         require(call.target == atomicizer);
         require(call.howToCall == AuthenticatedProxy.HowToCall.DelegateCall);
-        // Might not be strictly necessary.
-        require(addrs.length == caddrs.length && caddrs.length == cvals.length && caddrs.length == clengths.length);
+        require(addrs.length == caddrs.length);
 
         uint j = 0;
+        uint l = 0;
         for (uint i = 0; i < addrs.length; i++) {
             bytes memory extradata = new bytes(extradataLengths[i]);
             for (uint k = 0; k < extradataLengths[i]; k++) {
                 extradata[k] = extradatas[j];
                 j++;
             }
-            require(staticCall(addrs[i], abi.encodePacked(extradata, caller, /* TODO call */ metadata.matcher, metadata.value, metadata.listingTime, metadata.expirationTime)));
+            bytes memory data = new bytes(clengths[i]);
+            for (uint m = 0; m < clengths[i]; m++) {
+                data[m] = calldatas[l];
+                l++;
+            }
+            // TODO How to deal with value
+            require(staticCall(addrs[i], abi.encodePacked(extradata, caller, caddrs[i], AuthenticatedProxy.HowToCall.Call, data, metadata.matcher, metadata.value, metadata.listingTime, metadata.expirationTime)));
         }
 
     }
