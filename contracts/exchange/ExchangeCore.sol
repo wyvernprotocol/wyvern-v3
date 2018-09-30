@@ -61,6 +61,18 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         bytes calldata;
     }
 
+    /* Order match metadata, convenience struct. */
+    struct Metadata {
+        /* Matcher */
+        address matcher;
+        /* Value */
+        uint value;
+        /* Listing time */
+        uint listingTime;
+        /* Expiration time */
+        uint expirationTime;
+    }
+
     /* Events */
     event OrderApproved   (bytes32 indexed hash, address indexed maker, address staticTarget, bytes staticExtradata, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired);
     event OrderCancelled  (bytes32 indexed hash);
