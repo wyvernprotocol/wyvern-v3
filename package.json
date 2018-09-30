@@ -22,6 +22,8 @@
   "homepage": "https://github.com/wyvernprotocol/wyvern-v3#readme",
   "devDependencies": {
     "coveralls": "3.0.2",
+    "ganache-cli": "^6.1.8",
+    "ganache-core": "^2.2.1",
     "openzeppelin-solidity": "1.11.0",
     "solc": "0.4.24",
     "solidity-coverage": "^0.5.11",

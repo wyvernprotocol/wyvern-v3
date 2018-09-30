@@ -1,3 +1,3 @@
 #!/bin/sh
 
-testrpc --networkId 50 --port 8545
+./node_modules/ganache-cli/build/cli.node.js --networkId 50 --port 8545

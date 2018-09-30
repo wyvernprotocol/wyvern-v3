@@ -1,0 +1,8 @@
+{
+  "deployed": {
+    "development": {
+      "Migrations": "0x4ca8c687225d4113090e21e86a67896822333014",
+      "WyvernExchange": "0x3ec6ff3e3cea6b8fb879f6225ec8ef240f937c9d"
+    }
+  }
+}
