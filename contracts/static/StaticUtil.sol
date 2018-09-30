@@ -77,7 +77,7 @@ contract StaticUtil is StaticCaller {
         revert();
     }
 
-    function sequenceExact(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address caller, ExchangeCore.Call memory call, ExchangeCore.Metadata memory metadata)
+    function sequence(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, bool allowExtra, address caller, ExchangeCore.Call memory call, ExchangeCore.Metadata memory metadata)
         internal
         view
     {
@@ -90,7 +90,10 @@ contract StaticUtil is StaticCaller {
 
         require(call.target == atomicizer);
         require(call.howToCall == AuthenticatedProxy.HowToCall.DelegateCall);
-        require(addrs.length == caddrs.length);
+    
+        if (!allowExtra) {
+            require(addrs.length == caddrs.length);
+        }
 
         uint j = 0;
         uint l = 0;
@@ -105,18 +108,11 @@ contract StaticUtil is StaticCaller {
                 data[m] = calldatas[l];
                 l++;
             }
-            // TODO How to deal with value
+            // Not supported in the standard interface.
+            require(cvals[i] == 0);
             require(staticCall(addrs[i], abi.encodePacked(extradata, caller, caddrs[i], AuthenticatedProxy.HowToCall.Call, data, metadata.matcher, metadata.value, metadata.listingTime, metadata.expirationTime)));
         }
 
-    }
-
-    function sequenceAnyAfter(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address matcher, uint value, uint, uint)
-        internal
-        view
-    {
-        /* Assert DELEGATECALL to atomicizer library with given call sequence and any extra subsequent calls (TODO)
-           e.g. transferring a CryptoKitty, then paying a fee, counterparty doesn't care about the fee. */
     }
 
 }

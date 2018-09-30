@@ -74,7 +74,7 @@ contract OwnedUpgradeabilityProxy is Proxy, OwnedUpgradeabilityStorage {
      */
     function upgradeToAndCall(address implementation, bytes memory data) payable public onlyProxyOwner {
         upgradeTo(implementation);
-        (bool success, bytes memory ret) = address(this).delegatecall(data);
+        (bool success,) = address(this).delegatecall(data);
         require(success);
     }
 }
