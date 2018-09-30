@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.4.24;
+pragma solidity >= 0.4.9;
 
 import "../lib/ArrayUtils.sol";
 import "../exchange/ExchangeCore.sol";
@@ -14,8 +14,8 @@ contract StaticArray {
 
     /* ~ */
 
-    function dynamicMasked(address target, AuthenticatedProxy.HowToCall howToCall, bytes calldata, bytes calldataMask,
-                           address countertarget, AuthenticatedProxy.HowToCall counterHowToCall, bytes countercalldata, bytes countercalldataMask,
+    function dynamicMasked(address target, AuthenticatedProxy.HowToCall howToCall, bytes memory data, bytes memory calldataMask,
+                           address countertarget, AuthenticatedProxy.HowToCall counterHowToCall, bytes memory countercalldata, bytes memory countercalldataMask,
                            address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address, uint)
         internal
         pure
@@ -23,13 +23,13 @@ contract StaticArray {
 
         require(call.target == target);
         require(call.howToCall == howToCall);
-        ArrayUtils.guardedArrayReplace(calldata, call.calldata, calldataMask);
-        require(ArrayUtils.arrayEq(calldata, call.calldata));
+        ArrayUtils.guardedArrayReplace(data, call.data, calldataMask);
+        require(ArrayUtils.arrayEq(data, call.data));
         
         require(countercall.target == countertarget);
         require(countercall.howToCall == counterHowToCall);
-        ArrayUtils.guardedArrayReplace(countercalldata, countercall.calldata, countercalldataMask);
-        require(ArrayUtils.arrayEq(countercalldata, countercall.calldata));
+        ArrayUtils.guardedArrayReplace(countercalldata, countercall.data, countercalldataMask);
+        require(ArrayUtils.arrayEq(countercalldata, countercall.data));
 
     }
 

@@ -5,7 +5,7 @@
 
 */
 
-pragma solidity 0.4.24;
+pragma solidity >= 0.4.9;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
@@ -127,7 +127,7 @@ library ArrayUtils {
      * @param source Byte array to write
      * @return End memory index
      */
-    function unsafeWriteBytes(uint index, bytes source)
+    function unsafeWriteBytes(uint index, bytes memory source)
         internal
         pure
         returns (uint)

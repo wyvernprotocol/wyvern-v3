@@ -6,7 +6,7 @@
 
 */
 
-pragma solidity 0.4.24;
+pragma solidity >= 0.4.9;
 
 /**
  * @title WyvernAtomicizer
@@ -14,19 +14,20 @@ pragma solidity 0.4.24;
  */
 library WyvernAtomicizer {
 
-    function atomicize (address[] addrs, uint[] values, uint[] calldataLengths, bytes calldatas)
+    function atomicize (address[] memory addrs, uint[] memory values, uint[] memory calldataLengths, bytes memory calldatas)
         public
     {
         require(addrs.length == values.length && addrs.length == calldataLengths.length);
 
         uint j = 0;
         for (uint i = 0; i < addrs.length; i++) {
-            bytes memory calldata = new bytes(calldataLengths[i]);
+            bytes memory cd = new bytes(calldataLengths[i]);
             for (uint k = 0; k < calldataLengths[i]; k++) {
-                calldata[k] = calldatas[j];
+                cd[k] = calldatas[j];
                 j++;
             }
-            require(addrs[i].call.value(values[i])(calldata));
+            (bool success, bytes memory ret) = addrs[i].call.value(values[i])(cd);
+            require(success);
         }
     }
 

@@ -6,7 +6,7 @@
 
 */
 
-pragma solidity 0.4.24;
+pragma solidity >= 0.4.9;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -85,7 +85,7 @@ contract ProxyRegistry is Ownable {
         public
         returns (OwnableDelegateProxy proxy)
     {
-        require(proxies[msg.sender] == address(0));
+        require(proxies[msg.sender] == OwnableDelegateProxy(0));
         proxy = new OwnableDelegateProxy(msg.sender, delegateProxyImplementation, abi.encodeWithSignature("initialize(address,address)", msg.sender, address(this)));
         proxies[msg.sender] = proxy;
         return proxy;

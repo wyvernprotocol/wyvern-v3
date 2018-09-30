@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.4.24;
+pragma solidity >= 0.4.9;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
@@ -16,7 +16,7 @@ contract StaticERC20 {
 
     /* This can be more efficient (no duplicated parameters) once https://github.com/ethereum/solidity/issues/3876 is implemented. */
 
-    function swapOneForOne(address[2] tokenGiveGet, uint[2] nftGiveGet, address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address, uint)
+    function swapOneForOne(address[2] memory tokenGiveGet, uint[2] memory nftGiveGet, address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address, uint, uint, uint)
         internal
         pure
     {
@@ -24,12 +24,12 @@ contract StaticERC20 {
         /* Assert call is correct. */
         require(call.target == tokenGiveGet[0]);
         require(call.howToCall == AuthenticatedProxy.HowToCall.Call);
-        require(ArrayUtils.arrayEq(call.calldata, abi.encodeWithSignature("transfer(address,uint256)", counterparty, nftGiveGet[0])));
+        require(ArrayUtils.arrayEq(call.data, abi.encodeWithSignature("transfer(address,uint256)", counterparty, nftGiveGet[0])));
 
         /* Assert counter-call is correct. */
         require(countercall.target == tokenGiveGet[1]);
         require(countercall.howToCall == AuthenticatedProxy.HowToCall.Call);
-        require(ArrayUtils.arrayEq(countercall.calldata, abi.encodeWithSignature("transfer(address,uint256)", caller, nftGiveGet[1])));
+        require(ArrayUtils.arrayEq(countercall.data, abi.encodeWithSignature("transfer(address,uint256)", caller, nftGiveGet[1])));
 
     }
 

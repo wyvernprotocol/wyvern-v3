@@ -282,7 +282,7 @@ async-eventemitter@^0.2.2:
   dependencies:
     async "^2.4.0"
 
-async-eventemitter@ahultgren/async-eventemitter#fa06e39e56786ba541c180061dbf2c0a5bbf951c:
+"async-eventemitter@github:ahultgren/async-eventemitter#fa06e39e56786ba541c180061dbf2c0a5bbf951c":
   version "0.2.3"
   resolved "https://codeload.github.com/ahultgren/async-eventemitter/tar.gz/fa06e39e56786ba541c180061dbf2c0a5bbf951c"
   dependencies:
@@ -6688,10 +6688,10 @@ truffle-provider@^0.0.6:
     truffle-error "^0.0.3"
     web3 "0.20.6"
 
-truffle@4.1.14:
-  version "4.1.14"
-  resolved "https://registry.yarnpkg.com/truffle/-/truffle-4.1.14.tgz#8d2c298e29abf9b1e486e44ff9faca6d34bb9030"
-  integrity sha512-e7tTLvKP3bN9dE7MagfWyFjy4ZgoEGbeujECy1me1ENBzbj/aO/+45gs72qsL3+3IkCNNcWNOJjjrm8BYZZNNg==
+truffle@^5.0.0-beta.1:
+  version "5.0.0-user-level-mnemonic.0"
+  resolved "https://registry.yarnpkg.com/truffle/-/truffle-5.0.0-user-level-mnemonic.0.tgz#c2c0148278353371e22e7f2e50cc41db9bade16a"
+  integrity sha512-RMbyC+3tA/smP+8A1EFTFLf52Nnc6XPAmy1fcNdUlcjuqQlOdXGonUb8PBI4ZrCFbapWl0f3Jpr2XjlP4sdw7g==
   dependencies:
     mocha "^4.1.0"
     original-require "1.0.1"

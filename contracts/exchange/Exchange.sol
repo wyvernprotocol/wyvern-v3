@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity >= 0.4.9;
 
 import "./ExchangeCore.sol";
 
@@ -6,7 +6,7 @@ contract Exchange is ExchangeCore {
 
   /* Public ABI-encodable method wrappers. */
 
-  function hashOrder_(address exchange, address maker, address staticTarget, bytes staticExtradata, uint listingTime, uint expirationTime, uint salt)
+  function hashOrder_(address exchange, address maker, address staticTarget, bytes memory staticExtradata, uint listingTime, uint expirationTime, uint salt)
       public
       pure
       returns (bytes32 hash)
@@ -22,7 +22,7 @@ contract Exchange is ExchangeCore {
       return hashToSign(orderHash);
   }
 
-  function validateOrderParameters_(address exchange, address maker, address staticTarget, bytes staticExtradata, uint listingTime, uint expirationTime, uint salt)
+  function validateOrderParameters_(address exchange, address maker, address staticTarget, bytes memory staticExtradata, uint listingTime, uint expirationTime, uint salt)
       public
       view
       returns (bool)
@@ -38,14 +38,14 @@ contract Exchange is ExchangeCore {
       return validateOrderAuthorization(hash, maker, Sig(v, r, s));
   }
 
-  function approveOrder_(address exchange, address maker, address staticTarget, bytes staticExtradata, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired)
+  function approveOrder_(address exchange, address maker, address staticTarget, bytes memory staticExtradata, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired)
       public
   {
       return approveOrder(Order(exchange, maker, staticTarget, staticExtradata, listingTime, expirationTime, salt), orderbookInclusionDesired); 
   }
 
-  function atomicMatch_(address[8] addrs, uint[6] uints, bytes firstExtradata, bytes firstCalldata, bytes secondExtradata,
-      bytes secondCalldata, uint8[4] howToCallsVs, bytes32[5] rssMetadata)
+  function atomicMatch_(address[8] memory addrs, uint[6] memory uints, bytes memory firstExtradata, bytes memory firstCalldata, bytes memory secondExtradata,
+      bytes memory secondCalldata, uint8[4] memory howToCallsVs, bytes32[5] memory rssMetadata)
       public
   {
       return atomicMatch(

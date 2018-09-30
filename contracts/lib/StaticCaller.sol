@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity >= 0.4.9;
 
 contract StaticCaller {
 
@@ -9,13 +9,13 @@ contract StaticCaller {
         bytes extradata;
     }
 
-    function staticCall(address target, bytes memory calldata)
+    function staticCall(address target, bytes memory data)
         internal
         view
         returns (bool result)
     {
         assembly {
-            result := staticcall(gas, target, add(calldata, 0x20), mload(calldata), mload(0x40), 0)
+            result := staticcall(gas, target, add(data, 0x20), mload(data), mload(0x40), 0)
         }
         return result;
     }

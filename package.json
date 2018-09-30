@@ -4,6 +4,7 @@
   "description": "Wyvern Protocol v3, Ethereum implementation",
   "main": "index.js",
   "scripts": {
+    "patch": "scripts/patch.sh",
     "compile": "scripts/compile.sh",
     "coverage": "scripts/coverage.sh",
     "test": "scripts/test.sh",
@@ -25,11 +26,10 @@
     "ganache-cli": "^6.1.8",
     "ganache-core": "^2.2.1",
     "openzeppelin-solidity": "1.11.0",
-    "solc": "0.4.24",
     "solidity-coverage": "^0.5.11",
     "solium": "1.1.8",
     "standard": "12.0.1",
-    "truffle": "4.1.14",
+    "truffle": "^5.0.0-beta.1",
     "truffle-compile": "3.0.13",
     "web3": "1.0.0-beta.36"
   }

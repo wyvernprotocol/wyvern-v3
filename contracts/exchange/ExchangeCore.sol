@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.4.24;
+pragma solidity >= 0.4.9;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -64,7 +64,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         /* How to call */
         AuthenticatedProxy.HowToCall howToCall;
         /* Calldata */
-        bytes calldata;
+        bytes data;
     }
 
     /* Order match metadata, convenience struct. */
@@ -167,7 +167,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(caller, call.target, call.howToCall, call.calldata);
+        return abi.encodePacked(caller, call.target, call.howToCall, call.data);
     }
 
     function encodeStaticCall(Order memory order, address caller, Call memory call, address counterparty, Call memory countercall, address matcher, uint value)
@@ -175,7 +175,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(order.staticExtradata, encodeCallerAndCall(caller, call), encodeCallerAndCall(counterparty, countercall), countercall.calldata, matcher, value, order.listingTime, order.expirationTime);
+        return abi.encodePacked(order.staticExtradata, encodeCallerAndCall(caller, call), encodeCallerAndCall(counterparty, countercall), countercall.data, matcher, value, order.listingTime, order.expirationTime);
     }
 
     function executeStaticCall(Order memory order, address caller, Call memory call, address counterparty, Call memory countercall, address matcher, uint value)
@@ -186,7 +186,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         return staticCall(order.staticTarget, encodeStaticCall(order, caller, call, counterparty, countercall, matcher, value));
     }
 
-    function executeCall(address maker, Call call)
+    function executeCall(address maker, Call memory call)
         internal
         returns (bool)
     {
@@ -194,16 +194,16 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         OwnableDelegateProxy delegateProxy = registry.proxies(maker);
       
         /* Assert existence. */
-        require(delegateProxy != address(0));
+        require(delegateProxy != OwnableDelegateProxy(0));
 
         /* Assert implementation. */
         require(delegateProxy.implementation() == registry.delegateProxyImplementation());
       
         /* Typecast. */
-        AuthenticatedProxy proxy = AuthenticatedProxy(delegateProxy);
+        AuthenticatedProxy proxy = AuthenticatedProxy(address(delegateProxy));
   
         /* Execute order. */
-        return proxy.proxy(call.target, call.howToCall, call.calldata);
+        return proxy.proxy(call.target, call.howToCall, call.data);
     }
 
     function approveOrder(Order memory order, bool orderbookInclusionDesired)
@@ -277,7 +277,8 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         /* Transfer any msg.value.
            This is the first "asymmetric" part of order matching: if an order requires Ether, it must be the first order. */
         if (msg.value > 0) {
-            firstOrder.maker.transfer(msg.value);
+            address payable dest = address(uint160(firstOrder.maker));
+            dest.transfer(msg.value);
         }
 
         /* Execute first call, assert success.

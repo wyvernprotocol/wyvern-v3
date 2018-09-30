@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.4.24;
+pragma solidity >= 0.4.9;
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
@@ -23,16 +23,16 @@ contract TokenRecipient {
      * @param token Address of token
      * @param extraData Additional data to log
      */
-    function receiveApproval(address from, uint256 value, address token, bytes extraData) public {
+    function receiveApproval(address from, uint256 value, address token, bytes memory extraData) public {
         ERC20 t = ERC20(token);
-        require(t.transferFrom(from, this, value));
+        require(t.transferFrom(from, address(this), value));
         emit ReceivedTokens(from, value, token, extraData);
     }
 
     /**
      * @dev Receive Ether and generate a log event
      */
-    function () payable public {
+    function () payable external {
         emit ReceivedEther(msg.sender, msg.value);
     }
 }

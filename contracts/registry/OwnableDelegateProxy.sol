@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.4.24;
+pragma solidity >= 0.4.9;
 
 import "./ProxyRegistry.sol";
 import "./AuthenticatedProxy.sol";
@@ -12,12 +12,13 @@ import "./proxy/OwnedUpgradeabilityProxy.sol";
 
 contract OwnableDelegateProxy is OwnedUpgradeabilityProxy {
 
-    constructor(address owner, address initialImplementation, bytes calldata)
+    constructor(address owner, address initialImplementation, bytes memory data)
         public
     {
         setUpgradeabilityOwner(owner);
         _upgradeTo(initialImplementation);
-        require(initialImplementation.delegatecall(calldata));
+        (bool success, bytes memory ret) = initialImplementation.delegatecall(data);
+        require(success);
     }
 
 }

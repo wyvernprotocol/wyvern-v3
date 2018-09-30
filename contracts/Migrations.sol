@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity >= 0.4.9;
 
 contract Migrations {
 

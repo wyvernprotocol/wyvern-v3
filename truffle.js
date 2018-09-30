@@ -14,10 +14,13 @@ module.exports = {
       gasPrice: 0x01
     }
   },
-  solc: {
-    optimizer: {
-      enabled: true,
-      runs: 200
+  compilers: {
+    solc: {
+      version: '0.5.0-nightly.2018.9.26+commit.d72498b3',
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
     }
   }
 }

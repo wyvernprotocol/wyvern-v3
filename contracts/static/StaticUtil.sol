@@ -4,7 +4,8 @@
 
 */
 
-pragma solidity 0.4.24;
+pragma solidity >= 0.4.9;
+
 pragma experimental ABIEncoderV2;
 
 import "../lib/StaticCaller.sol";
@@ -13,7 +14,9 @@ import "../exchange/ExchangeCore.sol";
 
 contract StaticUtil is StaticCaller {
 
-    function any(address, ExchangeCore.Call, address, ExchangeCore.Call, address, uint)
+    address public atomicizer;
+
+    function any(address, ExchangeCore.Call memory, address, ExchangeCore.Call memory, address, uint, uint, uint)
         internal
         pure
     {
@@ -24,21 +27,19 @@ contract StaticUtil is StaticCaller {
 
     function split(StaticCaller.StaticSpec memory callSpec, StaticCaller.StaticSpec memory countercallSpec, StaticCaller.StaticSpec memory matcherValueSpec,
                    address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, ExchangeCore.Metadata memory metadata)
+        public
         view
     {
-        /* Split into three static calls: one for the call, one for the counter-call, and one for the matcher/value. */
+        /* Split into two static calls: one for the call, one for the counter-call, both with metadata. */
 
         /* Static call to check the call. */
-        require(staticCall(callSpec.target, abi.encodePacked(callSpec.extradata, caller, call.target, call.howToCall, call.calldata)));
+        require(staticCall(callSpec.target, abi.encodePacked(callSpec.extradata, caller, call.target, call.howToCall, call.data, metadata.matcher, metadata.value, metadata.listingTime, metadata.expirationTime)));
 
         /* Static call to check the counter-call. */
-        require(staticCall(countercallSpec.target, abi.encodePacked(countercallSpec.extradata, counterparty, countercall.target, countercall.howToCall, countercall.calldata)));
-
-        /* Static call to check the matcher & value. */
-        require(staticCall(matcherValueSpec.target, abi.encodePacked(matcherValueSpec.extradata, metadata.matcher, metadata.value, metadata.listingTime, metadata.expirationTime)));
+        require(staticCall(countercallSpec.target, abi.encodePacked(countercallSpec.extradata, counterparty, countercall.target, countercall.howToCall, countercall.data, metadata.matcher, metadata.value, metadata.listingTime, metadata.expirationTime)));
     }
 
-    function and(address[] addrs, uint[] extradataLengths, bytes extradatas, bytes rest)
+    function and(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, bytes memory rest)
         internal 
         view
     {
@@ -55,7 +56,7 @@ contract StaticUtil is StaticCaller {
         } 
     }
 
-    function or(address[] addrs, uint[] extradataLengths, bytes extradatas, bytes rest)
+    function or(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, bytes memory rest)
         internal 
         view
     {
@@ -76,15 +77,35 @@ contract StaticUtil is StaticCaller {
         revert();
     }
 
-    function sequenceExact(address[] addrs, uint[] extradataLengths, bytes extradatas, address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address matcher, uint value)
+    function sequenceExact(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address caller, ExchangeCore.Call memory call, ExchangeCore.Metadata memory metadata)
         internal
         view
     {
         /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly (TODO).
            e.g. transferring two CryptoKitties in sequence. */
+
+        require(addrs.length == extradataLengths.length);
+
+        (address[] memory caddrs, uint[] memory cvals, uint[] memory clengths, bytes memory calldatas) = abi.decode(call.data, (address[], uint[], uint[], bytes));
+
+        require(call.target == atomicizer);
+        require(call.howToCall == AuthenticatedProxy.HowToCall.DelegateCall);
+        // Might not be strictly necessary.
+        require(addrs.length == caddrs.length && caddrs.length == cvals.length && caddrs.length == clengths.length);
+
+        uint j = 0;
+        for (uint i = 0; i < addrs.length; i++) {
+            bytes memory extradata = new bytes(extradataLengths[i]);
+            for (uint k = 0; k < extradataLengths[i]; k++) {
+                extradata[k] = extradatas[j];
+                j++;
+            }
+            require(staticCall(addrs[i], abi.encodePacked(extradata, caller, /* TODO call */ metadata.matcher, metadata.value, metadata.listingTime, metadata.expirationTime)));
+        }
+
     }
 
-    function sequenceAnyAfter(address[] addrs, uint[] extradataLengths, bytes extradatas, address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address matcher, uint value)
+    function sequenceAnyAfter(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address matcher, uint value, uint, uint)
         internal
         view
     {
