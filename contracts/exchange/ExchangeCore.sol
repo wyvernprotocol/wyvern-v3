@@ -176,7 +176,11 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         pure
         returns (bytes memory)
     {
-        return abi.encodePacked(order.staticExtradata, encodeCallerAndCall(caller, call), encodeCallerAndCall(counterparty, countercall), countercall.data, matcher, value, order.listingTime, order.expirationTime);
+        /* This nonsense is necessary to preserve static call target function stack space. */
+        address[5] memory addresses = [caller, call.target, counterparty, countercall.target, matcher];
+        AuthenticatedProxy.HowToCall[2] memory howToCalls = [call.howToCall, countercall.howToCall];
+        uint[3] memory uints = [value, order.listingTime, order.expirationTime];
+        return abi.encodePacked(order.staticExtradata, addresses, howToCalls, uints, call.data, countercall.data);
     }
 
     function executeStaticCall(Order memory order, address caller, Call memory call, address counterparty, Call memory countercall, address matcher, uint value)

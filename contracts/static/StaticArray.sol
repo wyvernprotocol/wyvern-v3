@@ -22,4 +22,13 @@ contract StaticArray {
         require(ArrayUtils.arrayEq(data, call.data));
     }
 
+    function exact(address target, AuthenticatedProxy.HowToCall howToCall, bytes memory data, ExchangeCore.Call memory call, ExchangeCore.Metadata memory)
+        internal
+        pure
+    {
+        require(call.target == target);
+        require(call.howToCall == howToCall);
+        require(ArrayUtils.arrayEq(data, call.data));
+    }
+
 }
