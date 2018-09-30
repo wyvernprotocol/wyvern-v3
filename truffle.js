@@ -10,7 +10,8 @@ module.exports = {
       host: 'localhost',
       port: 8545,
       network_id: '*',
-      gas: 6700000
+      gas: 0xfffffffffff,
+      gasPrice: 0x01
     }
   },
   solc: {
