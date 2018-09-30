@@ -1,3 +1,9 @@
+/*
+
+    ExchangeCore
+
+*/
+
 pragma solidity 0.4.24;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -156,12 +162,21 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         return false;
     }
 
+    function encodeStaticCall(Order memory order, address caller, Call memory call, address counterparty, Call memory countercall, address matcher, uint value)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        // return abi.encodePacked(order.staticExtradata, caller, call.target, call.howToCall, call.calldata, counterparty, countercall.target, countercall.howToCall, countercall.calldata, matcher, value, order.listingTime, order.expirationTime);
+        return abi.encodePacked(order.staticExtradata, caller, call.target, call.howToCall, call.calldata, counterparty, countercall.target, countercall.howToCall, countercall.calldata, matcher, value);
+    }
+
     function executeStaticCall(Order memory order, address caller, Call memory call, address counterparty, Call memory countercall, address matcher, uint value)
         internal
         view
         returns (bool)
     {
-        return staticCall(order.staticTarget, abi.encodePacked(order.staticExtradata, caller, call.target, call.howToCall, call.calldata, counterparty, countercall.target, countercall.howToCall, countercall.calldata, matcher, value, order.listingTime, order.expirationTime));
+        return staticCall(order.staticTarget, encodeStaticCall(order, caller, call, counterparty, countercall, matcher, value));
     }
 
     function executeCall(address maker, Call call)
@@ -235,7 +250,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
             require(validateOrderAuthorization(secondHash, secondOrder.maker, secondSig));
         }
 
-        /* Prevent self-matching (necessary?). */
+        /* Prevent self-matching (possibly unnecessary, but safer). */
         require(firstHash != secondHash);
 
         /* EFFECTS */ 
