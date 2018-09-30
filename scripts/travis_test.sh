@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-set -e
-
+set -x
 pkill -f testrpc
+set -e
 sleep 2
 yarn testrpc &
 sleep 1
