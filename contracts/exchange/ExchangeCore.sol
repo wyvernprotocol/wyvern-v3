@@ -5,7 +5,6 @@
 */
 
 pragma solidity >= 0.4.9;
-pragma experimental ABIEncoderV2;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
