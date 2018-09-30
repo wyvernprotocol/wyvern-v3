@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "compile": "scripts/compile.sh",
+    "coverage": "scripts/coverage.sh",
     "test": "scripts/test.sh",
     "lint": "scripts/lint.sh",
     "testrpc": "scripts/testrpc.sh"
@@ -23,10 +24,11 @@
     "coveralls": "3.0.2",
     "openzeppelin-solidity": "1.11.0",
     "solc": "0.4.24",
+    "solidity-coverage": "^0.5.11",
     "solium": "1.1.8",
-    "standard": "11.0.1",
-    "truffle": "4.1.13",
+    "standard": "12.0.1",
+    "truffle": "4.1.14",
     "truffle-compile": "3.0.13",
-    "web3": "1.0.0-beta.34"
+    "web3": "1.0.0-beta.36"
   }
 }

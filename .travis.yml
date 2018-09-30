@@ -1,0 +1,13 @@
+dist: trusty
+sudo: required
+group: beta
+language: node_js
+node_js:
+  - "10"
+cache:
+  yarn: true
+before_script:
+  - scripts/travis_prep.sh
+script:
+  - scripts/travis_coverage.sh
+  - scripts/travis_test.sh
