@@ -12,6 +12,14 @@ module.exports = {
       network_id: '*',
       gas: 0xfffffffffff,
       gasPrice: 0x01
+    },
+    rinkeby: {
+      host: 'localhost',
+      from: '0x71a1e902fc6a3001951c1eb29b5e039c2eb70557',
+      port: 8545,
+      network_id: '*',
+      gas: 6700000,
+      gasPrice: 21000000000
     }
   },
   compilers: {
