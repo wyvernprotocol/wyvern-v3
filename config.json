@@ -1,10 +1,11 @@
 {
   "deployed": {
     "rinkeby": {
-      "Migrations": "0x7E71A5bB0c666DD32370190Edb4021D90e66d3EE",
-      "WyvernAtomicizer": "0xDBF927A61a47B14Ee207Be42a098DADbc4D5b9A9",
-      "WyvernRegistry": "0x2233B62736646237A186FF8cbA20f019d4E6F059",
-      "WyvernExchange": "0x908F4A1aB8D7bb29D901C77BB851cC272222226E"
+      "Migrations": "0x5B9a7E680439Abb722cA153C787E7e96210286Cb",
+      "WyvernAtomicizer": "0x2F5bCF74B50D48Acd0e0B71EB5fE39951e5ACeD0",
+      "WyvernRegistry": "0xc989388999097D03B3acEfE54C85B9b1BFeF885c",
+      "WyvernExchange": "0x498995Ce583422a345A7e7393A55A08b86b5B4c9",
+      "WyvernStatic": "0x79b2Fd218EE5d0179E5e291905E2e759428bCC83"
     }
   }
 }
