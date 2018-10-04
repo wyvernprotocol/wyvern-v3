@@ -1,17 +1,5 @@
 {
   "deployed": {
-    "development": {
-      "Migrations": "0xc1458042FfE21BE47c46a27BdeD86d54D0a8692F",
-      "WyvernExchange": "0x8998c9fF4FA0e64760792639eB6a04782023353C",
-      "WyvernAtomicizer": "0x5467DAd9F7f87D71F6aa5363254150448407f3C9",
-      "WyvernRegistry": "0x76a51A4852a3A68d2B2b6be4B6cf9901195F3942"
-    },
-    "rinkeby-fork": {
-      "Migrations": "0x4821e3960Fd1df57b9d601150BF02A68819b2851",
-      "WyvernAtomicizer": "0x32ad5e9728F2bc0B782801F7556E60bacEe03609",
-      "WyvernRegistry": "0xc984D06ae9ECBe79E6c66554Ca714e940d87f2B6",
-      "WyvernExchange": "0xE7b8aaB468f28cE166aC10611Da3931C218F8ef2"
-    },
     "rinkeby": {
       "Migrations": "0x7E71A5bB0c666DD32370190Edb4021D90e66d3EE",
       "WyvernAtomicizer": "0xDBF927A61a47B14Ee207Be42a098DADbc4D5b9A9",

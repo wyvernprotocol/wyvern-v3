@@ -5,6 +5,6 @@ const { setConfig } = require('./config.js')
 
 module.exports = (deployer, network) => {
   return deployer.deploy(WyvernRegistry).then(() => {
-    setConfig('deployed.' + network + '.WyvernRegistry', WyvernRegistry.address)
+    if (network !== 'development') setConfig('deployed.' + network + '.WyvernRegistry', WyvernRegistry.address)
   })
 }

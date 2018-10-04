@@ -12,7 +12,7 @@ import "../lib/ArrayUtils.sol";
 import "../exchange/ExchangeCore.sol";
 import "../registry/AuthenticatedProxy.sol";
 
-contract StaticERC20 {
+contract StaticERC721 {
 
     /* This can be more efficient (no duplicated parameters) once https://github.com/ethereum/solidity/issues/3876 is implemented. */
 
