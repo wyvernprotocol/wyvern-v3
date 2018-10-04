@@ -4,6 +4,7 @@
   "description": "Wyvern Protocol v3, Ethereum implementation",
   "main": "index.js",
   "scripts": {
+    "analyze": "scripts/analyze.sh",
     "patch": "scripts/patch.sh",
     "flatten": "scripts/flatten.sh",
     "compile": "scripts/compile.sh",

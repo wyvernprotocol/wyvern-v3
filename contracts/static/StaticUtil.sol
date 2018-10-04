@@ -8,7 +8,6 @@ pragma solidity >= 0.4.9;
 
 import "../lib/StaticCaller.sol";
 import "../registry/AuthenticatedProxy.sol";
-import "../exchange/ExchangeCore.sol";
 
 contract StaticUtil is StaticCaller {
 

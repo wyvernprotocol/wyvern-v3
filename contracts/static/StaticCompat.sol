@@ -7,7 +7,6 @@
 pragma solidity >= 0.4.9;
 
 import "../lib/ArrayUtils.sol";
-import "../exchange/ExchangeCore.sol";
 
 contract StaticCompat {
 

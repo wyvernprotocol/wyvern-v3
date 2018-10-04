@@ -9,12 +9,13 @@ pragma solidity >= 0.4.9;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "../lib/ArrayUtils.sol";
-import "../exchange/ExchangeCore.sol";
 import "../registry/AuthenticatedProxy.sol";
 
 contract StaticERC20 {
 
     /* This can be more efficient (no duplicated parameters) once https://github.com/ethereum/solidity/issues/3876 is implemented. */
+
+    /* TODO Refactor */
 
     function swapByRateCapped(address[2] memory tokenGiveGet, uint[4] memory amountGiveGetDesiredRealized, address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address, uint, uint, uint)
         internal
