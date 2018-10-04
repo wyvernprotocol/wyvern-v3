@@ -10,6 +10,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "../lib/ArrayUtils.sol";
 import "../registry/AuthenticatedProxy.sol";
+import "../exchange/ExchangeCore.sol";
 
 contract StaticERC721 {
 

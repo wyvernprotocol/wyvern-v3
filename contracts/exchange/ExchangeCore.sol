@@ -170,24 +170,24 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         return abi.encodePacked(caller, call.target, call.howToCall, call.data);
     }
 
-    function encodeStaticCall(Order memory order, address caller, Call memory call, address counterparty, Call memory countercall, address matcher, uint value)
+    function encodeStaticCall(Order memory order, Call memory call, Order memory counterorder, Call memory countercall, address matcher, uint value)
         internal
         pure
         returns (bytes memory)
     {
         /* This nonsense is necessary to preserve static call target function stack space. */
-        address[5] memory addresses = [caller, call.target, counterparty, countercall.target, matcher];
+        address[5] memory addresses = [order.maker, call.target, counterorder.maker, countercall.target, matcher];
         AuthenticatedProxy.HowToCall[2] memory howToCalls = [call.howToCall, countercall.howToCall];
-        uint[3] memory uints = [value, order.listingTime, order.expirationTime];
+        uint[4] memory uints = [value, order.listingTime, order.expirationTime, counterorder.listingTime];
         return abi.encodePacked(order.staticExtradata, addresses, howToCalls, uints, call.data, countercall.data);
     }
 
-    function executeStaticCall(Order memory order, address caller, Call memory call, address counterparty, Call memory countercall, address matcher, uint value)
+    function executeStaticCall(Order memory order, Call memory call, Order memory counterorder, Call memory countercall, address matcher, uint value)
         internal
         view
         returns (bool)
     {
-        return staticCall(order.staticTarget, encodeStaticCall(order, caller, call, counterparty, countercall, matcher, value));
+        return staticCall(order.staticTarget, encodeStaticCall(order, call, counterorder, countercall, matcher, value));
     }
 
     function executeCall(address maker, Call memory call)
@@ -298,10 +298,10 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         /* Static calls must happen after the effectful calls so that they can check the resulting state. */
 
         /* Execute first order static call, assert success. */
-        assert(executeStaticCall(firstOrder, firstOrder.maker, firstCall, secondOrder.maker, secondCall, msg.sender, msg.value));
+        assert(executeStaticCall(firstOrder, firstCall, secondOrder, secondCall, msg.sender, msg.value));
       
         /* Execute second order static call, assert success. */
-        assert(executeStaticCall(secondOrder, secondOrder.maker, secondCall, firstOrder.maker, firstCall, msg.sender, uint(0)));
+        assert(executeStaticCall(secondOrder, secondCall, firstOrder, firstCall, msg.sender, uint(0)));
 
         /* Log match event. */
         emit OrdersMatched(firstHash, secondHash, firstOrder.maker, secondOrder.maker, metadata);
