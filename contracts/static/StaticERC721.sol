@@ -10,29 +10,32 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "../lib/ArrayUtils.sol";
 import "../registry/AuthenticatedProxy.sol";
-import "../exchange/ExchangeCore.sol";
 
 contract StaticERC721 {
 
-    /* This can be more efficient (no duplicated parameters) once https://github.com/ethereum/solidity/issues/3876 is implemented. */
-
-    /* TODO refactor */
-
-    function swapOneForOne(address[2] memory tokenGiveGet, uint[2] memory nftGiveGet, address caller, ExchangeCore.Call memory call, address counterparty, ExchangeCore.Call memory countercall, address, uint, uint, uint)
-        internal
+    function swapOneForOne(address[2] memory tokenGiveGet, uint[2] memory nftGiveGet,
+        address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[4] memory uints,
+        bytes memory data, bytes memory counterdata)
+        public
         pure
     {
+        // Call target = token to give
+        require(addresses[1] == tokenGiveGet[0]);
+        // Decode call data
+        (address transferDest, uint transferNft) = abi.decode(data, (address, uint));
+        // Transfer dest = counterparty
+        require(transferDest == addresses[2]);
+        // Transfer NFTt = give NFT
+        require(transferNft == nftGiveGet[0]);
 
-        /* Assert call is correct. */
-        require(call.target == tokenGiveGet[0]);
-        require(call.howToCall == AuthenticatedProxy.HowToCall.Call);
-        require(ArrayUtils.arrayEq(call.data, abi.encodeWithSignature("transfer(address,uint256)", counterparty, nftGiveGet[0])));
-
-        /* Assert counter-call is correct. */
-        require(countercall.target == tokenGiveGet[1]);
-        require(countercall.howToCall == AuthenticatedProxy.HowToCall.Call);
-        require(ArrayUtils.arrayEq(countercall.data, abi.encodeWithSignature("transfer(address,uint256)", caller, nftGiveGet[1])));
-
+        // Countercall target = token to get
+        require(addresses[3] == tokenGiveGet[1]);
+        // Decode countercall data
+        (address counterTransferDest, uint counterTransferNft) = abi.decode(counterdata, (address, uint));
+        // Countertransfer dest = us
+        require(counterTransferDest == addresses[0]);
+        // Countertransfer NFT = get NFT
+        require(counterTransferNft == nftGiveGet[1]);
     }
 
 }

@@ -47,6 +47,7 @@ contract Exchange is ExchangeCore {
     function atomicMatch_(address[8] memory addrs, uint[6] memory uints, bytes memory firstExtradata, bytes memory firstCalldata, bytes memory secondExtradata,
         bytes memory secondCalldata, uint8[4] memory howToCallsVs, bytes32[5] memory rssMetadata)
         public
+        payable
     {
         return atomicMatch(
             Order(addrs[0], addrs[1], addrs[2], firstExtradata, uints[0], uints[1], uints[2]),

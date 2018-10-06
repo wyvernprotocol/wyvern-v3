@@ -20,7 +20,7 @@ contract StaticCompat {
     function v2compatBuySideCall(
         uint basePrice, uint extra, SaleKind saleKind, uint maximumFee,
         address target, AuthenticatedProxy.HowToCall desiredHowToCall, bytes memory data, bytes memory calldataMask,
-        address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[3] memory)
+        address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[4] memory)
         public
         pure
     {
@@ -30,7 +30,7 @@ contract StaticCompat {
     function v2compatBuySideCounterCall (
         uint basePrice, uint extra, SaleKind saleKind, uint maximumFee,
         address target, AuthenticatedProxy.HowToCall desiredHowToCall, bytes memory data, bytes memory calldataMask,
-        address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[3] memory)
+        address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[4] memory)
         public
         pure
     {
@@ -41,7 +41,7 @@ contract StaticCompat {
         require(ArrayUtils.arrayEq(data, cdata));
     }
 
-    function masked(address target, AuthenticatedProxy.HowToCall desiredHowToCall, bytes memory data, bytes memory calldataMask, address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[3] memory)
+    function masked(address target, AuthenticatedProxy.HowToCall desiredHowToCall, bytes memory data, bytes memory calldataMask, address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[4] memory)
         public
         pure
     {
@@ -51,7 +51,7 @@ contract StaticCompat {
         require(ArrayUtils.arrayEq(data, cdata));
     }
 
-    function exact(address target, AuthenticatedProxy.HowToCall desiredHowToCall, bytes memory data, address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[3] memory)
+    function exact(address target, AuthenticatedProxy.HowToCall desiredHowToCall, bytes memory data, address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[4] memory)
         public
         pure
     {

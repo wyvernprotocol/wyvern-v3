@@ -13,7 +13,7 @@ contract StaticUtil is StaticCaller {
 
     address public atomicizer;
 
-    function any(address[5] memory, AuthenticatedProxy.HowToCall[2] memory, uint[3] memory, bytes memory, bytes memory)
+    function any(address[5] memory, AuthenticatedProxy.HowToCall[2] memory, uint[4] memory, bytes memory, bytes memory)
         public
         pure
     {
@@ -23,7 +23,7 @@ contract StaticUtil is StaticCaller {
     }
 
     function split(address firstTarget, bytes memory firstExtradata, address secondTarget, bytes memory secondExtradata,
-                   address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[3] memory uints,
+                   address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[4] memory uints,
                    bytes memory data, bytes memory counterdata)
         public
         view
@@ -75,7 +75,7 @@ contract StaticUtil is StaticCaller {
         revert();
     }
 
-    function sequenceExact(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[3] memory uints)
+    function sequenceExact(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[4] memory uints)
         public
         view
     {
@@ -93,7 +93,7 @@ contract StaticUtil is StaticCaller {
         sequence(addrs, extradataLengths, extradatas, caddrs, cvals, clengths, calldatas, addresses, uints);
     }
 
-    function sequenceAnyAfter(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[3] memory uints)
+    function sequenceAnyAfter(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[4] memory uints)
         public
         view
     {
@@ -111,7 +111,7 @@ contract StaticUtil is StaticCaller {
         sequence(addrs, extradataLengths, extradatas, caddrs, cvals, clengths, calldatas, addresses, uints);
     }
 
-    function sequence(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[] memory caddrs, uint[] memory cvals, uint[] memory clengths, bytes memory calldatas, address[3] memory addresses, uint[3] memory uints)
+    function sequence(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[] memory caddrs, uint[] memory cvals, uint[] memory clengths, bytes memory calldatas, address[3] memory addresses, uint[4] memory uints)
         internal
         view
     {
