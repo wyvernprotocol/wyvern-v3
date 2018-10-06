@@ -21,6 +21,8 @@ contract StaticERC721 {
     {
         // Call target = token to give
         require(addresses[1] == tokenGiveGet[0]);
+        // Call type = call
+        require(howToCalls[0] == AuthenticatedProxy.HowToCall.Call);
         // Decode call data
         (address transferDest, uint transferNft) = abi.decode(data, (address, uint));
         // Transfer dest = counterparty
@@ -30,6 +32,8 @@ contract StaticERC721 {
 
         // Countercall target = token to get
         require(addresses[3] == tokenGiveGet[1]);
+        // Countercall type = call
+        require(howToCalls[1] == AuthenticatedProxy.HowToCall.Call);
         // Decode countercall data
         (address counterTransferDest, uint counterTransferNft) = abi.decode(counterdata, (address, uint));
         // Countertransfer dest = us
