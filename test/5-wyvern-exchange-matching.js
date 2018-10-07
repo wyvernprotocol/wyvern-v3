@@ -1,6 +1,7 @@
 /* global artifacts:false, it:false, contract:false, assert:false */
 
 const WyvernExchange = artifacts.require('WyvernExchange')
+const WyvernStatic = artifacts.require('WyvernStatic')
 
 contract('WyvernExchange', (accounts) => {
   it('should match any-any nop order', () => {
