@@ -81,7 +81,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
 
     /* Events */
     event OrderApproved   (bytes32 indexed hash, address indexed maker, address staticTarget, bytes staticExtradata, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired);
-    event OrderCancelled  (bytes32 indexed hash);
+    event OrderCancelled  (bytes32 indexed hash, address indexed maker);
     event OrdersMatched   (bytes32 firstHash, bytes32 secondHash, address indexed firstMaker, address indexed secondMaker, bytes32 indexed metadata);
 
     function hashOrder(Order memory order)
@@ -234,6 +234,29 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
 
         /* Log approval event. */
         emit OrderApproved(hash, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt, orderbookInclusionDesired);
+    }
+
+    function cancelOrder(Order memory order)
+        internal
+    {
+        /* CHECKS */
+
+        /* Assert sender is authorized to cancel order. */
+        require(order.maker == msg.sender);
+
+        /* Calculate order hash. */
+        bytes32 hash = hashOrder(order);
+
+        /* Assert order has not already been cancelled or finalized. */
+        require(!cancelledOrFinalized[hash]);
+
+        /* EFFECTS */
+
+        /* Mark order as cancelled. */
+        cancelledOrFinalized[hash] = true;
+
+        /* Log cancellation event. */
+        emit OrderCancelled(hash, order.maker);
     }
 
     function atomicMatch(Order memory firstOrder, Sig memory firstSig, Call memory firstCall, Order memory secondOrder, Sig memory secondSig, Call memory secondCall, bytes32 metadata)

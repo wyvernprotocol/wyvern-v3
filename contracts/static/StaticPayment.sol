@@ -31,6 +31,30 @@ contract StaticPayment {
         require(transferAmt == amount);
     }
 
+    function payExactEther(
+        uint amount,
+        address[3] memory, AuthenticatedProxy.HowToCall, bytes memory, uint[4] memory uints)
+        public
+        pure
+    {
+        // Amount is correct
+        require(uints[0] == amount);
+    }
+
+    function payMinAuctionEther(
+        )
+        public
+        pure
+    {
+    }
+
+    function payMaxAuctionEther(
+        )
+        public
+        pure
+    {
+    }
+
     function payMinAuction(
         address token, uint[3] memory startEndExtra,
         address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[4] memory)

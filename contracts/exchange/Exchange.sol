@@ -41,7 +41,13 @@ contract Exchange is ExchangeCore {
     function approveOrder_(address exchange, address maker, address staticTarget, bytes memory staticExtradata, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired)
         public
     {
-        return approveOrder(Order(exchange, maker, staticTarget, staticExtradata, listingTime, expirationTime, salt), orderbookInclusionDesired); 
+        return approveOrder(Order(exchange, maker, staticTarget, staticExtradata, listingTime, expirationTime, salt), orderbookInclusionDesired);
+    }
+
+    function cancelOrder_(address exchange, address maker, address staticTarget, bytes memory staticExtradata, uint listingTime, uint expirationTime, uint salt)
+        public
+    {
+        return cancelOrder(Order(exchange, maker, staticTarget, staticExtradata, listingTime, expirationTime, salt));
     }
 
     function atomicMatch_(address[8] memory addrs, uint[6] memory uints, bytes memory firstExtradata, bytes memory firstCalldata, bytes memory secondExtradata,

@@ -7,8 +7,7 @@ contract('WyvernStatic', (accounts) => {
   it('should be deployed', () => {
     return WyvernStatic
       .deployed()
-      .then(staticInstance => {
-      })
+      .then(() => {})
   })
 
   it('should have correct atomicizer address', () => {

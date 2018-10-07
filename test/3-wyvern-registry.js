@@ -6,8 +6,8 @@ contract('WyvernRegistry', (accounts) => {
   it('should be deployed', () => {
     return WyvernRegistry
       .deployed()
-      .then(registryInstance => {
-        assert.equal(true, true, '')
-      })
+      .then(() => {})
   })
+
+  // register proxies for several accounts
 })

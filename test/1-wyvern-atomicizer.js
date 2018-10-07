@@ -6,8 +6,6 @@ contract('WyvernAtomicizer', (accounts) => {
   it('should be deployed', () => {
     return WyvernAtomicizer
       .deployed()
-      .then(atomicizerInstance => {
-        assert.equal(true, true, '')
-      })
+      .then(() => {})
   })
 })

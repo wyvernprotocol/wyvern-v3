@@ -3,11 +3,4 @@
 const WyvernExchange = artifacts.require('WyvernExchange')
 
 contract('WyvernExchange', (accounts) => {
-  it('should be deployed', () => {
-    return WyvernExchange
-      .deployed()
-      .then(exchangeInstance => {
-        assert.equal(true, true, '')
-      })
-  })
 })
