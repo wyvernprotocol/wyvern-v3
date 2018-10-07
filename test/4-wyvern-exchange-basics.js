@@ -104,4 +104,10 @@ contract('WyvernExchange', (accounts) => {
 
   it('should not validate cancelled order', () => {
   })
+
+  it('should allow order cancellation by maker', () => {
+  })
+
+  it('should not allow order cancellation by non-maker', () => {
+  })
 })
