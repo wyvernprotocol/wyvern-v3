@@ -43,7 +43,7 @@ contract('WyvernExchange', (accounts) => {
   it('should validate valid order parameters', () => {
     return withExchange()
       .then(exchange => {
-        const example = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: exchange.inst.address, staticExtradata: '0x', listingTime: '0', expirationTime: '2', salt: '0'}
+        const example = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: exchange.inst.address, staticExtradata: '0x', listingTime: '0', expirationTime: '1000000000000', salt: '0'}
         return exchange.validateOrderParameters(example).then(valid => {
           assert.equal(true, valid, 'Should have validated')
         })
@@ -53,7 +53,7 @@ contract('WyvernExchange', (accounts) => {
   it('should not validate order parameters with invalid exchange', () => {
     return withExchange()
       .then(exchange => {
-        const example = {exchange: accounts[0], maker: accounts[0], staticTarget: exchange.inst.address, staticExtradata: '0x', listingTime: '0', expirationTime: '2', salt: '0'}
+        const example = {exchange: accounts[0], maker: accounts[0], staticTarget: exchange.inst.address, staticExtradata: '0x', listingTime: '0', expirationTime: '1000000000000', salt: '0'}
         return exchange.validateOrderParameters(example).then(valid => {
           assert.equal(false, valid, 'Should not have validated')
         })
@@ -63,7 +63,7 @@ contract('WyvernExchange', (accounts) => {
   it('should not validate order parameters with invalid staticTarget', () => {
     return withExchange()
       .then(exchange => {
-        const example = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: ZERO_ADDRESS, staticExtradata: '0x', listingTime: '0', expirationTime: '2', salt: '0'}
+        const example = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: ZERO_ADDRESS, staticExtradata: '0x', listingTime: '0', expirationTime: '1000000000000', salt: '0'}
         return exchange.validateOrderParameters(example).then(valid => {
           assert.equal(false, valid, 'Should not have validated')
         })
@@ -73,7 +73,7 @@ contract('WyvernExchange', (accounts) => {
   it('should not validate order parameters with listingTime after now', () => {
     return withExchange()
       .then(exchange => {
-        const example = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: exchange.inst.address, staticExtradata: '0x', listingTime: '1000', expirationTime: '2', salt: '0'}
+        const example = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: exchange.inst.address, staticExtradata: '0x', listingTime: '1000000000000', expirationTime: '1000000000000', salt: '0'}
         return exchange.validateOrderParameters(example).then(valid => {
           assert.equal(false, valid, 'Should not have validated')
         })

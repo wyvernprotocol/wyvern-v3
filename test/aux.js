@@ -33,7 +33,11 @@ const wrap = (inst) => {
   var obj = {
     inst: inst,
     hashOrder: (order) => inst.hashOrder_.call(order.exchange, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt),
-    hashToSign: (order) => inst.hashToSign_.call(order.exchange, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt),
+    hashToSign: (order) => {
+      return inst.hashOrder_.call(order.exchange, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt).then(hash => {
+        return inst.hashToSign_.call(hash)
+      })
+    },
     validateOrderParameters: (order) => inst.validateOrderParameters_.call(order.exchange, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt),
     validateOrderAuthorization: (hash, maker, sig) => inst.validateOrderAuthorization_.call(hash, maker, sig.v, sig.r, sig.s),
     approveOrder: (order, inclusion) => inst.approveOrder_(order.exchange, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt, inclusion),
@@ -54,6 +58,7 @@ const wrap = (inst) => {
       })
     })
   }
+  return obj
 }
 
 module.exports = {
