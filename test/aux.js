@@ -51,11 +51,10 @@ const wrap = (inst) => {
     )
   }
   obj.sign = (order, account) => {
-    return hashOrder(order).then(hash => {
-      return web3.eth.sign(hash, account).then(sigBytes => {
-        const sig = parseSig(sigBytes)
-        return sig
-      })
+    const hash = hashOrder(order)
+    return web3.eth.sign(hash, account).then(sigBytes => {
+      const sig = parseSig(sigBytes)
+      return sig
     })
   }
   return obj

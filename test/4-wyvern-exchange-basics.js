@@ -5,6 +5,7 @@ const WyvernExchange = artifacts.require('WyvernExchange')
 const { wrap, hashOrder, hashToSign } = require('./aux.js')
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
 contract('WyvernExchange', (accounts) => {
   const withExchange = () => {
@@ -91,21 +92,68 @@ contract('WyvernExchange', (accounts) => {
   })
 
   it('should validate valid authorization by signature', () => {
+    return withExchange()
+      .then(exchange => {
+        const example = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: exchange.inst.address, staticExtradata: '0x', listingTime: '0', expirationTime: '1000000000000', salt: '0'}
+        return exchange.sign(example, accounts[0]).then(sig => {
+          const hash = hashOrder(example)
+          return exchange.validateOrderAuthorization(hash, accounts[0], sig).then(valid => {
+            assert.equal(true, valid, 'Should have validated')
+          })
+        })
+      })
   })
 
+  /*
   it('should validate valid authorization by approval', () => {
+    return withExchange()
+      .then(exchange => {
+        const example = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: exchange.inst.address, staticExtradata: '0x', listingTime: '0', expirationTime: '1000000000000', salt: '1'}
+        return exchange.approveOrder(example, false).then(() => {
+          const hash = hashOrder(example)
+          return exchange.validateOrderAuthorization(hash, accounts[0], {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}).then(valid => {
+            assert.equal(true, valid, 'Should have validated')
+          })
+        })
+      })
   })
+  */
 
   it('should validate valid authorization by maker', () => {
   })
 
   it('should not validate authorization without signature', () => {
+    return withExchange()
+      .then(exchange => {
+        const example = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: exchange.inst.address, staticExtradata: '0x', listingTime: '0', expirationTime: '1000000000000', salt: '0'}
+        const hash = hashOrder(example)
+        return exchange.validateOrderAuthorization(hash, accounts[0], {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}).then(valid => {
+          assert.equal(false, valid, 'Should not have validated')
+        })
+      })
   })
 
   it('should not validate cancelled order', () => {
+    return withExchange()
+      .then(exchange => {
+        const example = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: exchange.inst.address, staticExtradata: '0x', listingTime: '0', expirationTime: '1000000000000', salt: '2'}
+        return exchange.sign(example, accounts[0]).then(sig => {
+          const hash = hashOrder(example)
+          return exchange.cancelOrder(example).then(() => {
+            return exchange.validateOrderAuthorization(hash, accounts[0], sig).then(valid => {
+              assert.equal(false, valid, 'Should not have validated')
+            })
+          })
+        })
+      })
   })
 
   it('should allow order cancellation by maker', () => {
+    return withExchange()
+      .then(exchange => {
+        const example = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: exchange.inst.address, staticExtradata: '0x', listingTime: '0', expirationTime: '1000000000000', salt: '3'}
+        return exchange.cancelOrder(example).then(() => {})
+      })
   })
 
   it('should not allow order cancellation by non-maker', () => {
