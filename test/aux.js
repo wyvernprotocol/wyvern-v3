@@ -60,6 +60,10 @@ const wrap = (inst) => {
   return obj
 }
 
+const randomUint = () => {
+  return Math.floor(Math.random() * 1e10)
+}
+
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
@@ -67,6 +71,7 @@ module.exports = {
   hashOrder,
   hashToSign,
   wrap,
+  randomUint,
   ZERO_ADDRESS,
   ZERO_BYTES32
 }

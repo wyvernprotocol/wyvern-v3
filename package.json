@@ -27,7 +27,7 @@
     "coveralls": "3.0.2",
     "ganache-cli": "^6.1.8",
     "ganache-core": "^2.2.1",
-    "openzeppelin-solidity": "1.11.0",
+    "openzeppelin-solidity": "https://github.com/OpenZeppelin/openzeppelin-solidity.git",
     "solidity-coverage": "^0.5.11",
     "solium": "1.1.8",
     "standard": "12.0.1",
