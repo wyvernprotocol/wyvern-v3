@@ -22,7 +22,8 @@ contract WyvernExchange is Exchange {
 
     /**
      */
-    constructor () public {
+    constructor (ProxyRegistry registryAddress) public {
+        registry = registryAddress;
     }
 
 }

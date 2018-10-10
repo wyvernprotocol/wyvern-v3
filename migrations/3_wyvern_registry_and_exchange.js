@@ -7,8 +7,11 @@ const { setConfig } = require('./config.js')
 module.exports = (deployer, network) => {
   return deployer.deploy(WyvernRegistry).then(() => {
     if (network !== 'development') setConfig('deployed.' + network + '.WyvernRegistry', WyvernRegistry.address)
-    return WyvernRegistry.deployed().then(registry => {
-      return registry.grantInitialAuthentication(WyvernExchange.address)
+    return deployer.deploy(WyvernExchange, WyvernRegistry.address).then(() => {
+      if (network !== 'development') setConfig('deployed.' + network + '.WyvernExchange', WyvernExchange.address)
+      return WyvernRegistry.deployed().then(registry => {
+        return registry.grantInitialAuthentication(WyvernExchange.address)
+      })
     })
   })
 }

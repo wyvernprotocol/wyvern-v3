@@ -9,5 +9,12 @@ contract('WyvernRegistry', (accounts) => {
       .then(() => {})
   })
 
-  // register proxies for several accounts
+  it('should allow proxy registration', () => {
+    return WyvernRegistry
+      .deployed()
+      .then(instance => {
+        return instance.registerProxy().then(() => {
+        })
+      })
+  })
 })

@@ -2,6 +2,7 @@
 
 const WyvernExchange = artifacts.require('WyvernExchange')
 const WyvernStatic = artifacts.require('WyvernStatic')
+const WyvernRegistry = artifacts.require('WyvernRegistry')
 
 const Web3 = require('web3')
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')
@@ -18,19 +19,32 @@ contract('WyvernExchange', (accounts) => {
         return WyvernStatic
           .deployed()
           .then(statici => {
-            return { exchange, statici }
+            return WyvernRegistry
+              .deployed()
+              .then(registry => {
+                return { exchange, statici, registry }
+              })
           })
       })
   }
 
+  it('should allow proxy registration', () => {
+    return WyvernRegistry
+      .deployed()
+      .then(instance => {
+        return instance.registerProxy().then(() => {
+        })
+      })
+  })
+
   it('should match any-any nop order', () => {
     return withContracts()
       .then(({exchange, statici}) => {
-        const extradata = web3.eth.abi.encodeFunctionSignature('any(address[5],uint8[2],uint[4],bytes,bytes)')
+        const extradata = web3.eth.abi.encodeFunctionSignature('any(address[5],uint8[2],uint256[4],bytes,bytes)')
         const one = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: extradata, listingTime: '0', expirationTime: '100000000000', salt: '0'}
         const two = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: extradata, listingTime: '0', expirationTime: '100000000000', salt: '1'}
         const sig = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
-        const call = {target: accounts[0], howToCall: '0', data: '0x'}
+        const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
         return exchange.atomicMatch(one, sig, call, two, sig, call, ZERO_BYTES32).then(() => {
           assert.equal(true, true, '')
         })

@@ -46,7 +46,7 @@ const wrap = (inst) => {
       [order.exchange, order.maker, order.staticTarget, call.target, counterorder.exchange, counterorder.maker, counterorder.staticTarget, countercall.target],
       [order.listingTime, order.expirationTime, order.salt, counterorder.listingTime, counterorder.expirationTime, counterorder.salt],
       order.staticExtradata, call.data, counterorder.staticExtradata, countercall.data,
-      [call.howToCall, sig.v, countercall.howToCall, countersig.v],
+      [sig.v, call.howToCall, countersig.v, countercall.howToCall],
       [sig.r, sig.s, countersig.r, countersig.s, metadata]
     )
   }

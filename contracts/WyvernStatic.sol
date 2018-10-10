@@ -25,4 +25,7 @@ contract WyvernStatic is StaticCompat, StaticERC20, StaticERC721, StaticUtil {
         atomicizer = atomicizerAddress;
     }
 
+    function test () public {
+    }
+
 }

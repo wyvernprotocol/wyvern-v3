@@ -184,7 +184,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         address[5] memory addresses = [order.maker, call.target, counterorder.maker, countercall.target, matcher];
         AuthenticatedProxy.HowToCall[2] memory howToCalls = [call.howToCall, countercall.howToCall];
         uint[4] memory uints = [value, order.listingTime, order.expirationTime, counterorder.listingTime];
-        return abi.encodePacked(order.staticExtradata, addresses, howToCalls, uints, call.data, countercall.data);
+        return abi.encodePacked(order.staticExtradata, abi.encode(addresses, howToCalls, uints, call.data, countercall.data));
     }
 
     function executeStaticCall(Order memory order, Call memory call, Order memory counterorder, Call memory countercall, address matcher, uint value)
@@ -204,7 +204,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
 
         /* Retrieve delegate proxy contract. */
         OwnableDelegateProxy delegateProxy = registry.proxies(maker);
-      
+
         /* Assert existence. */
         require(delegateProxy != OwnableDelegateProxy(0));
 
