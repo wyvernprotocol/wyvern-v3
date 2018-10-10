@@ -149,12 +149,17 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
 
         /* Order authentication. Order must be either: */
 
-        /* (a): previously approved */
+        /* (a): sent by maker */
+        if (maker == msg.sender) {
+            return true;
+        }
+
+        /* (b): previously approved */
         if (approvedOrders[hash]) {
             return true;
         }
     
-        /* (b): ECDSA-signed by maker. */
+        /* (c): ECDSA-signed by maker. */
         if (ecrecover(hashToSign(hash), sig.v, sig.r, sig.s) == maker) {
             return true;
         }
@@ -272,9 +277,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         require(validateOrderParameters(firstOrder));
 
         /* Check first order authorization. */
-        if (firstOrder.maker != msg.sender) {
-            require(validateOrderAuthorization(firstHash, firstOrder.maker, firstSig));
-        }
+        require(validateOrderAuthorization(firstHash, firstOrder.maker, firstSig));
 
         /* Calculate second order hash. */
         bytes32 secondHash = hashOrder(secondOrder);
@@ -283,9 +286,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         require(validateOrderParameters(secondOrder));
 
         /* Check second order authorization. */
-        if (secondOrder.maker != msg.sender) {
-            require(validateOrderAuthorization(secondHash, secondOrder.maker, secondSig));
-        }
+        require(validateOrderAuthorization(secondHash, secondOrder.maker, secondSig));
 
         /* Prevent self-matching (possibly unnecessary, but safer). */
         require(firstHash != secondHash);
