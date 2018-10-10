@@ -42,7 +42,7 @@ const wrap = (inst) => {
     validateOrderAuthorization: (hash, maker, sig, misc) => inst.validateOrderAuthorization_.call(hash, maker, sig.v, sig.r, sig.s, misc),
     approveOrder: (order, inclusion, misc) => inst.approveOrder_(order.exchange, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt, inclusion, misc),
     cancelOrder: (order) => inst.cancelOrder_(order.exchange, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt),
-    atomicMatch: (order, sig, call, counterorder, countersig, countercall, metadata) => inst.atomicMatch(
+    atomicMatch: (order, sig, call, counterorder, countersig, countercall, metadata) => inst.atomicMatch_(
       [order.exchange, order.maker, order.staticTarget, call.target, counterorder.exchange, counterorder.maker, counterorder.staticTarget, countercall.target],
       [order.listingTime, order.expirationTime, order.salt, counterorder.listingTime, counterorder.expirationTime, counterorder.salt],
       order.staticExtradata, call.data, counterorder.staticExtradata, countercall.data,
@@ -60,8 +60,13 @@ const wrap = (inst) => {
   return obj
 }
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000'
+
 module.exports = {
   hashOrder,
   hashToSign,
-  wrap
+  wrap,
+  ZERO_ADDRESS,
+  ZERO_BYTES32
 }

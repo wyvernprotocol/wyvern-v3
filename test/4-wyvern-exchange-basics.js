@@ -2,10 +2,7 @@
 
 const WyvernExchange = artifacts.require('WyvernExchange')
 
-const { wrap, hashOrder, hashToSign } = require('./aux.js')
-
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
-const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000'
+const { wrap, hashOrder, hashToSign, ZERO_ADDRESS, ZERO_BYTES32 } = require('./aux.js')
 
 contract('WyvernExchange', (accounts) => {
   const withExchange = () => {
