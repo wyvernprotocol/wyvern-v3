@@ -308,8 +308,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         /* Transfer any msg.value.
            This is the first "asymmetric" part of order matching: if an order requires Ether, it must be the first order. */
         if (msg.value > 0) {
-            address payable dest = address(uint160(firstOrder.maker));
-            dest.transfer(msg.value);
+            address(uint160(firstOrder.maker)).transfer(msg.value);
         }
 
         /* Execute first call, assert success.

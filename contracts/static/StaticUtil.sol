@@ -26,7 +26,6 @@ contract StaticUtil is StaticCaller {
                    address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[4] memory uints,
                    bytes memory data, bytes memory counterdata)
         public
-        view
     {
         /* Split into two static calls: one for the call, one for the counter-call, both with metadata. */
 
@@ -39,7 +38,6 @@ contract StaticUtil is StaticCaller {
 
     function and(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, bytes memory rest)
         public
-        view
     {
         require(addrs.length == extradataLengths.length);
         
@@ -56,7 +54,6 @@ contract StaticUtil is StaticCaller {
 
     function or(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, bytes memory rest)
         public
-        view
     {
         require(addrs.length == extradataLengths.length);
         
@@ -77,7 +74,6 @@ contract StaticUtil is StaticCaller {
 
     function sequenceExact(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[4] memory uints)
         public
-        view
     {
         /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly.
            e.g. transferring two CryptoKitties in sequence. */
@@ -95,7 +91,6 @@ contract StaticUtil is StaticCaller {
 
     function sequenceAnyAfter(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[4] memory uints)
         public
-        view
     {
         /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly.
            e.g. transferring two CryptoKitties in sequence. */
@@ -113,7 +108,6 @@ contract StaticUtil is StaticCaller {
 
     function sequence(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[] memory caddrs, uint[] memory cvals, uint[] memory clengths, bytes memory calldatas, address[3] memory addresses, uint[4] memory uints)
         internal
-        view
     {
         uint j = 0;
         uint l = 0;
