@@ -1,4 +1,7 @@
 module.exports = {
+  mocha: {
+    enableTimeouts: false
+  },
   networks: {
     development: {
       host: 'localhost',
@@ -19,7 +22,7 @@ module.exports = {
       port: 8545,
       network_id: '*',
       gas: 6700000,
-      gasPrice: 4000000000
+      gasPrice: 4100000000
     }
   },
   compilers: {

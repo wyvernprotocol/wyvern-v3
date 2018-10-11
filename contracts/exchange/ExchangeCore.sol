@@ -167,14 +167,6 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         return false;
     }
 
-    function encodeCallerAndCall(address caller, Call memory call)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return abi.encodePacked(caller, call.target, call.howToCall, call.data);
-    }
-
     function encodeStaticCall(Order memory order, Call memory call, Order memory counterorder, Call memory countercall, address matcher, uint value)
         internal
         pure
