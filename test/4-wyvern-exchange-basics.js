@@ -159,15 +159,11 @@ contract('WyvernExchange', (accounts) => {
       })
   })
 
-  it('should not allow order cancellation by non-maker', () => {
+  it('should allow order cancellation by non-maker', () => {
     return withExchange()
       .then(exchange => {
         const example = {exchange: exchange.inst.address, maker: accounts[1], staticTarget: exchange.inst.address, staticExtradata: '0x', listingTime: '0', expirationTime: '1000000000000', salt: '4'}
-        return exchange.cancelOrder(example).then(() => {
-          assert.equal(true, false, 'Should not be reached')
-        }).catch(err => {
-          assert.equal('Returned error: VM Exception while processing transaction: revert', err.message, 'Incorrect error')
-        })
+        return exchange.cancelOrder(example).then(() => {})
       })
   })
 })

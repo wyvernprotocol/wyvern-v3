@@ -44,10 +44,10 @@ contract Exchange is ExchangeCore {
         return approveOrder(Order(exchange, maker, staticTarget, staticExtradata, listingTime, expirationTime, salt), orderbookInclusionDesired);
     }
 
-    function cancelOrder_(address exchange, address maker, address staticTarget, bytes memory staticExtradata, uint listingTime, uint expirationTime, uint salt)
+    function cancelOrder_(bytes32 hash)
         public
     {
-        return cancelOrder(Order(exchange, maker, staticTarget, staticExtradata, listingTime, expirationTime, salt));
+        return cancelOrder(hash);
     }
 
     function atomicMatch_(address[8] memory addrs, uint[6] memory uints, bytes memory firstExtradata, bytes memory firstCalldata, bytes memory secondExtradata,

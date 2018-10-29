@@ -24,7 +24,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
     ProxyRegistry public registry;
 
     /* Cancelled / finalized orders, by hash. */
-    mapping(bytes32 => bool) public cancelledOrFinalized;
+    mapping(address => mapping(bytes32 => bool)) public cancelledOrFinalized;
 
     /* Orders verified by on-chain approval (alternative to ECDSA signatures so that smart contracts can place orders directly). */
     mapping(bytes32 => bool) public approvedOrders;
@@ -143,7 +143,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         returns (bool)
     {
         /* Order must not have been cancelled or already filled. */
-        if (cancelledOrFinalized[hash]) {
+        if (cancelledOrFinalized[maker][hash]) {
             return false;
         }
 
@@ -233,27 +233,21 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         emit OrderApproved(hash, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt, orderbookInclusionDesired);
     }
 
-    function cancelOrder(Order memory order)
+    function cancelOrder(bytes32 hash)
         internal
     {
         /* CHECKS */
 
-        /* Assert sender is authorized to cancel order. */
-        require(order.maker == msg.sender);
-
-        /* Calculate order hash. */
-        bytes32 hash = hashOrder(order);
-
         /* Assert order has not already been cancelled or finalized. */
-        require(!cancelledOrFinalized[hash]);
+        require(!cancelledOrFinalized[msg.sender][hash]);
 
         /* EFFECTS */
 
         /* Mark order as cancelled. */
-        cancelledOrFinalized[hash] = true;
+        cancelledOrFinalized[msg.sender][hash] = true;
 
         /* Log cancellation event. */
-        emit OrderCancelled(hash, order.maker);
+        emit OrderCancelled(hash, msg.sender);
     }
 
     function atomicMatch(Order memory firstOrder, Sig memory firstSig, Call memory firstCall, Order memory secondOrder, Sig memory secondSig, Call memory secondCall, bytes32 metadata)
@@ -287,12 +281,12 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
   
         /* Mark first order as finalized. */
         if (firstOrder.maker != msg.sender) {
-            cancelledOrFinalized[firstHash] = true;
+            cancelledOrFinalized[firstOrder.maker][firstHash] = true;
         }
 
         /* Mark second order as finalized. */
         if (secondOrder.maker != msg.sender) {
-            cancelledOrFinalized[secondHash] = true;
+            cancelledOrFinalized[secondOrder.maker][secondHash] = true;
         }
         
         /* INTERACTIONS */

@@ -41,7 +41,7 @@ const wrap = (inst) => {
     validateOrderParameters: (order) => inst.validateOrderParameters_.call(order.exchange, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt),
     validateOrderAuthorization: (hash, maker, sig, misc) => inst.validateOrderAuthorization_.call(hash, maker, sig.v, sig.r, sig.s, misc),
     approveOrder: (order, inclusion, misc) => inst.approveOrder_(order.exchange, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt, inclusion, misc),
-    cancelOrder: (order) => inst.cancelOrder_(order.exchange, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt),
+    cancelOrder: (order) => inst.cancelOrder_(hashOrder(order)),
     atomicMatch: (order, sig, call, counterorder, countersig, countercall, metadata) => inst.atomicMatch_(
       [order.exchange, order.maker, order.staticTarget, call.target, counterorder.exchange, counterorder.maker, counterorder.staticTarget, countercall.target],
       [order.listingTime, order.expirationTime, order.salt, counterorder.listingTime, counterorder.expirationTime, counterorder.salt],
