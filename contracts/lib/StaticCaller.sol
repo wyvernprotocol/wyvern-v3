@@ -20,4 +20,18 @@ contract StaticCaller {
         return result;
     }
 
+    function staticCallUint(address target, bytes memory data)
+        internal
+        view
+        returns (uint ret)
+    {
+        assembly {
+            let size := 0x20
+            let result := staticcall(gas, target, add(data, 0x20), mload(data), ret, size)
+            switch result
+            case 0 { revert(ret, size) }
+            default { return(ret, size) } 
+        }
+    }
+
 }

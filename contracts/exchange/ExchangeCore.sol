@@ -24,7 +24,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
     ProxyRegistry public registry;
 
     /* Cancelled / finalized orders, by hash. */
-    mapping(address => mapping(bytes32 => bool)) public cancelledOrFinalized;
+    mapping(address => mapping(bytes32 => uint)) public fills;
 
     /* Orders verified by on-chain approval (alternative to ECDSA signatures so that smart contracts can place orders directly). */
     mapping(bytes32 => bool) public approvedOrders;
@@ -49,6 +49,8 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         address staticTarget;
         /* Order static extradata. */
         bytes staticExtradata;
+        /* Order maximum fill factor. */
+        uint maximumFill;
         /* Order listing timestamp. */
         uint listingTime;
         /* Order expiration timestamp - 0 for no expiry. */
@@ -80,9 +82,9 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
     }
 
     /* Events */
-    event OrderApproved   (bytes32 indexed hash, address indexed maker, address staticTarget, bytes staticExtradata, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired);
-    event OrderCancelled  (bytes32 indexed hash, address indexed maker);
-    event OrdersMatched   (bytes32 firstHash, bytes32 secondHash, address indexed firstMaker, address indexed secondMaker, bytes32 indexed metadata);
+    event OrderApproved     (bytes32 indexed hash, address indexed maker, address staticTarget, bytes staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired);
+    event OrderFillChanged  (bytes32 indexed hash, address indexed maker, uint newFill);
+    event OrdersMatched     (bytes32 firstHash, bytes32 secondHash, address indexed firstMaker, address indexed secondMaker, uint newFirstFill, uint newSecondFill, bytes32 indexed metadata);
 
     function hashOrder(Order memory order)
         internal
@@ -90,7 +92,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         returns (bytes32 hash)
     {
         /* Hash all fields in the order. */
-        return keccak256(abi.encodePacked(order.exchange, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt));
+        return keccak256(abi.encodePacked(order.exchange, order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt));
     }
 
     function hashToSign(bytes32 orderHash)
@@ -137,13 +139,13 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         return true;
     }
 
-    function validateOrderAuthorization(bytes32 hash, address maker, Sig memory sig)
+    function validateOrderAuthorization(bytes32 hash, address maker, uint maximumFill, Sig memory sig)
         internal
         view
         returns (bool)
     {
-        /* Order must not have been cancelled or already filled. */
-        if (cancelledOrFinalized[maker][hash]) {
+        /* Order must not have already been completely filled. */
+        if (fills[maker][hash] >= maximumFill) {
             return false;
         }
 
@@ -175,16 +177,16 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         /* This nonsense is necessary to preserve static call target function stack space. */
         address[5] memory addresses = [order.maker, call.target, counterorder.maker, countercall.target, matcher];
         AuthenticatedProxy.HowToCall[2] memory howToCalls = [call.howToCall, countercall.howToCall];
-        uint[4] memory uints = [value, order.listingTime, order.expirationTime, counterorder.listingTime];
+        uint[5] memory uints = [value, order.maximumFill, order.listingTime, order.expirationTime, counterorder.listingTime];
         return abi.encodePacked(order.staticExtradata, abi.encode(addresses, howToCalls, uints, call.data, countercall.data));
     }
 
     function executeStaticCall(Order memory order, Call memory call, Order memory counterorder, Call memory countercall, address matcher, uint value)
         internal
         view
-        returns (bool)
+        returns (uint)
     {
-        return staticCall(order.staticTarget, encodeStaticCall(order, call, counterorder, countercall, matcher, value));
+        return staticCallUint(order.staticTarget, encodeStaticCall(order, call, counterorder, countercall, matcher, value));
     }
 
     function executeCall(address maker, Call memory call)
@@ -230,24 +232,19 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         approvedOrders[hash] = true;
 
         /* Log approval event. */
-        emit OrderApproved(hash, order.maker, order.staticTarget, order.staticExtradata, order.listingTime, order.expirationTime, order.salt, orderbookInclusionDesired);
+        emit OrderApproved(hash, order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt, orderbookInclusionDesired);
     }
 
-    function cancelOrder(bytes32 hash)
+    function setOrderFill(bytes32 hash, uint fill)
         internal
     {
-        /* CHECKS */
-
-        /* Assert order has not already been cancelled or finalized. */
-        require(!cancelledOrFinalized[msg.sender][hash]);
-
         /* EFFECTS */
 
-        /* Mark order as cancelled. */
-        cancelledOrFinalized[msg.sender][hash] = true;
+        /* Mark order as completely filled. */
+        fills[msg.sender][hash] = fill;
 
         /* Log cancellation event. */
-        emit OrderCancelled(hash, msg.sender);
+        emit OrderFillChanged(hash, msg.sender, fill);
     }
 
     function atomicMatch(Order memory firstOrder, Sig memory firstSig, Call memory firstCall, Order memory secondOrder, Sig memory secondSig, Call memory secondCall, bytes32 metadata)
@@ -263,7 +260,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         require(validateOrderParameters(firstOrder));
 
         /* Check first order authorization. */
-        require(validateOrderAuthorization(firstHash, firstOrder.maker, firstSig));
+        require(validateOrderAuthorization(firstHash, firstOrder.maker, firstOrder.maximumFill, firstSig));
 
         /* Calculate second order hash. */
         bytes32 secondHash = hashOrder(secondOrder);
@@ -272,23 +269,11 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         require(validateOrderParameters(secondOrder));
 
         /* Check second order authorization. */
-        require(validateOrderAuthorization(secondHash, secondOrder.maker, secondSig));
+        require(validateOrderAuthorization(secondHash, secondOrder.maker, secondOrder.maximumFill, secondSig));
 
         /* Prevent self-matching (possibly unnecessary, but safer). */
         require(firstHash != secondHash);
 
-        /* EFFECTS */ 
-  
-        /* Mark first order as finalized. */
-        if (firstOrder.maker != msg.sender) {
-            cancelledOrFinalized[firstOrder.maker][firstHash] = true;
-        }
-
-        /* Mark second order as finalized. */
-        if (secondOrder.maker != msg.sender) {
-            cancelledOrFinalized[secondOrder.maker][secondHash] = true;
-        }
-        
         /* INTERACTIONS */
 
         /* Transfer any msg.value.
@@ -306,14 +291,32 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
 
         /* Static calls must happen after the effectful calls so that they can check the resulting state. */
 
-        /* Execute first order static call, assert success. */
-        assert(executeStaticCall(firstOrder, firstCall, secondOrder, secondCall, msg.sender, msg.value));
-      
-        /* Execute second order static call, assert success. */
-        assert(executeStaticCall(secondOrder, secondCall, firstOrder, firstCall, msg.sender, uint(0)));
+        /* Execute first order static call, assert success, capture returned new fill. */
+        uint firstFill = executeStaticCall(firstOrder, firstCall, secondOrder, secondCall, msg.sender, msg.value);
+
+        /* Execute second order static call, assert success, capture returned new fill. */
+        uint secondFill = executeStaticCall(secondOrder, secondCall, firstOrder, firstCall, msg.sender, uint(0));
+
+        /* EFFECTS */
+
+        /* Update first order fill, if necessary. */
+        if (firstOrder.maker != msg.sender) {
+            if (firstFill != fills[firstOrder.maker][firstHash]) {
+                fills[firstOrder.maker][firstHash] = firstFill;
+            }
+        }
+
+        /* Update second order fill, if necessary. */
+        if (secondOrder.maker != msg.sender) {
+            if (secondFill != fills[secondOrder.maker][secondHash]) {
+                fills[secondOrder.maker][secondHash] = secondFill;
+            }
+        }
+
+        /* LOGS */
 
         /* Log match event. */
-        emit OrdersMatched(firstHash, secondHash, firstOrder.maker, secondOrder.maker, metadata);
+        emit OrdersMatched(firstHash, secondHash, firstOrder.maker, secondOrder.maker, firstFill, secondFill, metadata);
     }
 
 }
