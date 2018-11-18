@@ -23,14 +23,17 @@ contract StaticCaller {
     function staticCallUint(address target, bytes memory data)
         internal
         view
-        returns (uint ret)
+        returns (uint)
     {
         assembly {
-            let size := 0x20
-            let result := staticcall(gas, target, add(data, 0x20), mload(data), ret, size)
+            let ptr := mload(0x40)
+            let result := staticcall(gas, target, add(data, 0x20), mload(data), 0, 0)
+            let size := returndatasize
+            returndatacopy(ptr, 0, size)
+
             switch result
-            case 0 { revert(ret, size) }
-            default { return(ret, size) } 
+            case 0 { revert(ptr, size) }
+            default { return(ptr, size) }
         }
     }
 
