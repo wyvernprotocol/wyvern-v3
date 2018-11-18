@@ -2,13 +2,6 @@ pragma solidity >= 0.4.9;
 
 contract StaticCaller {
 
-    struct StaticSpec {
-        /* target */
-        address target;
-        /* extradata */
-        bytes extradata;
-    }
-
     function staticCall(address target, bytes memory data)
         internal
         view
@@ -23,18 +16,15 @@ contract StaticCaller {
     function staticCallUint(address target, bytes memory data)
         internal
         view
-        returns (uint)
+        returns (uint ret)
     {
+        bool result;
         assembly {
-            let ptr := mload(0x40)
-            let result := staticcall(gas, target, add(data, 0x20), mload(data), 0, 0)
-            let size := returndatasize
-            returndatacopy(ptr, 0, size)
-
-            switch result
-            case 0 { revert(ptr, size) }
-            default { return(ptr, size) }
+            let size := 0x20
+            result := staticcall(gas, target, add(data, 0x20), mload(data), ret, size)
         }
+        require(result);
+        return ret;
     }
 
 }
