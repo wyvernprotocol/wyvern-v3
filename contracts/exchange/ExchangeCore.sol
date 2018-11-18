@@ -238,6 +238,11 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
     function setOrderFill(bytes32 hash, uint fill)
         internal
     {
+        /* CHECKS */
+
+        /* Assert fill is not already set. */
+        require(fills[msg.sender][hash] != fill);
+
         /* EFFECTS */
 
         /* Mark order as completely filled. */

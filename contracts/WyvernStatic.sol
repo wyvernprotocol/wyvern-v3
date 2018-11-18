@@ -21,12 +21,16 @@ contract WyvernStatic is StaticCompat, StaticERC20, StaticERC721, StaticUtil {
 
     /**
      */
-    constructor (address atomicizerAddress) public {
+    constructor (address atomicizerAddress)
+        public
+    {
         atomicizer = atomicizerAddress;
     }
 
-    function test () public returns (uint) {
-        return 1;
+    function test () 
+        public
+        pure
+    {
     }
 
 }

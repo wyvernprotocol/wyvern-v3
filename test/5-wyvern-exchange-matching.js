@@ -76,7 +76,7 @@ contract('WyvernExchange', (accounts) => {
   it('should match any-any nop order', () => {
     return withContracts()
       .then(({exchange, statici}) => {
-        const extradata = web3.eth.abi.encodeFunctionSignature('any(address[5],uint8[2],uint256[4],bytes,bytes)')
+        const extradata = web3.eth.abi.encodeFunctionSignature('any(address[5],uint8[2],uint256[5],bytes,bytes)')
         const one = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '0'}
         const two = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '1'}
         const sig = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
@@ -94,7 +94,7 @@ contract('WyvernExchange', (accounts) => {
             const atomicizerc = new web3.eth.Contract(atomicizer.abi, atomicizer.address)
             const erc20c = new web3.eth.Contract(erc20.abi, erc20.address)
             const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
-            const extradata = web3.eth.abi.encodeFunctionSignature('any(address[5],uint8[2],uint256[4],bytes,bytes)')
+            const extradata = web3.eth.abi.encodeFunctionSignature('any(address[5],uint8[2],uint256[5],bytes,bytes)')
             const one = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '0'}
             const two = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '1'}
             const sig = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}

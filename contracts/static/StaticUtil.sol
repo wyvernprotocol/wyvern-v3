@@ -13,17 +13,20 @@ contract StaticUtil is StaticCaller {
 
     address public atomicizer;
 
-    function any(address[5] memory, AuthenticatedProxy.HowToCall[2] memory, uint[4] memory, bytes memory, bytes memory)
+    function any(address[5] memory, AuthenticatedProxy.HowToCall[2] memory, uint[5] memory, bytes memory, bytes memory)
         public
         pure
+        returns (uint)
     {
         /* Accept any call.
            Useful e.g. for matching-by-transaction, where you authorize the counter-call by sending the transaction and don't need to re-check it.
            Might be more efficient to implement in ExchangeCore. */
+
+        return 1;
     }
 
     function split(address firstTarget, bytes memory firstExtradata, address secondTarget, bytes memory secondExtradata,
-                   address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[4] memory uints,
+                   address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[5] memory uints,
                    bytes memory data, bytes memory counterdata)
         public
     {
