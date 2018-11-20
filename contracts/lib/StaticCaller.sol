@@ -21,7 +21,9 @@ contract StaticCaller {
         bool result;
         assembly {
             let size := 0x20
-            result := staticcall(gas, target, add(data, 0x20), mload(data), ret, size)
+            let free := mload(0x40)
+            result := staticcall(gas, target, add(data, 0x20), mload(data), free, size)
+            ret := mload(free)
         }
         require(result);
         return ret;
