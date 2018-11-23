@@ -11,7 +11,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../lib/ArrayUtils.sol";
 import "../lib/StaticCaller.sol";
 import "../lib/ReentrancyGuarded.sol";
-import "../registry/ProxyRegistry.sol";
+import "../registry/ProxyRegistryInterface.sol";
 import "../registry/AuthenticatedProxy.sol";
 
 /**
@@ -195,7 +195,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         return staticCallUint(order.staticTarget, encodeStaticCall(order, call, counterorder, countercall, matcher, value));
     }
 
-    function executeCall(ProxyRegistry registry, address maker, Call memory call)
+    function executeCall(ProxyRegistryInterface registry, address maker, Call memory call)
         internal
         returns (bool)
     {
@@ -304,10 +304,10 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
 
         /* Execute first call, assert success.
            This is the second "asymmetric" part of order matching: execution of the second order can depend on state changes in the first order, but not vice-versa. */
-        assert(executeCall(ProxyRegistry(firstOrder.registry), firstOrder.maker, firstCall));
+        assert(executeCall(ProxyRegistryInterface(firstOrder.registry), firstOrder.maker, firstCall));
 
         /* Execute second call, assert success. */
-        assert(executeCall(ProxyRegistry(secondOrder.registry), secondOrder.maker, secondCall));
+        assert(executeCall(ProxyRegistryInterface(secondOrder.registry), secondOrder.maker, secondCall));
 
         /* Static calls must happen after the effectful calls so that they can check the resulting state. */
 
