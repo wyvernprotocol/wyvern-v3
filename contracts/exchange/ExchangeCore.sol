@@ -148,6 +148,11 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         view
         returns (bool)
     {
+        /* Memoized authentication. If order has already been partially filled, order must be authenticated. */
+        if (fills[maker][hash] > 0) {
+            return true;
+        }
+
         /* Order authentication. Order must be either: */
 
         /* (a): sent by maker */
