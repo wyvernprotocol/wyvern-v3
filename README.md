@@ -37,16 +37,24 @@ yarn test
 
 #### Linting
 
-Lint all Solidity files with;
+Lint all Solidity files with:
 
-```
+```bash
 yarn lint
+```
+
+#### Static Analysis
+
+Run static analysis tooling with:
+
+```bash
+yarn analyze
 ```
 
 #### Deployment
 
 Edit [truffle.js](truffle.js) according to your deployment plans, then run:
 
-```
+```bash
 yarn run truffle deploy --network [network]
 ```
