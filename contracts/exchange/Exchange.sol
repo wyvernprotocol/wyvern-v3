@@ -39,6 +39,12 @@ contract Exchange is ExchangeCore {
         return validateOrderAuthorization(hash, maker, Sig(v, r, s));
     }
 
+    function approveOrderHash_(bytes32 hash)
+        public
+    {
+        return approveOrderHash(hash);
+    }
+
     function approveOrder_(address exchange, address registry, address maker, address staticTarget, bytes memory staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired)
         public
     {

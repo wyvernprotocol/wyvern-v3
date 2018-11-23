@@ -20,11 +20,13 @@ import "../registry/AuthenticatedProxy.sol";
  */
 contract ExchangeCore is ReentrancyGuarded, StaticCaller {
 
-    /* Cancelled / finalized orders, by hash. */
+    /* Cancelled / finalized orders, by maker address then by hash. */
     mapping(address => mapping(bytes32 => uint)) public fills;
 
-    /* Orders verified by on-chain approval (alternative to ECDSA signatures so that smart contracts can place orders directly). */
-    mapping(bytes32 => bool) public approvedOrders;
+    /* Orders verified by on-chain approval.
+       Alternative to ECDSA signatures so that smart contracts can place orders directly.
+       By maker address, then by hash. */
+    mapping(address => mapping(bytes32 => bool)) public approved;
 
     /* A signature, convenience struct. */
     struct Sig {
@@ -161,7 +163,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         }
 
         /* (b): previously approved */
-        if (approvedOrders[hash]) {
+        if (approved[maker][hash]) {
             return true;
         }
     
@@ -216,6 +218,20 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         return proxy.proxy(call.target, call.howToCall, call.data);
     }
 
+    function approveOrderHash(bytes32 hash)
+        internal
+    {
+        /* CHECKS */
+
+        /* Assert order has not already been approved. */
+        require(!approved[msg.sender][hash]);
+
+        /* EFFECTS */
+
+        /* Mark order as approved. */
+        approved[msg.sender][hash] = true;
+    }
+
     function approveOrder(Order memory order, bool orderbookInclusionDesired)
         internal
     {
@@ -227,13 +243,8 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         /* Calculate order hash. */
         bytes32 hash = hashOrder(order);
 
-        /* Assert order has not already been approved. */
-        require(!approvedOrders[hash]);
-
-        /* EFFECTS */
-
-        /* Mark order as approved. */
-        approvedOrders[hash] = true;
+        /* Approve order hash. */
+        approveOrderHash(hash);
 
         /* Log approval event. */
         emit OrderApproved(hash, order.exchange, order.registry, order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt, orderbookInclusionDesired);

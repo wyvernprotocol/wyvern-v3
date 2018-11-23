@@ -119,6 +119,19 @@ contract('WyvernExchange', (accounts) => {
       })
   })
 
+  it('should validate valid authorization by hash-approval', () => {
+    return withExchangeAndRegistry()
+      .then(({exchange, registry}) => {
+        const example = {exchange: exchange.inst.address, registry: registry.address, maker: accounts[1], staticTarget: exchange.inst.address, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '1000000000000', salt: '1'}
+        const hash = hashOrder(example)
+        return exchange.approveOrderHash(hash, {from: accounts[1]}).then(() => {
+          return exchange.validateOrderAuthorization(hash, accounts[0], {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}).then(valid => {
+            assert.equal(true, valid, 'Should have validated')
+          })
+        })
+      })
+  })
+
   it('should validate valid authorization by maker', () => {
     return withExchangeAndRegistry()
       .then(({exchange, registry}) => {
