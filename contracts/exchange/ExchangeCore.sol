@@ -181,7 +181,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         returns (bytes memory)
     {
         /* This array wrapping is necessary to preserve static call target function stack space. */
-        address[5] memory addresses = [order.maker, call.target, counterorder.maker, countercall.target, matcher];
+        address[7] memory addresses = [order.registry, order.maker, call.target, counterorder.registry, counterorder.maker, countercall.target, matcher];
         AuthenticatedProxy.HowToCall[2] memory howToCalls = [call.howToCall, countercall.howToCall];
         uint[5] memory uints = [value, order.maximumFill, order.listingTime, order.expirationTime, counterorder.listingTime];
         return abi.encodePacked(order.staticExtradata, abi.encode(addresses, howToCalls, uints, call.data, countercall.data));
@@ -293,9 +293,6 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
 
         /* Prevent self-matching (possibly unnecessary, but safer). */
         require(firstHash != secondHash);
-
-        /* Orders must have same proxy registry. */
-        require(firstOrder.registry == secondOrder.registry);
 
         /* INTERACTIONS */
 

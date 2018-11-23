@@ -13,7 +13,7 @@ contract StaticUtil is StaticCaller {
 
     address public atomicizer;
 
-    function any(address[5] memory, AuthenticatedProxy.HowToCall[2] memory, uint[5] memory, bytes memory, bytes memory)
+    function any(address[7] memory, AuthenticatedProxy.HowToCall[2] memory, uint[5] memory, bytes memory, bytes memory)
         public
         pure
         returns (uint)
@@ -26,7 +26,7 @@ contract StaticUtil is StaticCaller {
     }
 
     function split(address firstTarget, bytes memory firstExtradata, address secondTarget, bytes memory secondExtradata,
-                   address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[5] memory uints,
+                   address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[5] memory uints,
                    bytes memory data, bytes memory counterdata)
         public
     {
