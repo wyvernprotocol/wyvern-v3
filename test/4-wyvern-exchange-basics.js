@@ -94,7 +94,7 @@ contract('WyvernExchange', (accounts) => {
         const example = {exchange: exchange.inst.address, maker: accounts[1], staticTarget: exchange.inst.address, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '1000000000000', salt: '0'}
         return exchange.sign(example, accounts[1]).then(sig => {
           const hash = hashOrder(example)
-          return exchange.validateOrderAuthorization(hash, accounts[0], '1', sig).then(valid => {
+          return exchange.validateOrderAuthorization(hash, accounts[0], sig).then(valid => {
             assert.equal(true, valid, 'Should have validated')
           })
         })
@@ -107,7 +107,7 @@ contract('WyvernExchange', (accounts) => {
         const example = {exchange: exchange.inst.address, maker: accounts[1], staticTarget: exchange.inst.address, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '1000000000000', salt: '1'}
         return exchange.approveOrder(example, false, {from: accounts[1]}).then(() => {
           const hash = hashOrder(example)
-          return exchange.validateOrderAuthorization(hash, accounts[0], '1', {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}).then(valid => {
+          return exchange.validateOrderAuthorization(hash, accounts[0], {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}).then(valid => {
             assert.equal(true, valid, 'Should have validated')
           })
         })
@@ -119,7 +119,7 @@ contract('WyvernExchange', (accounts) => {
       .then(exchange => {
         const example = {exchange: exchange.inst.address, maker: accounts[0], staticTarget: exchange.inst.address, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '1000000000000', salt: '5'}
         const hash = hashOrder(example)
-        return exchange.validateOrderAuthorization(hash, accounts[0], '1', {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}, {from: accounts[0]}).then(valid => {
+        return exchange.validateOrderAuthorization(hash, accounts[0], {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}, {from: accounts[0]}).then(valid => {
           assert.equal(true, valid, 'Should have validated')
         })
       })
@@ -130,7 +130,7 @@ contract('WyvernExchange', (accounts) => {
       .then(exchange => {
         const example = {exchange: exchange.inst.address, maker: accounts[1], staticTarget: exchange.inst.address, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '1000000000000', salt: '0'}
         const hash = hashOrder(example)
-        return exchange.validateOrderAuthorization(hash, accounts[1], '1', {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}).then(valid => {
+        return exchange.validateOrderAuthorization(hash, accounts[1], {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}).then(valid => {
           assert.equal(false, valid, 'Should not have validated')
         })
       })
@@ -143,7 +143,7 @@ contract('WyvernExchange', (accounts) => {
         return exchange.sign(example, accounts[0]).then(sig => {
           const hash = hashOrder(example)
           return exchange.setOrderFill(example, 1).then(() => {
-            return exchange.validateOrderAuthorization(hash, accounts[1], '1', sig).then(valid => {
+            return exchange.validateOrderParameters(example).then(valid => {
               assert.equal(false, valid, 'Should not have validated')
             })
           })

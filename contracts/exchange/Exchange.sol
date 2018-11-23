@@ -27,15 +27,16 @@ contract Exchange is ExchangeCore {
         view
         returns (bool)
     {
-        return validateOrderParameters(Order(exchange, maker, staticTarget, staticExtradata, maximumFill, listingTime, expirationTime, salt));
+        Order memory order = Order(exchange, maker, staticTarget, staticExtradata, maximumFill, listingTime, expirationTime, salt);
+        return validateOrderParameters(order, hashOrder(order));
     }
 
-    function validateOrderAuthorization_(bytes32 hash, address maker, uint maximumFill, uint8 v, bytes32 r, bytes32 s)
+    function validateOrderAuthorization_(bytes32 hash, address maker, uint8 v, bytes32 r, bytes32 s)
         public
         view
         returns (bool)
     {
-        return validateOrderAuthorization(hash, maker, maximumFill, Sig(v, r, s));
+        return validateOrderAuthorization(hash, maker, Sig(v, r, s));
     }
 
     function approveOrder_(address exchange, address maker, address staticTarget, bytes memory staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired)

@@ -116,7 +116,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         return size > 0;
     }
 
-    function validateOrderParameters(Order memory order)
+    function validateOrderParameters(Order memory order, bytes32 hash)
         internal
         view
         returns (bool)
@@ -131,6 +131,11 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
             return false;
         }
 
+        /* Order must not have already been completely filled. */
+        if (fills[order.maker][hash] >= order.maximumFill) {
+            return false;
+        }
+
         /* Order static target must exist. */
         if (!exists(order.staticTarget)) {
             return false;
@@ -139,16 +144,11 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         return true;
     }
 
-    function validateOrderAuthorization(bytes32 hash, address maker, uint maximumFill, Sig memory sig)
+    function validateOrderAuthorization(bytes32 hash, address maker, Sig memory sig)
         internal
         view
         returns (bool)
     {
-        /* Order must not have already been completely filled. */
-        if (fills[maker][hash] >= maximumFill) {
-            return false;
-        }
-
         /* Order authentication. Order must be either: */
 
         /* (a): sent by maker */
@@ -174,7 +174,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         pure
         returns (bytes memory)
     {
-        /* This nonsense is necessary to preserve static call target function stack space. */
+        /* This array wrapping is necessary to preserve static call target function stack space. */
         address[5] memory addresses = [order.maker, call.target, counterorder.maker, countercall.target, matcher];
         AuthenticatedProxy.HowToCall[2] memory howToCalls = [call.howToCall, countercall.howToCall];
         uint[5] memory uints = [value, order.maximumFill, order.listingTime, order.expirationTime, counterorder.listingTime];
@@ -262,19 +262,19 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         bytes32 firstHash = hashOrder(firstOrder);
 
         /* Check first order validity. */
-        require(validateOrderParameters(firstOrder));
+        require(validateOrderParameters(firstOrder, firstHash));
 
         /* Check first order authorization. */
-        require(validateOrderAuthorization(firstHash, firstOrder.maker, firstOrder.maximumFill, firstSig));
+        require(validateOrderAuthorization(firstHash, firstOrder.maker, firstSig));
 
         /* Calculate second order hash. */
         bytes32 secondHash = hashOrder(secondOrder);
 
         /* Check second order validity. */
-        require(validateOrderParameters(secondOrder));
+        require(validateOrderParameters(secondOrder, secondHash));
 
         /* Check second order authorization. */
-        require(validateOrderAuthorization(secondHash, secondOrder.maker, secondOrder.maximumFill, secondSig));
+        require(validateOrderAuthorization(secondHash, secondOrder.maker, secondSig));
 
         /* Prevent self-matching (possibly unnecessary, but safer). */
         require(firstHash != secondHash);
