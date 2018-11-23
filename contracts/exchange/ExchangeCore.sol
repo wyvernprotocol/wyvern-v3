@@ -20,9 +20,6 @@ import "../registry/AuthenticatedProxy.sol";
  */
 contract ExchangeCore is ReentrancyGuarded, StaticCaller {
 
-    /* Registry. */
-    ProxyRegistry public registry;
-
     /* Cancelled / finalized orders, by hash. */
     mapping(address => mapping(bytes32 => uint)) public fills;
 
@@ -43,6 +40,8 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
     struct Order {
         /* Exchange contract address (versioning mechanism). */
         address exchange;
+        /* Proxy registry contract address (versioning mechanism). */
+        address registry;
         /* Order maker address. */
         address maker;
         /* Order static target. */
@@ -82,7 +81,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
     }
 
     /* Events */
-    event OrderApproved     (bytes32 indexed hash, address indexed maker, address staticTarget, bytes staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired);
+    event OrderApproved     (bytes32 indexed hash, address exchange, address registry, address indexed maker, address staticTarget, bytes staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired);
     event OrderFillChanged  (bytes32 indexed hash, address indexed maker, uint newFill);
     event OrdersMatched     (bytes32 firstHash, bytes32 secondHash, address indexed firstMaker, address indexed secondMaker, uint newFirstFill, uint newSecondFill, bytes32 indexed metadata);
 
@@ -92,7 +91,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         returns (bytes32 hash)
     {
         /* Hash all fields in the order. */
-        return keccak256(abi.encodePacked(order.exchange, order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt));
+        return keccak256(abi.encodePacked(order.exchange, order.registry, order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt));
     }
 
     function hashToSign(bytes32 orderHash)
@@ -189,7 +188,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         return staticCallUint(order.staticTarget, encodeStaticCall(order, call, counterorder, countercall, matcher, value));
     }
 
-    function executeCall(address maker, Call memory call)
+    function executeCall(ProxyRegistry registry, address maker, Call memory call)
         internal
         returns (bool)
     {
@@ -232,7 +231,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         approvedOrders[hash] = true;
 
         /* Log approval event. */
-        emit OrderApproved(hash, order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt, orderbookInclusionDesired);
+        emit OrderApproved(hash, order.exchange, order.registry, order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt, orderbookInclusionDesired);
     }
 
     function setOrderFill(bytes32 hash, uint fill)
@@ -279,6 +278,9 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         /* Prevent self-matching (possibly unnecessary, but safer). */
         require(firstHash != secondHash);
 
+        /* Orders must have same proxy registry. */
+        require(firstOrder.registry == secondOrder.registry);
+
         /* INTERACTIONS */
 
         /* Transfer any msg.value.
@@ -289,10 +291,10 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
 
         /* Execute first call, assert success.
            This is the second "asymmetric" part of order matching: execution of the second order can depend on state changes in the first order, but not vice-versa. */
-        assert(executeCall(firstOrder.maker, firstCall));
+        assert(executeCall(ProxyRegistry(firstOrder.registry), firstOrder.maker, firstCall));
 
         /* Execute second call, assert success. */
-        assert(executeCall(secondOrder.maker, secondCall));
+        assert(executeCall(ProxyRegistry(secondOrder.registry), secondOrder.maker, secondCall));
 
         /* Static calls must happen after the effectful calls so that they can check the resulting state. */
 
