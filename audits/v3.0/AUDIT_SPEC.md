@@ -43,67 +43,103 @@ If you previously audited version 2.2, [the v3 design spec](../../docs/DESIGN.md
 
 ## Contracts
 
-Contracts not in this list (`WyvernStatic` and its dependencies) do not need to be audited, although you may find a quick read instructive to analysis of the core protocol.
+Contracts not in this list (**WyvernStatic** and its dependencies) do not need to be audited, although you may find a quick read instructive to analysis of the core protocol.
 
 ### WyvernExchange
 
 [contracts/WyvernExchange.sol](../../contracts/WyvernExchange.sol)
 
+Top-level exchange contract. Inherits **Exchange**.
+
 #### Exchange
 
 [contracts/lib/Exchange.sol](../../contracts/lib/Exchange.sol)
+
+ABI-wrapper / helper function contract. Inherits **ExchangeCore**.
 
 #### ExchangeCore
 
 [contracts/exchange/ExchangeCore.sol](../../contracts/exchange/ExchangeCore.sol)
 
+Core order validation, authentication, and settlement logic. Inherits **ReentrancyGuarded**, **StaticCaller**, and **EIP712**.
+
 ##### ReentrancyGuarded
 
 [contracts/lib/ReentrancyGuarded.sol](../../contracts/lib/ReentrancyGuarded.sol)
+
+Simple state variable and modifier for generic reentrancy-prevention.
 
 ##### StaticCaller
 
 [contracts/lib/StaticCaller.sol](../../contracts/lib/StaticCaller.sol)
 
+Helper functions for making static calls to other contracts.
+
+##### EIP712
+
+[contracts/lib/EIP712.sol](../../contracts/lib/EIP712.sol)
+
+State variables and helper functions for implementing [EIP 712](https://github.com/ethereum/EIPs/pull/712).
+
 ### WyvernRegistry
 
 [contracts/WyvernRegistry.sol](../../contracts/WyvernRegistry.sol)
+
+Top-level registry contract. Inherits **ProxyRegistry**.
 
 #### ProxyRegistryInterface
 
 [contracts/registry/ProxyRegistryInterface.sol](../../contracts/registry/ProxyRegistryInterface.sol)
 
+Interface contract to **ProxyRegistry**, used by **ExchangeCore**.
+
 #### ProxyRegistry
 
 [contracts/registry/ProxyRegistry.sol](../../contracts/registry/ProxyRegistry.sol)
+
+Core registry logic for user-owned **AuthenticatedProxy** contracts. Inherits **Ownable**.
 
 #### AuthenticatedProxy
 
 [contracts/registry/AuthenticatedProxy.sol](../../contracts/registry/AuthenticatedProxy.sol)
 
+User-owned proxy contract interfacing with a particular registry instance. Inherits **TokenRecipient**, **OwnedUpgradabilityStorage**.
+
 #### OwnableDelegateProxy
 
 [contracts/registry/OwnableDelegateProxy.sol](../../contracts/registry/OwnableDelegateProxy.sol)
+
+Ownable delegate proxy contract with basic constructor logic for initial implementation. Inherits **OwnedUpgradeabilityProxy**.
 
 ##### Proxy
 
 [contracts/registry/proxy/Proxy.sol](../../contracts/registry/proxy/Proxy.sol)
 
+Delegatecall proxy contract.
+
 ##### OwnedUpgradeabilityProxy
 
-[contracts/registry/proxy/OwnedUpgradabilityProxy.sol](../../contracts/registry/proxy/OwnedUpgradabilityProxy.sol)
+[contracts/registry/proxy/OwnedUpgradeabilityProxy.sol](../../contracts/registry/proxy/OwnedUpgradeabilityProxy.sol)
+
+Upgradeable proxy authorization control. Inherits **Proxy**, **OwnedUpgradeabilityStorage**.
 
 ##### OwnedUpgradeabilityStorage
 
-[contracts/registry/proxy/OwnedUpgradabilityStorage.sol](../../contracts/registry/proxy/OwnedUpgradabilityStorage.sol)
+[contracts/registry/proxy/OwnedUpgradeabilityStorage.sol](../../contracts/registry/proxy/OwnedUpgradeabilityStorage.sol)
+
+Contract to track the owner of an upgradeable proxy.
 
 #### TokenRecipient
 
 [contracts/registry/TokenRecipient.sol](../../contracts/registry/TokenRecipient.sol)
 
+Helper functions and events to enable a contract to receive tokens and Ether.
+
 ### WyvernAtomicizer
 
 [contracts/WyvernAtomicizer.sol](../../contracts/WyvernAtomicizer.sol)
+
+Library contract to sequence sub-calls atomically.
 
 ## Deployments
 
