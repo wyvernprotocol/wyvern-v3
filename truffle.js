@@ -30,7 +30,7 @@ module.exports = {
       version: '0.5.0',
       optimizer: {
         enabled: true,
-        runs: 200
+        runs: 1000
       }
     }
   }

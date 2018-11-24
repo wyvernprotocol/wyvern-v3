@@ -14,8 +14,8 @@ pragma solidity 0.5.0;
  */
 library WyvernAtomicizer {
 
-    function atomicize (address[] memory addrs, uint[] memory values, uint[] memory calldataLengths, bytes memory calldatas)
-        public
+    function atomicize (address[] calldata addrs, uint[] calldata values, uint[] calldata calldataLengths, bytes calldata calldatas)
+        external
     {
         require(addrs.length == values.length && addrs.length == calldataLengths.length);
 
