@@ -1,26 +1,48 @@
 const Web3 = require('web3')
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')
-const web3 = new Web3(provider)
+var web3 = new Web3(provider)
+const { structHash, signHash } = require('./eip712.js')
 
-const hashOrder = (order) => {
-  return web3.utils.soliditySha3(
-    {type: 'address', value: order.exchange},
-    {type: 'address', value: order.registry},
-    {type: 'address', value: order.maker},
-    {type: 'address', value: order.staticTarget},
-    {type: 'bytes', value: order.staticExtradata},
-    {type: 'uint', value: order.maximumFill},
-    {type: 'uint', value: order.listingTime},
-    {type: 'uint', value: order.expirationTime},
-    {type: 'uint', value: order.salt}
-  ).toString('hex')
+const eip712Order = {
+  name: 'Order',
+  fields: [
+    { name: 'exchange', type: 'address' },
+    { name: 'registry', type: 'address' },
+    { name: 'maker', type: 'address' },
+    { name: 'staticTarget', type: 'address' },
+    { name: 'staticExtradata', type: 'bytes' },
+    { name: 'maximumFill', type: 'uint' },
+    { name: 'listingTime', type: 'uint' },
+    { name: 'expirationTime', type: 'uint' },
+    { name: 'salt', type: 'uint' }
+  ]
 }
 
-const hashToSign = (order) => {
-  return web3.utils.soliditySha3(
-    {type: 'string', value: '\x19Ethereum Signed Message:\n32'},
-    {type: 'bytes32', value: hashOrder(order)}
-  )
+web3 = web3.extend({
+  methods: [{
+    name: 'signTypedData',
+    call: 'personal_signTypedData',
+    params: 2,
+    inputFormatter: [null, web3.extend.formatters.inputAddressFormatter]
+  }]
+})
+
+const hashOrder = (order) => {
+  return '0x' + structHash(eip712Order.name, eip712Order.fields, order).toString('hex')
+}
+
+const hashToSign = (order, exchange) => {
+  return '0x' + signHash({
+    name: eip712Order.name,
+    fields: eip712Order.fields,
+    domain: {
+      name: 'Wyvern Exchange',
+      version: '3',
+      chainId: 5,
+      verifyingContract: exchange
+    },
+    data: order
+  }).toString('hex')
 }
 
 const parseSig = (bytes) => {

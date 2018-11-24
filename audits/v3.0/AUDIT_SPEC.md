@@ -74,7 +74,7 @@ If you previously audited version 2.2, [the v3 design spec](../DESIGN.md) provid
 
 #### Rinkeby
 
-Wyvern v3 has been deployed to Ethereum Rinkeby (testnet). You can find all contract addresses in [config.json](../config.json).
+Wyvern v3 has been deployed to Ethereum Rinkeby (testnet). You can find all contract addresses in [config.json](../../config.json).
 
 #### Metropolis
 

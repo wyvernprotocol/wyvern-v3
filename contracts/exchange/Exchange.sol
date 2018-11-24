@@ -16,7 +16,7 @@ contract Exchange is ExchangeCore {
 
     function hashToSign_(bytes32 orderHash)
         public
-        pure
+        view
         returns (bytes32 hash)
     {
         return hashToSign(orderHash);

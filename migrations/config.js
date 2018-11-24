@@ -1,7 +1,11 @@
 const fs = require('fs')
 
+const getConfig = () => {
+  return JSON.parse(fs.readFileSync('config.json'))
+}
+
 const updateConfig = (func) => {
-  const previous = JSON.parse(fs.readFileSync('config.json'))
+  const previous = getConfig()
   const updated = func(previous)
   fs.writeFileSync('config.json', JSON.stringify(updated, null, 2))
 }
@@ -21,6 +25,7 @@ const setConfig = (path, val) => {
 }
 
 module.exports = {
-  setConfig: setConfig,
-  updateConfig: updateConfig
+  getConfig,
+  setConfig,
+  updateConfig
 }

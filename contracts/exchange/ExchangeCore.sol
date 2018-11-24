@@ -10,6 +10,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "../lib/StaticCaller.sol";
 import "../lib/ReentrancyGuarded.sol";
+import "../lib/EIP712.sol";
 import "../registry/ProxyRegistryInterface.sol";
 import "../registry/AuthenticatedProxy.sol";
 
@@ -17,15 +18,9 @@ import "../registry/AuthenticatedProxy.sol";
  * @title ExchangeCore
  * @author Wyvern Protocol Developers
  */
-contract ExchangeCore is ReentrancyGuarded, StaticCaller {
+contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
-    /* Cancelled / finalized orders, by maker address then by hash. */
-    mapping(address => mapping(bytes32 => uint)) public fills;
-
-    /* Orders verified by on-chain approval.
-       Alternative to ECDSA signatures so that smart contracts can place orders directly.
-       By maker address, then by hash. */
-    mapping(address => mapping(bytes32 => bool)) public approved;
+    /* Struct definitions. */
 
     /* A signature, convenience struct. */
     struct Sig {
@@ -69,39 +64,62 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller {
         bytes data;
     }
 
-    /* Order match metadata, convenience struct. */
-    struct Metadata {
-        /* Matcher */
-        address matcher;
-        /* Value */
-        uint value;
-        /* Listing time */
-        uint listingTime;
-        /* Expiration time */
-        uint expirationTime;
-    }
+    /* Constants */
+
+    /* Order typehash for EIP 712 compatibility. */
+    bytes32 constant ORDER_TYPEHASH = keccak256(
+      "Order(address exchange,address registry,address maker,address staticTarget,bytes staticExtradata,uint maximumFill,uint listingTime,uint expirationTime,uint salt)"
+    );
+
+    /* Variables */
+
+    /* Cancelled / finalized orders, by maker address then by hash. */
+    mapping(address => mapping(bytes32 => uint)) public fills;
+
+    /* Orders verified by on-chain approval.
+       Alternative to ECDSA signatures so that smart contracts can place orders directly.
+       By maker address, then by hash. */
+    mapping(address => mapping(bytes32 => bool)) public approved;
 
     /* Events */
+
     event OrderApproved     (bytes32 indexed hash, address exchange, address registry, address indexed maker, address staticTarget, bytes staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired);
     event OrderFillChanged  (bytes32 indexed hash, address indexed maker, uint newFill);
     event OrdersMatched     (bytes32 firstHash, bytes32 secondHash, address indexed firstMaker, address indexed secondMaker, uint newFirstFill, uint newSecondFill, bytes32 indexed metadata);
+
+    /* Functions */
 
     function hashOrder(Order memory order)
         internal
         pure
         returns (bytes32 hash)
     {
-        /* Hash all fields in the order. */
-        return keccak256(abi.encodePacked(order.exchange, order.registry, order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt));
+        /* Per EIP 712. */
+        return keccak256(abi.encode(
+            ORDER_TYPEHASH,
+            order.exchange,
+            order.registry,
+            order.maker,
+            order.staticTarget,
+            keccak256(order.staticExtradata),
+            order.maximumFill,
+            order.listingTime,
+            order.expirationTime,
+            order.salt
+        ));
     }
 
     function hashToSign(bytes32 orderHash)
         internal
-        pure
+        view
         returns (bytes32 hash)
     {
         /* Calculate the string a user must sign. */
-        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", orderHash));
+        return keccak256(abi.encodePacked(
+            "\x19\x01",
+            DOMAIN_SEPARATOR,
+            orderHash
+        ));
     }
 
     function exists(address what)

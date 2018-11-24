@@ -38,7 +38,7 @@ contract('WyvernExchange', (accounts) => {
       .then(({exchange, registry}) => {
         const example = {exchange: exchange.inst.address, registry: registry.address, maker: accounts[0], staticTarget: ZERO_ADDRESS, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '0', salt: '0'}
         return exchange.hashToSign(example).then(hash => {
-          assert.equal(hashToSign(example), hash, 'Incorrect order hash')
+          assert.equal(hashToSign(example, exchange.inst.address), hash, 'Incorrect order hash')
         })
       })
   })

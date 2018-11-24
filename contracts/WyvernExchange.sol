@@ -22,7 +22,13 @@ contract WyvernExchange is Exchange {
 
     /**
      */
-    constructor () public {
+    constructor (uint chainId) public {
+        DOMAIN_SEPARATOR = hash(EIP712Domain({
+            name: "Wyvern Exchange",
+            version: "3",
+            chainId: chainId,
+            verifyingContract: address(this)
+        }));
     }
 
 }
