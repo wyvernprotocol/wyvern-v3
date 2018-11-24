@@ -14,6 +14,21 @@ contract('WyvernRegistry', (accounts) => {
       .deployed()
       .then(instance => {
         return instance.registerProxy().then(() => {
+          return instance.proxies(accounts[0]).then(addr => {
+            assert.equal(addr.length > 0, true)
+          })
+        })
+      })
+  })
+
+  it('should allow proxy registration for another user', () => {
+    return WyvernRegistry
+      .deployed()
+      .then(instance => {
+        return instance.registerProxyFor(accounts[1]).then(() => {
+          return instance.proxies(accounts[1]).then(addr => {
+            assert.equal(addr.length > 0, true)
+          })
         })
       })
   })

@@ -85,9 +85,22 @@ contract ProxyRegistry is Ownable {
         public
         returns (OwnableDelegateProxy proxy)
     {
-        require(proxies[msg.sender] == OwnableDelegateProxy(0));
-        proxy = new OwnableDelegateProxy(msg.sender, delegateProxyImplementation, abi.encodeWithSignature("initialize(address,address)", msg.sender, address(this)));
-        proxies[msg.sender] = proxy;
+        registerProxyFor(msg.sender);
+    }
+
+    /**
+     * Register a proxy contract with this registry
+     *
+     * @dev Can be called by any user
+     * @return New AuthenticatedProxy contract
+     */
+    function registerProxyFor(address user)
+        public
+        returns (OwnableDelegateProxy proxy)
+    {
+        require(proxies[user] == OwnableDelegateProxy(0));
+        proxy = new OwnableDelegateProxy(user, delegateProxyImplementation, abi.encodeWithSignature("initialize(address,address)", user, address(this)));
+        proxies[user] = proxy;
         return proxy;
     }
 
