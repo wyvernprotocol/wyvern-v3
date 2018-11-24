@@ -47,6 +47,8 @@ contract('WyvernExchange', (accounts) => {
     return withContracts().then(({erc20, erc721}) => {
       const amount = randomUint()
       return erc20.mint(accounts[0], amount).then(() => {
+        return {tokens: amount, nfts: [1, 2, 3]}
+        /*
         const a = randomUint()
         return erc721.mint(accounts[0], a).then(() => {
           const b = randomUint()
@@ -57,6 +59,7 @@ contract('WyvernExchange', (accounts) => {
             })
           })
         })
+        */
       })
     })
   }

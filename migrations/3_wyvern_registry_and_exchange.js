@@ -5,7 +5,7 @@ const WyvernExchange = artifacts.require('./WyvernExchange.sol')
 const { setConfig } = require('./config.js')
 
 const chainIds = {
-  development: 5,
+  development: 50,
   rinkeby: 4,
   main: 1
 }

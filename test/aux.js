@@ -38,7 +38,7 @@ const hashToSign = (order, exchange) => {
     domain: {
       name: 'Wyvern Exchange',
       version: '3',
-      chainId: 5,
+      chainId: 50,
       verifyingContract: exchange
     },
     data: order

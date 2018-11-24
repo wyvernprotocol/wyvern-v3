@@ -6,14 +6,23 @@
 
 pragma solidity 0.5.0;
 
-import "openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol";
+import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 
-contract TestERC721 is ERC721Mintable {
+contract TestERC721 is ERC721 {
 
     /**
      */
     constructor () public {
-        _addMinter(msg.sender);
+        mint(msg.sender, 1);
+        mint(msg.sender, 2);
+        mint(msg.sender, 3);
+    }
+
+    /**
+     */
+    function mint(address to, uint256 tokenId) public returns (bool) {
+        _mint(to, tokenId);
+        return true;
     }
 
 }

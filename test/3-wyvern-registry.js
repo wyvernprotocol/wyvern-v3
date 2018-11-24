@@ -13,8 +13,8 @@ contract('WyvernRegistry', (accounts) => {
     return WyvernRegistry
       .deployed()
       .then(instance => {
-        return instance.registerProxy().then(() => {
-          return instance.proxies(accounts[0]).then(addr => {
+        return instance.registerProxy({from: accounts[2]}).then(() => {
+          return instance.proxies(accounts[2]).then(addr => {
             assert.equal(addr.length > 0, true)
           })
         })

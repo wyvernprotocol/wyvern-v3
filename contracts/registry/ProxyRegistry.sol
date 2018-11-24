@@ -85,7 +85,7 @@ contract ProxyRegistry is Ownable {
         public
         returns (OwnableDelegateProxy proxy)
     {
-        registerProxyFor(msg.sender);
+        return registerProxyFor(msg.sender);
     }
 
     /**
