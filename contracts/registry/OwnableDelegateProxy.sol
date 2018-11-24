@@ -4,10 +4,8 @@
 
 */
 
-pragma solidity >= 0.4.9;
+pragma solidity 0.5.0;
 
-import "./ProxyRegistry.sol";
-import "./AuthenticatedProxy.sol";
 import "./proxy/OwnedUpgradeabilityProxy.sol";
 
 contract OwnableDelegateProxy is OwnedUpgradeabilityProxy {
