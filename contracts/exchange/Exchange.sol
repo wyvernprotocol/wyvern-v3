@@ -6,8 +6,8 @@ contract Exchange is ExchangeCore {
 
     /* Public ABI-encodable method wrappers. */
 
-    function hashOrder_(address exchange, address registry, address maker, address staticTarget, bytes calldata staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt)
-        external
+    function hashOrder_(address exchange, address registry, address maker, address staticTarget, bytes memory staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt)
+        public
         pure
         returns (bytes32 hash)
     {
@@ -22,8 +22,8 @@ contract Exchange is ExchangeCore {
         return hashToSign(orderHash);
     }
 
-    function validateOrderParameters_(address exchange, address registry, address maker, address staticTarget, bytes calldata staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt)
-        external
+    function validateOrderParameters_(address exchange, address registry, address maker, address staticTarget, bytes memory staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt)
+        public
         view
         returns (bool)
     {
@@ -45,8 +45,8 @@ contract Exchange is ExchangeCore {
         return approveOrderHash(hash);
     }
 
-    function approveOrder_(address exchange, address registry, address maker, address staticTarget, bytes calldata staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired)
-        external
+    function approveOrder_(address exchange, address registry, address maker, address staticTarget, bytes memory staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired)
+        public
     {
         return approveOrder(Order(exchange, registry, maker, staticTarget, staticExtradata, maximumFill, listingTime, expirationTime, salt), orderbookInclusionDesired);
     }
