@@ -8,7 +8,6 @@ pragma solidity >= 0.4.9;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
-import "../lib/ArrayUtils.sol";
 import "../lib/StaticCaller.sol";
 import "../lib/ReentrancyGuarded.sol";
 import "../registry/ProxyRegistryInterface.sol";

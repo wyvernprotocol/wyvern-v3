@@ -1,6 +1,6 @@
 /*
 
-  << Project Wyvern Atomicizer >>
+  << Wyvern Atomicizer >>
 
   Execute multiple transactions, in order, atomically (if any fails, all revert).
 

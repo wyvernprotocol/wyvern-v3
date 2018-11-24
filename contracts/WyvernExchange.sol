@@ -1,6 +1,6 @@
 /*
 
-  << Project Wyvern Exchange >>
+  << Wyvern Exchange >>
 
 */
 

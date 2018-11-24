@@ -1,6 +1,6 @@
 /*
 
-  << Project Wyvern Static >>
+  << Wyvern Static >>
 
 */
 

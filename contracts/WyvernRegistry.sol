@@ -1,6 +1,6 @@
 /*
 
-  << Project Wyvern Proxy Registry >>
+  << Wyvern Proxy Registry >>
 
 */
 
