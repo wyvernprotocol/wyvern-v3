@@ -12,6 +12,7 @@ module.exports = (deployer, network) => {
     if (network !== 'development') setConfig('deployed.' + network + '.WyvernAtomicizer', WyvernAtomicizer.address)
     return deployer.deploy(WyvernStatic, WyvernAtomicizer.address).then(() => {
       if (network !== 'development') setConfig('deployed.' + network + '.WyvernStatic', WyvernStatic.address)
+      if (network !== 'development') return
       return deployer.deploy(TestERC20).then(() => {
         if (network !== 'development') setConfig('deployed.' + network + '.TestERC20', TestERC20.address)
         return deployer.deploy(TestERC721).then(() => {
