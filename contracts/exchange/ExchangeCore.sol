@@ -34,8 +34,6 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
     /* An order, convenience struct. */
     struct Order {
-        /* Exchange contract address (versioning mechanism). */
-        address exchange;
         /* Proxy registry contract address (versioning mechanism). */
         address registry;
         /* Order maker address. */
@@ -68,7 +66,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
     /* Order typehash for EIP 712 compatibility. */
     bytes32 constant ORDER_TYPEHASH = keccak256(
-      "Order(address exchange,address registry,address maker,address staticTarget,bytes staticExtradata,uint maximumFill,uint listingTime,uint expirationTime,uint salt)"
+      "Order(address registry,address maker,address staticTarget,bytes staticExtradata,uint maximumFill,uint listingTime,uint expirationTime,uint salt)"
     );
 
     /* Variables */
@@ -83,7 +81,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
     /* Events */
 
-    event OrderApproved     (bytes32 indexed hash, address exchange, address registry, address indexed maker, address staticTarget, bytes staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired);
+    event OrderApproved     (bytes32 indexed hash, address registry, address indexed maker, address staticTarget, bytes staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired);
     event OrderFillChanged  (bytes32 indexed hash, address indexed maker, uint newFill);
     event OrdersMatched     (bytes32 firstHash, bytes32 secondHash, address indexed firstMaker, address indexed secondMaker, uint newFirstFill, uint newSecondFill, bytes32 indexed metadata);
 
@@ -97,7 +95,6 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         /* Per EIP 712. */
         return keccak256(abi.encode(
             ORDER_TYPEHASH,
-            order.exchange,
             order.registry,
             order.maker,
             order.staticTarget,
@@ -139,11 +136,6 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         view
         returns (bool)
     {
-        /* Order must be targeted at this protocol version (this exchange contract). */
-        if (order.exchange != address(this)) {
-            return false;
-        }
-
         /* Order must be listed and not be expired. */
         if (order.listingTime > block.timestamp || order.expirationTime <= block.timestamp) {
             return false;
@@ -264,7 +256,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         approveOrderHash(hash);
 
         /* Log approval event. */
-        emit OrderApproved(hash, order.exchange, order.registry, order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt, orderbookInclusionDesired);
+        emit OrderApproved(hash, order.registry, order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt, orderbookInclusionDesired);
     }
 
     function setOrderFill(bytes32 hash, uint fill)
