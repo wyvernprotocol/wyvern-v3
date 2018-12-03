@@ -104,4 +104,21 @@ contract ProxyRegistry is Ownable {
         return proxy;
     }
 
+    /**
+     * Transfer access
+     */
+    function transferAccessTo(address from, address to)
+        public
+    {
+        OwnableDelegateProxy proxy = proxies[from];
+
+        /* CHECKS */
+        require(OwnableDelegateProxy(msg.sender) == proxy);
+        require(proxies[to] == OwnableDelegateProxy(0));
+
+        /* EFFECTS */
+        delete proxies[from];
+        proxies[to] = proxy;
+    }
+
 }
