@@ -15,6 +15,18 @@ contract('WyvernRegistry', (accounts) => {
       .then(() => {})
   })
 
+  it('should not allow additional grant', () => {
+    return WyvernRegistry
+      .deployed()
+      .then(registry => {
+        return registry.grantInitialAuthentication(registry.address).then(() => {
+          assert.equal(true, false, 'Should not have succeeded')
+        }).catch(err => {
+          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+        })
+      })
+  })
+
   it('should allow proxy registration', () => {
     return WyvernRegistry
       .deployed()
