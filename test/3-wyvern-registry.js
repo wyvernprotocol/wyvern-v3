@@ -51,6 +51,59 @@ contract('WyvernRegistry', (accounts) => {
       })
   })
 
+  it('should allow proxy revocation', () => {
+    return WyvernRegistry
+      .deployed()
+      .then(registry => {
+        return TestAuthenticatedProxy
+          .deployed()
+          .then(testProxy => {
+            return registry.proxies(accounts[1]).then(addr => {
+              return AuthenticatedProxy.at(addr).then(proxy => {
+                return proxy.user().then(user => {
+                  assert.equal(user, accounts[1])
+                  const inst = new web3.eth.Contract(AuthenticatedProxy.abi, addr)
+                  return inst.methods.setRevoke(true).send({from: accounts[1]}).then(() => {
+                    return inst.methods.revoked().call().then(ret => {
+                      assert.equal(ret, true, 'Should be revoked')
+                      return inst.methods.setRevoke(false).send({from: accounts[1]}).then(() => {
+                        return inst.methods.revoked().call().then(ret => {
+                          assert.equal(ret, false, 'Should be unrevoked')
+                        })
+                      })
+                    })
+                  })
+                })
+              })
+            })
+          })
+      })
+  })
+
+  it('should not allow proxy reinitialization', () => {
+    return WyvernRegistry
+      .deployed()
+      .then(registry => {
+        return TestAuthenticatedProxy
+          .deployed()
+          .then(testProxy => {
+            return registry.proxies(accounts[1]).then(addr => {
+              return AuthenticatedProxy.at(addr).then(proxy => {
+                return proxy.user().then(user => {
+                  assert.equal(user, accounts[1])
+                  const inst = new web3.eth.Contract(AuthenticatedProxy.abi, addr)
+                  return inst.methods.initialize(registry.address, registry.address).send({from: accounts[1]}).then(ret => {
+                    assert.equal(true, false, 'Should not have succeeded')
+                  }).catch(err => {
+                    assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+                  })
+                })
+              })
+            })
+          })
+      })
+  })
+
   it('should allow delegateproxy owner change', () => {
     return WyvernRegistry
       .deployed()
