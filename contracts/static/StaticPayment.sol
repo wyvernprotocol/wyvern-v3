@@ -15,25 +15,25 @@ contract StaticPayment {
 
     function payExact(
         address token, uint amount,
-        address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[4] memory)
+        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[5] memory)
         public
         pure
     {
         // Call target = token
-        require(addresses[1] == token);
+        require(addresses[2] == token);
         // Call type = call
         require(howToCall == AuthenticatedProxy.HowToCall.Call);
         // Decode call data
         (address transferDest, uint transferAmt) = abi.decode(data, (address, uint));
         // Transfer dest = counterparty
-        require(transferDest == addresses[2]);
+        require(transferDest == addresses[3]);
         // Transfer amount = payment amount
         require(transferAmt == amount);
     }
 
     function payExactEther(
         uint amount,
-        address[3] memory, AuthenticatedProxy.HowToCall, bytes memory, uint[4] memory uints)
+        address[4] memory, AuthenticatedProxy.HowToCall, bytes memory, uint[5] memory uints)
         public
         pure
     {
@@ -57,7 +57,7 @@ contract StaticPayment {
 
     function payMinAuction(
         address token, uint[3] memory startEndExtra,
-        address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[4] memory)
+        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[5] memory)
         public
         pure
     {
@@ -67,7 +67,7 @@ contract StaticPayment {
 
     function payMaxAuction(
         address token, uint[3] memory startEndExtra,
-        address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[4] memory)
+        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[5] memory)
         public
         pure
     {
@@ -77,7 +77,7 @@ contract StaticPayment {
 
     function payMakerTakerFee(
         address token, uint[3] memory makerTakerFee,
-        address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[4] memory)
+        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[5] memory)
         public
         pure
     {

@@ -33,10 +33,10 @@ contract StaticUtil is StaticCaller {
         /* Split into two static calls: one for the call, one for the counter-call, both with metadata. */
 
         /* Static call to check the call. */
-        require(staticCall(firstTarget, abi.encodePacked(firstExtradata, [addresses[0], addresses[1], addresses[4]], howToCalls[0], data, uints)));
+        require(staticCall(firstTarget, abi.encodePacked(firstExtradata, [addresses[0], addresses[1], addresses[2], addresses[6]], howToCalls[0], data, uints)));
 
         /* Static call to check the counter-call. */
-        require(staticCall(secondTarget, abi.encodePacked(secondExtradata, [addresses[2], addresses[3], addresses[4]], howToCalls[1], counterdata, uints)));
+        require(staticCall(secondTarget, abi.encodePacked(secondExtradata, [addresses[3], addresses[4], addresses[5], addresses[6]], howToCalls[1], counterdata, uints)));
     }
 
     function and(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, bytes memory rest)
@@ -75,7 +75,7 @@ contract StaticUtil is StaticCaller {
         revert();
     }
 
-    function sequenceExact(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[4] memory uints)
+    function sequenceExact(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[5] memory uints)
         public
     {
         /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly.
@@ -92,7 +92,7 @@ contract StaticUtil is StaticCaller {
         sequence(addrs, extradataLengths, extradatas, caddrs, cvals, clengths, calldatas, addresses, uints);
     }
 
-    function sequenceAnyAfter(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[4] memory uints)
+    function sequenceAnyAfter(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[5] memory uints)
         public
     {
         /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly.
@@ -109,7 +109,7 @@ contract StaticUtil is StaticCaller {
         sequence(addrs, extradataLengths, extradatas, caddrs, cvals, clengths, calldatas, addresses, uints);
     }
 
-    function sequence(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[] memory caddrs, uint[] memory cvals, uint[] memory clengths, bytes memory calldatas, address[3] memory addresses, uint[4] memory uints)
+    function sequence(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[] memory caddrs, uint[] memory cvals, uint[] memory clengths, bytes memory calldatas, address[4] memory addresses, uint[5] memory uints)
         internal
     {
         uint j = 0;
