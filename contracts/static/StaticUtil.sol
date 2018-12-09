@@ -29,6 +29,7 @@ contract StaticUtil is StaticCaller {
                    address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[5] memory uints,
                    bytes memory data, bytes memory counterdata)
         public
+        returns (uint)
     {
         /* Split into two static calls: one for the call, one for the counter-call, both with metadata. */
 
@@ -37,6 +38,8 @@ contract StaticUtil is StaticCaller {
 
         /* Static call to check the counter-call. */
         require(staticCall(secondTarget, abi.encodePacked(secondExtradata, [addresses[3], addresses[4], addresses[5], addresses[6]], howToCalls[1], counterdata, uints)));
+
+        return 1;
     }
 
     function and(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, bytes memory rest)
@@ -52,7 +55,7 @@ contract StaticUtil is StaticCaller {
                 j++;
             }
             require(staticCall(addrs[i], abi.encodePacked(extradata, rest)));
-        } 
+        }
     }
 
     function or(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, bytes memory rest)
