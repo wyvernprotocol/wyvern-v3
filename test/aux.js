@@ -1,7 +1,7 @@
 const Web3 = require('web3')
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')
 var web3 = new Web3(provider)
-const { structHash, signHash } = require('./eip712.js')
+const { eip712Domain, structHash, signHash } = require('./eip712.js')
 
 const eip712Order = {
   name: 'Order',
@@ -20,9 +20,9 @@ const eip712Order = {
 web3 = web3.extend({
   methods: [{
     name: 'signTypedData',
-    call: 'personal_signTypedData',
+    call: 'eth_signTypedData',
     params: 2,
-    inputFormatter: [null, web3.extend.formatters.inputAddressFormatter]
+    inputFormatter: [web3.extend.formatters.inputAddressFormatter, null]
   }]
 })
 
@@ -30,8 +30,8 @@ const hashOrder = (order) => {
   return '0x' + structHash(eip712Order.name, eip712Order.fields, order).toString('hex')
 }
 
-const hashToSign = (order, exchange) => {
-  return '0x' + signHash({
+const structToSign = (order, exchange) => {
+  return {
     name: eip712Order.name,
     fields: eip712Order.fields,
     domain: {
@@ -41,14 +41,18 @@ const hashToSign = (order, exchange) => {
       verifyingContract: exchange
     },
     data: order
-  }).toString('hex')
+  }
+}
+
+const hashToSign = (order, exchange) => {
+  return '0x' + signHash(structToSign(order, exchange)).toString('hex')
 }
 
 const parseSig = (bytes) => {
   bytes = bytes.substr(2)
   const r = '0x' + bytes.slice(0, 64)
   const s = '0x' + bytes.slice(64, 128)
-  const v = 27 + parseInt('0x' + bytes.slice(128, 130), 16)
+  const v = parseInt('0x' + bytes.slice(128, 130), 16)
   return {v, r, s}
 }
 
@@ -75,8 +79,16 @@ const wrap = (inst) => {
     )
   }
   obj.sign = (order, account) => {
-    const hash = hashOrder(order)
-    return web3.eth.sign(hash, account).then(sigBytes => {
+    const str = structToSign(order, inst.address)
+    return web3.signTypedData(account, {
+      types: {
+        EIP712Domain: eip712Domain.fields,
+        Order: eip712Order.fields
+      },
+      domain: str.domain,
+      primaryType: 'Order',
+      message: order
+    }).then(sigBytes => {
       const sig = parseSig(sigBytes)
       return sig
     })

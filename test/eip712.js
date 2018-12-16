@@ -62,5 +62,6 @@ function signHash (typedData) {
 
 module.exports = {
   structHash,
-  signHash
+  signHash,
+  eip712Domain
 }
