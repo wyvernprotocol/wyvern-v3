@@ -64,9 +64,9 @@ contract('WyvernExchange', (accounts) => {
     })
   }
 
-  it('should allow proxy registration', () => {
+  it('should allow proxy transfer approval', () => {
     return withContracts().then(({registry, erc20, erc721}) => {
-      return registry.registerProxy().then(() => {
+      return registry.registerProxy({from: accounts[0]}).then(() => {
         return registry.proxies(accounts[0]).then(proxy => {
           return erc20.approve(proxy, 100000).then(() => {
             return erc721.setApprovalForAll(proxy, true)
