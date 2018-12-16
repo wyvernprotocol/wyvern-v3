@@ -4,6 +4,7 @@ const WyvernRegistry = artifacts.require('WyvernRegistry')
 const AuthenticatedProxy = artifacts.require('AuthenticatedProxy')
 const OwnableDelegateProxy = artifacts.require('OwnableDelegateProxy')
 const TestAuthenticatedProxy = artifacts.require('TestAuthenticatedProxy')
+const TestERC20 = artifacts.require('TestERC20')
 
 const Web3 = require('web3')
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')
@@ -71,7 +72,6 @@ contract('WyvernRegistry', (accounts) => {
       })
   })
 
-  /*
   it('should allow proxy upgrade', () => {
     return WyvernRegistry
       .deployed()
@@ -79,14 +79,15 @@ contract('WyvernRegistry', (accounts) => {
         return registryInstance.registerProxy({from: accounts[5]}).then(() => {
           return registryInstance.proxies(accounts[5])
             .then(ret => {
-              console.log(ret)
               const contract = new web3.eth.Contract(OwnableDelegateProxy.abi, ret)
               return registryInstance.delegateProxyImplementation().then(impl => {
-                console.log('1')
-                return contract.methods.upgradeTo(accounts[5]).send({from: accounts[5]}).then(() => {
-                  console.log('2')
-                  return contract.methods.upgradeTo(impl).send({from: accounts[5]}).then(() => {
-                    console.log('3')
+                return new Promise((resolve, reject) => {
+                  contract.methods.upgradeTo(registryInstance.address).send({from: accounts[5]}, (err) => {
+                    if (err) reject(err)
+                    contract.methods.upgradeTo(impl).send({from: accounts[5]}, (err) => {
+                      if (err) reject(err)
+                      else resolve()
+                    })
                   })
                 })
               })
@@ -94,7 +95,41 @@ contract('WyvernRegistry', (accounts) => {
         })
       })
   })
-  */
+
+  it('should allow proxy to receive ether', () => {
+    return WyvernRegistry
+      .deployed()
+      .then(registryInstance => {
+        return registryInstance.proxies(accounts[3])
+          .then(ret => {
+            return web3.eth.sendTransaction({to: ret, from: accounts[0], value: 1000}).then(() => {})
+          })
+      })
+  })
+
+  it('should allow proxy to receive tokens', () => {
+    return WyvernRegistry
+      .deployed()
+      .then(registryInstance => {
+        return registryInstance.proxies(accounts[3])
+          .then(ret => {
+            return TestERC20.deployed().then(erc20 => {
+              const amount = '1000'
+              return erc20.mint(accounts[3], amount).then(() => {
+                return erc20.approve(ret, amount, {from: accounts[3]}).then(() => {
+                  const contract = new web3.eth.Contract(AuthenticatedProxy.abi, ret)
+                  return new Promise((resolve, reject) => {
+                    contract.methods.receiveApproval(accounts[3], amount, erc20.address, '0x').send({from: accounts[3]}, (err) => {
+                      if (err) reject(err)
+                      else resolve()
+                    })
+                  })
+                })
+              })
+            })
+          })
+      })
+  })
 
   it('should not allow proxy upgrade to same implementation', () => {
     return WyvernRegistry
@@ -284,7 +319,7 @@ contract('WyvernRegistry', (accounts) => {
       })
   })
 
-  it('should allow delegateproxy owner change', () => {
+  it('should allow delegateproxy owner change, but only from owner', () => {
     return WyvernRegistry
       .deployed()
       .then(registry => {
@@ -297,9 +332,14 @@ contract('WyvernRegistry', (accounts) => {
                   assert.equal(user, accounts[1])
                   const inst = new web3.eth.Contract(TestAuthenticatedProxy.abi, testProxy.address)
                   const call = inst.methods.setUser(accounts[4]).encodeABI()
-                  return proxy.proxyAssert(testProxy.address, 1, call, {from: accounts[1]}).then(() => {
-                    return proxy.user().then(user => {
-                      assert.equal(user, accounts[4], 'User was not changed')
+                  return proxy.proxyAssert(testProxy.address, 1, call, {from: accounts[4]}).then(() => {
+                    assert.equal(true, false, 'Should not have succeeded')
+                  }).catch(err => {
+                    assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+                    return proxy.proxyAssert(testProxy.address, 1, call, {from: accounts[1]}).then(() => {
+                      return proxy.user().then(user => {
+                        assert.equal(user, accounts[4], 'User was not changed')
+                      })
                     })
                   })
                 })
