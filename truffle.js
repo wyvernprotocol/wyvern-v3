@@ -23,7 +23,7 @@ module.exports = {
       network_id: '4',
       gas: 6700000,
       gasPrice: 4100000000,
-      confirmations: 5
+      confirmations: 3
     }
   },
   compilers: {

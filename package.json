@@ -31,7 +31,7 @@
     "solidity-coverage": "^0.5.11",
     "solium": "1.1.8",
     "standard": "12.0.1",
-    "truffle": "5.0.0-next.17",
+    "truffle": "^5.0.0-next.25",
     "truffle-flattener": "^1.2.10",
     "web3": "1.0.0-beta.36"
   }
