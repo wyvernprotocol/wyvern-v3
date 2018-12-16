@@ -201,26 +201,98 @@ contract('WyvernExchange', (accounts) => {
   })
 
   it('should not match with invalid first order params', () => {
+    return withContracts()
+      .then(({exchange, registry, statici}) => {
+        const extradata = web3.eth.abi.encodeFunctionSignature('any(address[7],uint8[2],uint256[5],bytes,bytes)')
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        return exchange.inst.setOrderFill_(hashOrder(one), '1', {from: accounts[6]}).then(() => {
+          return exchange.sign(one, accounts[6]).then(oneSig => {
+            return exchange.sign(two, accounts[6]).then(twoSig => {
+              const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
+              return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
+                assert.equal(true, false, 'should not have matched')
+              }).catch(err => {
+                assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+              })
+            })
+          })
+        })
+      })
   })
 
   it('should not match with invalid second order params', () => {
-  })
-
-  it('should not match with cancelled first order', () => {
-  })
-
-  it('should not match with cancelled second order', () => {
+    return withContracts()
+      .then(({exchange, registry, statici}) => {
+        const extradata = web3.eth.abi.encodeFunctionSignature('any(address[7],uint8[2],uint256[5],bytes,bytes)')
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        return exchange.inst.setOrderFill_(hashOrder(two), '1', {from: accounts[6]}).then(() => {
+          return exchange.sign(one, accounts[6]).then(oneSig => {
+            return exchange.sign(two, accounts[6]).then(twoSig => {
+              const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
+              return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
+                assert.equal(true, false, 'should not have matched')
+              }).catch(err => {
+                assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+              })
+            })
+          })
+        })
+      })
   })
 
   it('should not match with nonexistent first proxy', () => {
+    return withContracts()
+      .then(({exchange, registry, statici}) => {
+        const extradata = web3.eth.abi.encodeFunctionSignature('any(address[7],uint8[2],uint256[5],bytes,bytes)')
+        const one = {registry: registry.address, maker: accounts[7], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        return exchange.sign(one, accounts[7]).then(oneSig => {
+          return exchange.sign(two, accounts[6]).then(twoSig => {
+            const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
+            return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
+              assert.equal(true, false, 'should not have matched')
+            }).catch(err => {
+              assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+            })
+          })
+        })
+      })
   })
 
   it('should not match with nonexistent second proxy', () => {
+    return withContracts()
+      .then(({exchange, registry, statici}) => {
+        const extradata = web3.eth.abi.encodeFunctionSignature('any(address[7],uint8[2],uint256[5],bytes,bytes)')
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[7], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        return exchange.sign(one, accounts[6]).then(oneSig => {
+          return exchange.sign(two, accounts[7]).then(twoSig => {
+            const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
+            return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
+              assert.equal(true, false, 'should not have matched')
+            }).catch(err => {
+              assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+            })
+          })
+        })
+      })
   })
 
   it('should allow value transfer', () => {
-  })
-
-  it('should not allow reentrancy', () => {
+    return withContracts()
+      .then(({exchange, registry, statici}) => {
+        const extradata = web3.eth.abi.encodeFunctionSignature('any(address[7],uint8[2],uint256[5],bytes,bytes)')
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        return exchange.sign(one, accounts[6]).then(oneSig => {
+          return exchange.sign(two, accounts[6]).then(twoSig => {
+            const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
+            return exchange.atomicMatchWith(one, oneSig, call, two, twoSig, call, ZERO_BYTES32, {value: 200}).then(() => {
+            })
+          })
+        })
+      })
   })
 })

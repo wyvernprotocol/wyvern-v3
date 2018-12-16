@@ -1,5 +1,15 @@
+/*
+
+  << EIP 712 >>
+
+*/
+
 pragma solidity 0.5.0;
 
+/**
+ * @title EIP712
+ * @author Wyvern Protocol Developers
+ */
 contract EIP712 {
 
     struct EIP712Domain {
@@ -18,8 +28,8 @@ contract EIP712 {
     function hash(EIP712Domain memory eip712Domain)
         internal
         pure
-        returns (bytes32) {
-
+        returns (bytes32)
+    {
         return keccak256(abi.encode(
             EIP712DOMAIN_TYPEHASH,
             keccak256(bytes(eip712Domain.name)),
@@ -27,7 +37,6 @@ contract EIP712 {
             eip712Domain.chainId,
             eip712Domain.verifyingContract
         ));
-
     }
 
 }

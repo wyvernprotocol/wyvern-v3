@@ -1,5 +1,15 @@
+/*
+
+  << Static Caller >>
+
+*/
+
 pragma solidity 0.5.0;
 
+/**
+ * @title StaticCaller
+ * @author Wyvern Protocol Developers
+ */
 contract StaticCaller {
 
     function staticCall(address target, bytes memory data)

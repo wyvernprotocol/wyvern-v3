@@ -76,6 +76,14 @@ const wrap = (inst) => {
       order.staticExtradata, call.data, counterorder.staticExtradata, countercall.data,
       [sig.v, call.howToCall, countersig.v, countercall.howToCall],
       [sig.r, sig.s, countersig.r, countersig.s, metadata]
+    ),
+    atomicMatchWith: (order, sig, call, counterorder, countersig, countercall, metadata, misc) => inst.atomicMatch_(
+      [order.registry, order.maker, order.staticTarget, call.target, counterorder.registry, counterorder.maker, counterorder.staticTarget, countercall.target],
+      [order.maximumFill, order.listingTime, order.expirationTime, order.salt, counterorder.maximumFill, counterorder.listingTime, counterorder.expirationTime, counterorder.salt],
+      order.staticExtradata, call.data, counterorder.staticExtradata, countercall.data,
+      [sig.v, call.howToCall, countersig.v, countercall.howToCall],
+      [sig.r, sig.s, countersig.r, countersig.s, metadata],
+      misc
     )
   }
   obj.sign = (order, account) => {

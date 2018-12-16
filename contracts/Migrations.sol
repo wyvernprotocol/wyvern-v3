@@ -1,3 +1,9 @@
+/*
+
+  Standard migrations contract for Truffle deployment tracking.
+
+*/
+
 pragma solidity 0.5.0;
 
 contract Migrations {

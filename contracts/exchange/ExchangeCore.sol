@@ -66,12 +66,12 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
     /* Order typehash for EIP 712 compatibility. */
     bytes32 constant ORDER_TYPEHASH = keccak256(
-      "Order(address registry,address maker,address staticTarget,bytes staticExtradata,uint maximumFill,uint listingTime,uint expirationTime,uint salt)"
+        "Order(address registry,address maker,address staticTarget,bytes staticExtradata,uint maximumFill,uint listingTime,uint expirationTime,uint salt)"
     );
 
     /* Variables */
 
-    /* Cancelled / finalized orders, by maker address then by hash. */
+    /* Order fill status, by maker address then by hash. */
     mapping(address => mapping(bytes32 => uint)) public fills;
 
     /* Orders verified by on-chain approval.
