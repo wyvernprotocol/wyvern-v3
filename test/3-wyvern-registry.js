@@ -107,6 +107,26 @@ contract('WyvernRegistry', (accounts) => {
       })
   })
 
+  it('should not allow proxy to receive tokens before approval', () => {
+    return WyvernRegistry
+      .deployed()
+      .then(registryInstance => {
+        return registryInstance.proxies(accounts[3])
+          .then(ret => {
+            return TestERC20.deployed().then(erc20 => {
+              const contract = new web3.eth.Contract(AuthenticatedProxy.abi, ret)
+              return new Promise((resolve, reject) => {
+                const amount = '1000'
+                contract.methods.receiveApproval(accounts[3], amount, erc20.address, '0x').send({from: accounts[3]}, (err) => {
+                  if (err) resolve()
+                  else reject(new Error('should not have succeeded'))
+                })
+              })
+            })
+          })
+      })
+  })
+
   it('should allow proxy to receive tokens', () => {
     return WyvernRegistry
       .deployed()
@@ -246,6 +266,32 @@ contract('WyvernRegistry', (accounts) => {
         return instance.registerProxyFor(accounts[1]).then(() => {
           return instance.proxies(accounts[1]).then(addr => {
             assert.equal(addr.length > 0, true)
+          })
+        })
+      })
+  })
+
+  it('should not allow proxy registration for another user if a proxy already exists', () => {
+    return WyvernRegistry
+      .deployed()
+      .then(instance => {
+        return instance.registerProxyFor(accounts[1]).then(() => {
+          assert.equal(true, false, 'should not have succeeded')
+        }).catch(err => {
+          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+        })
+      })
+  })
+
+  it('should not allow proxy transfer from another account', () => {
+    return WyvernRegistry
+      .deployed()
+      .then(instance => {
+        return instance.proxies(accounts[2]).then(ret => {
+          return instance.transferAccessTo(ret, accounts[2]).then(() => {
+            assert.equal(true, false, 'should not have succeeded')
+          }).catch(err => {
+            assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
           })
         })
       })

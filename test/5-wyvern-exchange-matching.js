@@ -89,6 +89,31 @@ contract('WyvernExchange', (accounts) => {
       })
   })
 
+  it('should not match any-any reentrant order', () => {
+    return withContracts()
+      .then(({exchange, registry, statici}) => {
+        const extradata = web3.eth.abi.encodeFunctionSignature('any(address[7],uint8[2],uint256[5],bytes,bytes)')
+        const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '4'}
+        const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '5'}
+        const sig = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+        const exchangec = new web3.eth.Contract(exchange.inst.abi, exchange.inst.address)
+        const call1 = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
+        const data = exchangec.methods.atomicMatch_(
+          [one.registry, one.maker, one.staticTarget, call1.target, two.registry, two.maker, two.staticTarget, call1.target],
+          [one.maximumFill, one.listingTime, one.expirationTime, one.salt, two.maximumFill, two.listingTime, two.expirationTime, two.salt],
+          one.staticExtradata, call1.data, two.staticExtradata, call1.data,
+          [sig.v, call1.howToCall, sig.v, call1.howToCall],
+          [sig.r, sig.s, sig.r, sig.s, ZERO_BYTES32]).encodeABI()
+        const call2 = {target: exchange.inst.address, howToCall: 0, data: data}
+        return exchange.atomicMatch(one, sig, call1, two, sig, call2, ZERO_BYTES32).then(() => {
+          assert.equal(true, false, 'should not have succeeded')
+        }).catch(err => {
+          // TODO
+          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: invalid opcode', 'Incorrect error')
+        })
+      })
+  })
+
   it('should match nft-nft order', () => {
     return withContracts()
       .then(({atomicizer, exchange, registry, statici, erc20, erc721}) => {

@@ -16,9 +16,7 @@ contract ReentrancyGuarded {
 
     /* Prevent a contract function from being reentrant-called. */
     modifier reentrancyGuard {
-        if (reentrancyLock) {
-            revert();
-        }
+        require(!reentrancyLock);
         reentrancyLock = true;
         _;
         reentrancyLock = false;

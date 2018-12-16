@@ -43,6 +43,18 @@ contract('WyvernExchange', (accounts) => {
       })
   })
 
+  it('should not allow set-fill to same fill', () => {
+    return withExchangeAndRegistry()
+      .then(({exchange, registry}) => {
+        const example = {registry: registry.address, maker: accounts[1], staticTarget: exchange.inst.address, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '1000000000000', salt: '6'}
+        return exchange.setOrderFill(example, '0', {from: accounts[1]}).then(() => {
+          assert.equal(true, false, 'should not have suceeded')
+        }).catch(err => {
+          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+        })
+      })
+  })
+
   it('should validate valid order parameters', () => {
     return withExchangeAndRegistry()
       .then(({exchange, registry}) => {
@@ -129,6 +141,19 @@ contract('WyvernExchange', (accounts) => {
         const hash = hashOrder(example)
         return exchange.validateOrderAuthorization(hash, accounts[0], {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}, {from: accounts[0]}).then(valid => {
           assert.equal(true, valid, 'Should have validated')
+        })
+      })
+  })
+
+  it('should validate valid authorization by cache', () => {
+    return withExchangeAndRegistry()
+      .then(({exchange, registry}) => {
+        const example = {registry: registry.address, maker: accounts[1], staticTarget: exchange.inst.address, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '1000000000000', salt: '6'}
+        return exchange.setOrderFill(example, '2', {from: accounts[1]}).then(() => {
+          const hash = hashOrder(example)
+          return exchange.validateOrderAuthorization(hash, accounts[0], {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}, {from: accounts[0]}).then(valid => {
+            assert.equal(true, valid, 'Should have validated')
+          })
         })
       })
   })
