@@ -98,7 +98,7 @@ contract('WyvernExchange', (accounts) => {
   it('should validate valid authorization by signature', () => {
     return withExchangeAndRegistry()
       .then(({exchange, registry}) => {
-        const example = {registry: registry.address, maker: accounts[1], staticTarget: exchange.inst.address, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '1000000000000', salt: '0'}
+        const example = {registry: registry.address, maker: accounts[1], staticTarget: exchange.inst.address, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '1000000000000', salt: '100230'}
         return exchange.sign(example, accounts[1]).then(sig => {
           const hash = hashOrder(example)
           return exchange.validateOrderAuthorization(hash, accounts[0], sig).then(valid => {
@@ -108,10 +108,36 @@ contract('WyvernExchange', (accounts) => {
       })
   })
 
+  it('should not allow approval twice', () => {
+    return withExchangeAndRegistry()
+      .then(({exchange, registry}) => {
+        const example = {registry: registry.address, maker: accounts[1], staticTarget: exchange.inst.address, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '1000000000000', salt: '1010'}
+        return exchange.approveOrder(example, false, {from: accounts[1]}).then(() => {
+          return exchange.approveOrder(example, false, {from: accounts[1]}).then(() => {
+            assert.equal(true, false, 'should not have succeeded')
+          }).catch(err => {
+            assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+          })
+        })
+      })
+  })
+
+  it('should not allow approval from another user', () => {
+    return withExchangeAndRegistry()
+      .then(({exchange, registry}) => {
+        const example = {registry: registry.address, maker: accounts[1], staticTarget: exchange.inst.address, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '1000000000000', salt: '10101234'}
+        return exchange.approveOrder(example, false, {from: accounts[2]}).then(() => {
+          assert.equal(true, false, 'should not have succeeded')
+        }).catch(err => {
+          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+        })
+      })
+  })
+
   it('should validate valid authorization by approval', () => {
     return withExchangeAndRegistry()
       .then(({exchange, registry}) => {
-        const example = {registry: registry.address, maker: accounts[1], staticTarget: exchange.inst.address, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '1000000000000', salt: '1'}
+        const example = {registry: registry.address, maker: accounts[1], staticTarget: exchange.inst.address, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '1000000000000', salt: '10'}
         return exchange.approveOrder(example, false, {from: accounts[1]}).then(() => {
           const hash = hashOrder(example)
           return exchange.validateOrderAuthorization(hash, accounts[0], {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}).then(valid => {
