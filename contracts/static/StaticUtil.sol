@@ -13,7 +13,7 @@ contract StaticUtil is StaticCaller {
 
     address public atomicizer;
 
-    function any(address[7] memory, AuthenticatedProxy.HowToCall[2] memory, uint[5] memory, bytes memory, bytes memory)
+    function any(address[7] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory, bytes memory, bytes memory)
         public
         pure
         returns (uint)
@@ -25,8 +25,32 @@ contract StaticUtil is StaticCaller {
         return 1;
     }
 
+    function anyNoFill(address[7] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory, bytes memory, bytes memory)
+        public
+        pure
+        returns (uint)
+    {
+        /* Accept any call.
+           Useful e.g. for matching-by-transaction, where you authorize the counter-call by sending the transaction and don't need to re-check it.
+           Might be more efficient to implement in ExchangeCore. */
+
+        return 0;
+    }
+
+    function anyAddOne(address[7] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory uints, bytes memory, bytes memory)
+        public
+        pure
+        returns (uint)
+    {
+        /* Accept any call.
+           Useful e.g. for matching-by-transaction, where you authorize the counter-call by sending the transaction and don't need to re-check it.
+           Might be more efficient to implement in ExchangeCore. */
+
+        return uints[5] + 1;
+    }
+
     function split(address firstTarget, bytes memory firstExtradata, address secondTarget, bytes memory secondExtradata,
-                   address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[5] memory uints,
+                   address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
                    bytes memory data, bytes memory counterdata)
         public
         returns (uint)
@@ -78,7 +102,7 @@ contract StaticUtil is StaticCaller {
         revert();
     }
 
-    function sequenceExact(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[5] memory uints)
+    function sequenceExact(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[6] memory uints)
         public
     {
         /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly.
@@ -95,7 +119,7 @@ contract StaticUtil is StaticCaller {
         sequence(addrs, extradataLengths, extradatas, caddrs, cvals, clengths, calldatas, addresses, uints);
     }
 
-    function sequenceAnyAfter(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[5] memory uints)
+    function sequenceAnyAfter(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[6] memory uints)
         public
     {
         /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly.
@@ -112,7 +136,7 @@ contract StaticUtil is StaticCaller {
         sequence(addrs, extradataLengths, extradatas, caddrs, cvals, clengths, calldatas, addresses, uints);
     }
 
-    function sequence(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[] memory caddrs, uint[] memory cvals, uint[] memory clengths, bytes memory calldatas, address[4] memory addresses, uint[5] memory uints)
+    function sequence(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[] memory caddrs, uint[] memory cvals, uint[] memory clengths, bytes memory calldatas, address[4] memory addresses, uint[6] memory uints)
         internal
     {
         uint j = 0;

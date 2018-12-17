@@ -184,7 +184,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         return false;
     }
 
-    function encodeStaticCall(Order memory order, Call memory call, Order memory counterorder, Call memory countercall, address matcher, uint value)
+    function encodeStaticCall(Order memory order, Call memory call, Order memory counterorder, Call memory countercall, address matcher, uint value, uint fill)
         internal
         pure
         returns (bytes memory)
@@ -192,16 +192,17 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         /* This array wrapping is necessary to preserve static call target function stack space. */
         address[7] memory addresses = [order.registry, order.maker, call.target, counterorder.registry, counterorder.maker, countercall.target, matcher];
         AuthenticatedProxy.HowToCall[2] memory howToCalls = [call.howToCall, countercall.howToCall];
-        uint[5] memory uints = [value, order.maximumFill, order.listingTime, order.expirationTime, counterorder.listingTime];
+        uint[6] memory uints = [value, order.maximumFill, order.listingTime, order.expirationTime, counterorder.listingTime, fill];
         return abi.encodePacked(order.staticExtradata, abi.encode(addresses, howToCalls, uints, call.data, countercall.data));
     }
 
-    function executeStaticCall(Order memory order, Call memory call, Order memory counterorder, Call memory countercall, address matcher, uint value)
+    function executeStaticCall(Order memory order, Call memory call, Order memory counterorder, Call memory countercall, address matcher, uint value, bytes32 hash)
         internal
         view
         returns (uint)
     {
-        return staticCallUint(order.staticTarget, encodeStaticCall(order, call, counterorder, countercall, matcher, value));
+        uint fill = fills[order.maker][hash];
+        return staticCallUint(order.staticTarget, encodeStaticCall(order, call, counterorder, countercall, matcher, value, fill));
     }
 
     function executeCall(ProxyRegistryInterface registry, address maker, Call memory call)
@@ -321,10 +322,10 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         /* Static calls must happen after the effectful calls so that they can check the resulting state. */
 
         /* Execute first order static call, assert success, capture returned new fill. */
-        uint firstFill = executeStaticCall(firstOrder, firstCall, secondOrder, secondCall, msg.sender, msg.value);
+        uint firstFill = executeStaticCall(firstOrder, firstCall, secondOrder, secondCall, msg.sender, msg.value, firstHash);
 
         /* Execute second order static call, assert success, capture returned new fill. */
-        uint secondFill = executeStaticCall(secondOrder, secondCall, firstOrder, firstCall, msg.sender, uint(0));
+        uint secondFill = executeStaticCall(secondOrder, secondCall, firstOrder, firstCall, msg.sender, uint(0), secondHash);
 
         /* EFFECTS */
 

@@ -14,7 +14,7 @@ import "../registry/AuthenticatedProxy.sol";
 contract StaticERC721 {
 
     function swapOneForOne(address[2] memory tokenGiveGet, uint[2] memory nftGiveGet,
-        address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[5] memory uints,
+        address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
         bytes memory data, bytes memory counterdata)
         public
         pure

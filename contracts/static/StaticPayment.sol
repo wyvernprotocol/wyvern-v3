@@ -15,7 +15,7 @@ contract StaticPayment {
 
     function payExact(
         address token, uint amount,
-        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[5] memory)
+        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[6] memory)
         public
         pure
     {
@@ -33,7 +33,7 @@ contract StaticPayment {
 
     function payExactEther(
         uint amount,
-        address[4] memory, AuthenticatedProxy.HowToCall, bytes memory, uint[5] memory uints)
+        address[4] memory, AuthenticatedProxy.HowToCall, bytes memory, uint[6] memory uints)
         public
         pure
     {
@@ -57,7 +57,7 @@ contract StaticPayment {
 
     function payMinAuction(
         address token, uint[3] memory startEndExtra,
-        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[5] memory)
+        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[6] memory)
         public
         pure
     {
@@ -67,7 +67,7 @@ contract StaticPayment {
 
     function payMaxAuction(
         address token, uint[3] memory startEndExtra,
-        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[5] memory)
+        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[6] memory)
         public
         pure
     {
@@ -77,7 +77,7 @@ contract StaticPayment {
 
     function payMakerTakerFee(
         address token, uint[3] memory makerTakerFee,
-        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[5] memory)
+        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[6] memory)
         public
         pure
     {

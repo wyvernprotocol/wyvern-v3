@@ -15,7 +15,7 @@ contract StaticERC20 {
 
     function swapExact(
         address[2] memory tokenGiveGet, uint[2] memory amountGiveGet,
-        address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[5] memory uints,
+        address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
         bytes memory data, bytes memory counterdata)
         public
         pure
