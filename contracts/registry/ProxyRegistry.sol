@@ -12,6 +12,10 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "./OwnableDelegateProxy.sol";
 
+/**
+ * @title ProxyRegistry
+ * @author Wyvern Protocol Developers
+ */
 contract ProxyRegistry is Ownable {
 
     /* DelegateProxy implementation contract. Must be initialized. */

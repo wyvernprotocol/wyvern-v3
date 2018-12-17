@@ -39,7 +39,7 @@ Disadvantages
 
 ```c
 struct Order {
-    address exchange;
+    address registry;
     address maker;
     address staticTarget;
     bytes staticExtradata;
@@ -52,7 +52,7 @@ struct Order {
 
 | Name            | Type    | Purpose                                                        |
 | --------------- | ------- | ---------------------------------------------------------------|
-| exchange        | address | Version the order to a particular core exchange contract       |
+| registry        | address | Version the order to a particular registry contract            |
 | maker           | address | Order maker, who will execute the call                         |
 | staticTarget    | address | Target address for predicate function                          |
 | staticExtradata | bytes   | Extra data for predicate function                              |
@@ -67,25 +67,27 @@ All fields are signed over.
 
 #### Asserting calldata
 
-bulk of the logic is in constructing the predicate
+The bulk of a logic in an order is in constructing the predicate over the call and countercall.
 
 ##### Call
 
-the call the maker executes
+The first call is executed by the maker of the order.
 
 ##### Countercall
 
-the call the counterparty executes
+The second call is executed by the counterparty.
 
 #### Asserting state
 
-instead assert that you own some asset
+Static calls are executed *after* the calls (the whole transaction is reverted if the static call fails), so instead of asserting properties of the calldata, you can assert that particular state has changed - e.g. that an account now owns some asset.
 
 #### Metadata
 
-listing time, expiration time, special-case ether
+Metadata contains order listing time, order expiration time, counterorder listing time, Ether passed in the call (if any), and current order fill value.
 
 #### Generalized Partial Fill
+
+Orders sign over a maximum fill, and static calls return a uint, which specifies the updated fill value if the order is matched.
 
 ### Authorizing an order
 

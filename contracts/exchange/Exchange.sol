@@ -1,7 +1,17 @@
+/*
+
+  << Exchange >>
+
+*/
+
 pragma solidity 0.5.0;
 
 import "./ExchangeCore.sol";
 
+/**
+ * @title Exchange
+ * @author Wyvern Protocol Developers
+ */
 contract Exchange is ExchangeCore {
 
     /* Public ABI-encodable method wrappers. */

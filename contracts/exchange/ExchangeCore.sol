@@ -1,6 +1,6 @@
 /*
 
-    ExchangeCore
+  << Exchange Core >>
 
 */
 
@@ -320,8 +320,10 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
         /* Static calls must happen after the effectful calls so that they can check the resulting state. */
 
-        /* Fetch previous fills. */
+        /* Fetch previous first order fill. */
         uint previousFirstFill = fills[firstOrder.maker][firstHash];
+
+        /* Fetch previous second order fill. */
         uint previousSecondFill = fills[secondOrder.maker][secondHash];
 
         /* Execute first order static call, assert success, capture returned new fill. */

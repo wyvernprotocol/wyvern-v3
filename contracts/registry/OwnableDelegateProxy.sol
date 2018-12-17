@@ -8,6 +8,10 @@ pragma solidity 0.5.0;
 
 import "./proxy/OwnedUpgradeabilityProxy.sol";
 
+/**
+ * @title OwnableDelegateProxy
+ * @author Wyvern Protocol Developers
+ */
 contract OwnableDelegateProxy is OwnedUpgradeabilityProxy {
 
     constructor(address owner, address initialImplementation, bytes memory data)
