@@ -199,6 +199,21 @@ contract('WyvernRegistry', (accounts) => {
       })
   })
 
+  it('should allow proxy ownership transfer', () => {
+    return WyvernRegistry
+      .deployed()
+      .then(registryInstance => {
+        return registryInstance.proxies(accounts[3])
+          .then(ret => {
+            const contract = new web3.eth.Contract(OwnableDelegateProxy.abi, ret)
+            return contract.methods.transferProxyOwnership(accounts[4]).send({from: accounts[3]}).then(() => {
+              return contract.methods.transferProxyOwnership(accounts[3]).send({from: accounts[4]}).then(() => {
+              })
+            })
+          })
+      })
+  })
+
   it('should allow start but not end of authentication process', () => {
     return WyvernRegistry
       .deployed()

@@ -196,12 +196,11 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         return abi.encodePacked(order.staticExtradata, abi.encode(addresses, howToCalls, uints, call.data, countercall.data));
     }
 
-    function executeStaticCall(Order memory order, Call memory call, Order memory counterorder, Call memory countercall, address matcher, uint value, bytes32 hash)
+    function executeStaticCall(Order memory order, Call memory call, Order memory counterorder, Call memory countercall, address matcher, uint value, uint fill)
         internal
         view
         returns (uint)
     {
-        uint fill = fills[order.maker][hash];
         return staticCallUint(order.staticTarget, encodeStaticCall(order, call, counterorder, countercall, matcher, value, fill));
     }
 
@@ -321,24 +320,28 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
         /* Static calls must happen after the effectful calls so that they can check the resulting state. */
 
+        /* Fetch previous fills. */
+        uint previousFirstFill = fills[firstOrder.maker][firstHash];
+        uint previousSecondFill = fills[secondOrder.maker][secondHash];
+
         /* Execute first order static call, assert success, capture returned new fill. */
-        uint firstFill = executeStaticCall(firstOrder, firstCall, secondOrder, secondCall, msg.sender, msg.value, firstHash);
+        uint firstFill = executeStaticCall(firstOrder, firstCall, secondOrder, secondCall, msg.sender, msg.value, previousFirstFill);
 
         /* Execute second order static call, assert success, capture returned new fill. */
-        uint secondFill = executeStaticCall(secondOrder, secondCall, firstOrder, firstCall, msg.sender, uint(0), secondHash);
+        uint secondFill = executeStaticCall(secondOrder, secondCall, firstOrder, firstCall, msg.sender, uint(0), previousSecondFill);
 
         /* EFFECTS */
 
         /* Update first order fill, if necessary. */
         if (firstOrder.maker != msg.sender) {
-            if (firstFill != fills[firstOrder.maker][firstHash]) {
+            if (firstFill != previousFirstFill) {
                 fills[firstOrder.maker][firstHash] = firstFill;
             }
         }
 
         /* Update second order fill, if necessary. */
         if (secondOrder.maker != msg.sender) {
-            if (secondFill != fills[secondOrder.maker][secondHash]) {
+            if (secondFill != previousSecondFill) {
                 fills[secondOrder.maker][secondHash] = secondFill;
             }
         }

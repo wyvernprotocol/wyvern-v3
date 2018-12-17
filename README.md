@@ -11,7 +11,7 @@ See [DESIGN.md](docs/DESIGN.md) for the rationale behind Wyvern v3. Read [USAGE.
 
 Deployed contract addresses can be found in [config.json](config.json).
 
-**This code has not been audited. Do not use it in production.**
+**This code is presently undergoing audit. You would be well-advised not to use it in production.**
 
 ### Development
 
