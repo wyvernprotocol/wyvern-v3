@@ -6,17 +6,18 @@
 
 */
 
-pragma solidity 0.5.0;
+pragma solidity 0.5.1;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "./OwnableDelegateProxy.sol";
+import "./ProxyRegistryInterface.sol";
 
 /**
  * @title ProxyRegistry
  * @author Wyvern Protocol Developers
  */
-contract ProxyRegistry is Ownable {
+contract ProxyRegistry is Ownable, ProxyRegistryInterface {
 
     /* DelegateProxy implementation contract. Must be initialized. */
     address public delegateProxyImplementation;
@@ -52,7 +53,7 @@ contract ProxyRegistry is Ownable {
     }
 
     /**
-     * End the process to nable access for specified contract after delay period has passed.
+     * End the process to enable access for specified contract after delay period has passed.
      *
      * @dev ProxyRegistry owner only
      * @param addr Address to which to grant permissions

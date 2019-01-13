@@ -5,4 +5,3 @@ set -e
 truffle version
 yarn list
 yarn lint
-yarn patch

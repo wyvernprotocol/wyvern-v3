@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "analyze": "scripts/analyze.sh",
-    "patch": "scripts/patch.sh",
     "flatten": "scripts/flatten.sh",
     "compile": "scripts/compile.sh",
     "coverage": "scripts/coverage.sh",
@@ -25,14 +24,14 @@
   "homepage": "https://github.com/wyvernprotocol/wyvern-v3#readme",
   "devDependencies": {
     "coveralls": "3.0.2",
-    "ganache-cli": "^6.2.3",
-    "ganache-core": "^2.3.1",
-    "openzeppelin-solidity": "^2.0.0",
-    "solidity-coverage": "^0.5.11",
-    "solium": "1.1.8",
+    "ganache-cli": "6.2.5",
+    "ganache-core": "2.3.3",
+    "openzeppelin-solidity": "2.1.1",
+    "solidity-coverage": "0.5.11",
+    "solium": "1.2.2",
     "standard": "12.0.1",
-    "truffle": "^5.0.0-next.25",
-    "truffle-flattener": "^1.2.10",
-    "web3": "1.0.0-beta.36"
+    "truffle": "5.0.1",
+    "truffle-flattener": "1.2.10",
+    "web3": "1.0.0-beta.37"
   }
 }
