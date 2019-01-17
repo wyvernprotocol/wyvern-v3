@@ -189,7 +189,7 @@ contract('WyvernExchange', (accounts) => {
             )
 
             const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: func + paramsOne.slice(2), maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '2'}
-            const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: func + paramsTwo.slice(2), maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3'}
+            const two = {registry: registry.address, maker: accounts[1], staticTarget: statici.address, staticExtradata: func + paramsTwo.slice(2), maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3'}
 
             console.warn(one.staticExtradata)
             console.warn(two.staticExtradata)
