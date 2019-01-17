@@ -45,6 +45,14 @@ contract('WyvernExchange', (accounts) => {
       })
   }
 
+  const withAsymmetricalTokens = () => {
+    return withContracts().then(({erc20, erc721}) => {
+      return erc721.transferFrom(accounts[0], accounts[1], 1).then(() => {
+        return {nfts: [1, 2, 3]}
+      })
+    })
+  }
+
   const withSomeTokens = () => {
     return withContracts().then(({erc20, erc721}) => {
       const amount = randomUint()
@@ -159,6 +167,62 @@ contract('WyvernExchange', (accounts) => {
         }).catch(err => {
           assert.equal(err.message, 'Returned error: VM Exception while processing transaction: invalid opcode', 'Incorrect error')
         })
+      })
+  })
+
+  it('should match nft-nft swap order', () => {
+    return withContracts()
+      .then(({atomicizer, exchange, registry, statici, erc20, erc721}) => {
+        return withAsymmetricalTokens()
+          .then(({ nfts }) => {
+            const atomicizerc = new web3.eth.Contract(atomicizer.abi, atomicizer.address)
+            const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
+            // const func = web3.eth.abi.encodeFunctionSignature('any(address[7],uint8[2],uint256[6],bytes,bytes)')
+            const func = web3.eth.abi.encodeFunctionSignature('swapOneForOne(address[2],uint256[2],address[7],uint8[2],uint256[6],bytes,bytes)')
+            const paramsOne = web3.eth.abi.encodeParameters(
+              ['address[2]', 'uint256[2]'],
+              [[erc721.address, erc721.address], [3, 1]]
+            )
+            const paramsTwo = web3.eth.abi.encodeParameters(
+              ['address[2]', 'uint256[2]'],
+              [[erc721.address, erc721.address], [1, 3]]
+            )
+
+            const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: func + paramsOne.slice(2), maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '2'}
+            const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: func + paramsTwo.slice(2), maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3'}
+
+            console.warn(one.staticExtradata)
+            console.warn(two.staticExtradata)
+
+            let firstData = erc721c.methods.transferFrom(accounts[0], accounts[1], 3).encodeABI()
+            // firstData = atomicizerc.methods.atomicize(
+            //   [erc721.address],
+            //   [0],
+            //   [(firstData.length - 2) / 2],
+            //   firstData
+            // ).encodeABI()
+
+            let secondData = erc721c.methods.transferFrom(accounts[1], accounts[0], 1).encodeABI()
+            // secondData = atomicizerc.methods.atomicize(
+            //   [erc721.address],
+            //   [0],
+            //   [(secondData.length - 2) / 2],
+            //   secondData
+            // ).encodeABI()
+
+            const firstCall = {target: erc721.address, howToCall: 0, data: firstData}
+            const secondCall = {target: erc721.address, howToCall: 0, data: secondData}
+            const sigOne = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+            return exchange.sign(two, accounts[1]).then(sigTwo => {
+              // return exchange.sign(one, accounts[0]).then(sigOne => {
+              return exchange.atomicMatch(one, sigOne, firstCall, two, sigTwo, secondCall, ZERO_BYTES32).then(() => {
+                // return erc20.balanceOf(accounts[1]).then(balance => {
+                //   assert.equal(2, balance, 'Incorrect balance')
+                // })
+              })
+              // })
+            })
+          })
       })
   })
 
