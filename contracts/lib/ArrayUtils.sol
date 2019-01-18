@@ -29,8 +29,8 @@ library ArrayUtils {
         internal
         pure
     {
-        require(array.length == desired.length);
-        require(array.length == mask.length);
+        require(array.length == desired.length, "Arrays have different lengths");
+        require(array.length == mask.length, "Array and mask have different lengths");
 
         uint words = array.length / 0x20;
         uint index = words * 0x20;

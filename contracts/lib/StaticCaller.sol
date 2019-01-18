@@ -35,7 +35,7 @@ contract StaticCaller {
             result := staticcall(gas, target, add(data, 0x20), mload(data), free, size)
             ret := mload(free)
         }
-        require(result);
+        require(result, "Static call failed");
         return ret;
     }
 

@@ -209,16 +209,16 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         returns (bool)
     {
         /* Assert target exists. */
-        require(exists(call.target));
+        require(exists(call.target), "Call target does not exist");
 
         /* Retrieve delegate proxy contract. */
         OwnableDelegateProxy delegateProxy = registry.proxies(maker);
 
         /* Assert existence. */
-        require(delegateProxy != OwnableDelegateProxy(0));
+        require(delegateProxy != OwnableDelegateProxy(0), "Delegate proxy does not exist for maker");
 
         /* Assert implementation. */
-        require(delegateProxy.implementation() == registry.delegateProxyImplementation());
+        require(delegateProxy.implementation() == registry.delegateProxyImplementation(), "Incorrect delegate proxy implementation for maker");
       
         /* Typecast. */
         AuthenticatedProxy proxy = AuthenticatedProxy(address(delegateProxy));
@@ -233,7 +233,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         /* CHECKS */
 
         /* Assert order has not already been approved. */
-        require(!approved[msg.sender][hash]);
+        require(!approved[msg.sender][hash], "Order has already been approved");
 
         /* EFFECTS */
 
@@ -247,7 +247,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         /* CHECKS */
 
         /* Assert sender is authorized to approve order. */
-        require(order.maker == msg.sender);
+        require(order.maker == msg.sender, "Sender is not authorized to approve order");
 
         /* Calculate order hash. */
         bytes32 hash = hashOrder(order);
@@ -265,7 +265,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         /* CHECKS */
 
         /* Assert fill is not already set. */
-        require(fills[msg.sender][hash] != fill);
+        require(fills[msg.sender][hash] != fill, "Fill is already set");
 
         /* EFFECTS */
 
@@ -286,22 +286,22 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         bytes32 firstHash = hashOrder(firstOrder);
 
         /* Check first order validity. */
-        require(validateOrderParameters(firstOrder, firstHash));
+        require(validateOrderParameters(firstOrder, firstHash), "First order has invalid parameters");
 
         /* Check first order authorization. */
-        require(validateOrderAuthorization(firstHash, firstOrder.maker, firstSig));
+        require(validateOrderAuthorization(firstHash, firstOrder.maker, firstSig), "First order failed authorization");
 
         /* Calculate second order hash. */
         bytes32 secondHash = hashOrder(secondOrder);
 
         /* Check second order validity. */
-        require(validateOrderParameters(secondOrder, secondHash));
+        require(validateOrderParameters(secondOrder, secondHash), "Second order has invalid parameters");
 
         /* Check second order authorization. */
-        require(validateOrderAuthorization(secondHash, secondOrder.maker, secondSig));
+        require(validateOrderAuthorization(secondHash, secondOrder.maker, secondSig), "Second order failed authorization");
 
         /* Prevent self-matching (possibly unnecessary, but safer). */
-        require(firstHash != secondHash);
+        require(firstHash != secondHash, "Self-matching orders is prohibited");
 
         /* INTERACTIONS */
 

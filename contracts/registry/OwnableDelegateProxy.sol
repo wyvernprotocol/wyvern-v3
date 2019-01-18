@@ -20,7 +20,7 @@ contract OwnableDelegateProxy is OwnedUpgradeabilityProxy {
         setUpgradeabilityOwner(owner);
         _upgradeTo(initialImplementation);
         (bool success,) = initialImplementation.delegatecall(data);
-        require(success);
+        require(success, "OwnableDelegateProxy failed implementation");
     }
 
 }

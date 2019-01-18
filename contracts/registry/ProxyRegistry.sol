@@ -48,7 +48,7 @@ contract ProxyRegistry is Ownable, ProxyRegistryInterface {
         public
         onlyOwner
     {
-        require(!contracts[addr] && pending[addr] == 0);
+        require(!contracts[addr] && pending[addr] == 0, "Contract is already allowed in registry, or pending");
         pending[addr] = now;
     }
 
@@ -62,7 +62,7 @@ contract ProxyRegistry is Ownable, ProxyRegistryInterface {
         public
         onlyOwner
     {
-        require(!contracts[addr] && pending[addr] != 0 && ((pending[addr] + DELAY_PERIOD) < now));
+        require(!contracts[addr] && pending[addr] != 0 && ((pending[addr] + DELAY_PERIOD) < now), "Contract is no longer pending or has already been approved by registry");
         pending[addr] = 0;
         contracts[addr] = true;
     }
@@ -103,7 +103,7 @@ contract ProxyRegistry is Ownable, ProxyRegistryInterface {
         public
         returns (OwnableDelegateProxy proxy)
     {
-        require(proxies[user] == OwnableDelegateProxy(0));
+        require(proxies[user] == OwnableDelegateProxy(0), "User already has a proxy");
         proxy = new OwnableDelegateProxy(user, delegateProxyImplementation, abi.encodeWithSignature("initialize(address,address)", user, address(this)));
         proxies[user] = proxy;
         return proxy;
@@ -118,8 +118,8 @@ contract ProxyRegistry is Ownable, ProxyRegistryInterface {
         OwnableDelegateProxy proxy = proxies[from];
 
         /* CHECKS */
-        require(OwnableDelegateProxy(msg.sender) == proxy);
-        require(proxies[to] == OwnableDelegateProxy(0));
+        require(OwnableDelegateProxy(msg.sender) == proxy, "Proxy transfer can only be called by the proxy");
+        require(proxies[to] == OwnableDelegateProxy(0), "Proxy transfer has existing proxy as destination");
 
         /* EFFECTS */
         delete proxies[from];

@@ -124,7 +124,7 @@ contract('WyvernExchange', (accounts) => {
                 return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
                   assert.equal(true, false, 'should not have succeeded')
                 }).catch(err => {
-                  assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+                  assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
                 })
               })
             })
@@ -142,7 +142,7 @@ contract('WyvernExchange', (accounts) => {
         return exchange.atomicMatch(one, nullSig, call, one, nullSig, call, ZERO_BYTES32).then(() => {
           assert.equal(true, false, 'should not have succeeded')
         }).catch(err => {
-          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+          assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
         })
       })
   })
@@ -165,7 +165,7 @@ contract('WyvernExchange', (accounts) => {
         return exchange.atomicMatch(one, nullSig, call1, two, nullSig, call2, ZERO_BYTES32).then(() => {
           assert.equal(true, false, 'should not have succeeded')
         }).catch(err => {
-          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: invalid opcode', 'Incorrect error')
+          assert.include(err.message, 'Returned error: VM Exception while processing transaction: invalid opcode', 'Incorrect error')
         })
       })
   })
@@ -308,7 +308,7 @@ contract('WyvernExchange', (accounts) => {
           return exchange.atomicMatch(one, nullSig, call, two, sig, call, ZERO_BYTES32).then(() => {
             assert.equal(true, false, 'should not have matched')
           }).catch(err => {
-            assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+            assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
           })
         })
       })
@@ -325,7 +325,7 @@ contract('WyvernExchange', (accounts) => {
           return exchange.atomicMatch(one, sig, call, two, nullSig, call, ZERO_BYTES32).then(() => {
             assert.equal(true, false, 'should not have matched')
           }).catch(err => {
-            assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+            assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
           })
         })
       })
@@ -344,7 +344,7 @@ contract('WyvernExchange', (accounts) => {
               return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
                 assert.equal(true, false, 'should not have matched')
               }).catch(err => {
-                assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+                assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
               })
             })
           })
@@ -365,7 +365,7 @@ contract('WyvernExchange', (accounts) => {
               return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
                 assert.equal(true, false, 'should not have matched')
               }).catch(err => {
-                assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+                assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
               })
             })
           })
@@ -385,7 +385,7 @@ contract('WyvernExchange', (accounts) => {
             return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
               assert.equal(true, false, 'should not have matched')
             }).catch(err => {
-              assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+              assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
             })
           })
         })
@@ -404,7 +404,7 @@ contract('WyvernExchange', (accounts) => {
             return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
               assert.equal(true, false, 'should not have matched')
             }).catch(err => {
-              assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+              assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
             })
           })
         })
@@ -423,7 +423,7 @@ contract('WyvernExchange', (accounts) => {
             return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
               assert.equal(true, false, 'should not have matched')
             }).catch(err => {
-              assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+              assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
             })
           })
         })

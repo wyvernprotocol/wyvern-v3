@@ -25,7 +25,7 @@ contract TokenRecipient {
      */
     function receiveApproval(address from, uint256 value, address token, bytes memory extraData) public {
         ERC20 t = ERC20(token);
-        require(t.transferFrom(from, address(this), value));
+        require(t.transferFrom(from, address(this), value), "ERC20 token transfer failed");
         emit ReceivedTokens(from, value, token, extraData);
     }
 

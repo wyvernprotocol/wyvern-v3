@@ -33,7 +33,7 @@ contract('WyvernRegistry', (accounts) => {
         return registry.grantInitialAuthentication(registry.address).then(() => {
           assert.equal(true, false, 'Should not have succeeded')
         }).catch(err => {
-          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+          assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
         })
       })
   })
@@ -162,7 +162,7 @@ contract('WyvernRegistry', (accounts) => {
               return contract.methods.upgradeTo(impl).send({from: accounts[3]}).then(() => {
                 assert.equal(true, false, 'Allowed upgrade to same implementation')
               }).catch(err => {
-                assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert')
+                assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert')
               })
             })
           })
@@ -193,7 +193,7 @@ contract('WyvernRegistry', (accounts) => {
             return contract.methods.upgradeTo(registryInstance.address).send({from: accounts[1]}).then(() => {
               assert.equal(true, false, 'allowed proxy update from another account')
             }).catch(err => {
-              assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert')
+              assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert')
             })
           })
       })
@@ -224,7 +224,7 @@ contract('WyvernRegistry', (accounts) => {
             return registryInstance.endGrantAuthentication(accounts[0]).then(() => {
               assert.equal(true, false, 'End of authentication process allowed without time period passing')
             }).catch(err => {
-              assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+              assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
             })
           })
         })
@@ -238,7 +238,7 @@ contract('WyvernRegistry', (accounts) => {
         return registryInstance.startGrantAuthentication(accounts[0]).then(() => {
           assert.equal(true, false, 'Start of authentication process allowed twice')
         }).catch(err => {
-          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+          assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
         })
       })
   })
@@ -250,7 +250,7 @@ contract('WyvernRegistry', (accounts) => {
         return registryInstance.endGrantAuthentication(accounts[1]).then(() => {
           assert.equal(true, false, 'End of authentication process allowed without start')
         }).catch(err => {
-          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+          assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
         })
       })
   })
@@ -293,7 +293,7 @@ contract('WyvernRegistry', (accounts) => {
         return instance.registerProxyFor(accounts[1]).then(() => {
           assert.equal(true, false, 'should not have succeeded')
         }).catch(err => {
-          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+          assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
         })
       })
   })
@@ -306,7 +306,7 @@ contract('WyvernRegistry', (accounts) => {
           return instance.transferAccessTo(ret, accounts[2]).then(() => {
             assert.equal(true, false, 'should not have succeeded')
           }).catch(err => {
-            assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+            assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
           })
         })
       })
@@ -350,7 +350,7 @@ contract('WyvernRegistry', (accounts) => {
           return proxyInst.methods.setRevoke(true).send({from: accounts[1]}).then(() => {
             assert.equal(true, false, 'Revocation was allowed from another account')
           }).catch(err => {
-            assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+            assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
           })
         })
       })
@@ -371,7 +371,7 @@ contract('WyvernRegistry', (accounts) => {
                   return inst.methods.initialize(registry.address, registry.address).send({from: accounts[1]}).then(ret => {
                     assert.equal(true, false, 'Should not have succeeded')
                   }).catch(err => {
-                    assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+                    assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
                   })
                 })
               })
@@ -396,7 +396,7 @@ contract('WyvernRegistry', (accounts) => {
                   return proxy.proxyAssert(testProxy.address, 1, call, {from: accounts[4]}).then(() => {
                     assert.equal(true, false, 'Should not have succeeded')
                   }).catch(err => {
-                    assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+                    assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
                     return proxy.proxyAssert(testProxy.address, 1, call, {from: accounts[1]}).then(() => {
                       return proxy.user().then(user => {
                         assert.equal(user, accounts[4], 'User was not changed')
