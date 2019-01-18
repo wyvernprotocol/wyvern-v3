@@ -47,8 +47,10 @@ contract('WyvernExchange', (accounts) => {
 
   const withAsymmetricalTokens = () => {
     return withContracts().then(({erc20, erc721}) => {
-      return erc721.transferFrom(accounts[0], accounts[1], 1).then(() => {
-        return {nfts: [1, 2, 3]}
+      return erc721.mint(accounts[0], 4).then(() => {
+        return erc721.mint(accounts[6], 5).then(() => {
+          return { nfts: [4, 5], erc721 }
+        })
       })
     })
   }
@@ -63,7 +65,7 @@ contract('WyvernExchange', (accounts) => {
   }
 
   it('should allow proxy transfer approval', () => {
-    return withContracts().then(({registry, erc20, erc721}) => {
+    return withContracts().then(({ registry, erc20, erc721 }) => {
       return registry.registerProxy({from: accounts[0]}).then(() => {
         return registry.proxies(accounts[0]).then(proxy => {
           return erc20.approve(proxy, 100000).then(() => {
@@ -75,10 +77,14 @@ contract('WyvernExchange', (accounts) => {
   })
 
   it('should allow proxy registration', () => {
-    return withContracts().then(({registry}) => {
+    return withContracts().then(({registry, erc20, erc721}) => {
       return registry.registerProxy({from: accounts[6]}).then(() => {
-        return registry.proxies(accounts[6]).then(ret => {
-          assert.equal(true, ret.length > 0, 'no proxy address')
+        return registry.proxies(accounts[6]).then(proxy => {
+          assert.equal(true, proxy.length > 0, 'no proxy address')
+          // Also approve erc20 and erc721
+          return erc20.approve(proxy, 100000, {from: accounts[6]}).then(() => {
+            return erc721.setApprovalForAll(proxy, true, {from: accounts[6]})
+          })
         })
       })
     })
@@ -172,29 +178,26 @@ contract('WyvernExchange', (accounts) => {
 
   it('should match nft-nft swap order', () => {
     return withContracts()
-      .then(({atomicizer, exchange, registry, statici, erc20, erc721}) => {
+      .then(({atomicizer, exchange, registry, statici }) => {
         return withAsymmetricalTokens()
-          .then(({ nfts }) => {
+          .then(({ nfts, erc721 }) => {
             const atomicizerc = new web3.eth.Contract(atomicizer.abi, atomicizer.address)
             const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
             // const func = web3.eth.abi.encodeFunctionSignature('any(address[7],uint8[2],uint256[6],bytes,bytes)')
             const func = web3.eth.abi.encodeFunctionSignature('swapOneForOne(address[2],uint256[2],address[7],uint8[2],uint256[6],bytes,bytes)')
             const paramsOne = web3.eth.abi.encodeParameters(
               ['address[2]', 'uint256[2]'],
-              [[erc721.address, erc721.address], [3, 1]]
+              [[erc721.address, erc721.address], [nfts[0], nfts[1]]]
             )
             const paramsTwo = web3.eth.abi.encodeParameters(
               ['address[2]', 'uint256[2]'],
-              [[erc721.address, erc721.address], [1, 3]]
+              [[erc721.address, erc721.address], [nfts[1], nfts[0]]]
             )
 
             const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: func + paramsOne.slice(2), maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '2'}
-            const two = {registry: registry.address, maker: accounts[1], staticTarget: statici.address, staticExtradata: func + paramsTwo.slice(2), maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3'}
+            const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticExtradata: func + paramsTwo.slice(2), maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3'}
 
-            console.warn(one.staticExtradata)
-            console.warn(two.staticExtradata)
-
-            let firstData = erc721c.methods.transferFrom(accounts[0], accounts[1], 3).encodeABI()
+            let firstData = erc721c.methods.transferFrom(accounts[0], accounts[6], nfts[0]).encodeABI()
             // firstData = atomicizerc.methods.atomicize(
             //   [erc721.address],
             //   [0],
@@ -202,7 +205,7 @@ contract('WyvernExchange', (accounts) => {
             //   firstData
             // ).encodeABI()
 
-            let secondData = erc721c.methods.transferFrom(accounts[1], accounts[0], 1).encodeABI()
+            let secondData = erc721c.methods.transferFrom(accounts[6], accounts[0], nfts[1]).encodeABI()
             // secondData = atomicizerc.methods.atomicize(
             //   [erc721.address],
             //   [0],
@@ -213,10 +216,10 @@ contract('WyvernExchange', (accounts) => {
             const firstCall = {target: erc721.address, howToCall: 0, data: firstData}
             const secondCall = {target: erc721.address, howToCall: 0, data: secondData}
             const sigOne = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
-            return exchange.sign(two, accounts[1]).then(sigTwo => {
+            return exchange.sign(two, accounts[6]).then(sigTwo => {
               // return exchange.sign(one, accounts[0]).then(sigOne => {
               return exchange.atomicMatch(one, sigOne, firstCall, two, sigTwo, secondCall, ZERO_BYTES32).then(() => {
-                // return erc20.balanceOf(accounts[1]).then(balance => {
+                // return erc20.balanceOf(accounts[6]).then(balance => {
                 //   assert.equal(2, balance, 'Incorrect balance')
                 // })
               })
@@ -226,7 +229,7 @@ contract('WyvernExchange', (accounts) => {
       })
   })
 
-  it('should match nft-nft order', () => {
+  it('should match two nft + erc20 orders', () => {
     return withContracts()
       .then(({atomicizer, exchange, registry, statici, erc20, erc721}) => {
         return withSomeTokens()
@@ -238,8 +241,8 @@ contract('WyvernExchange', (accounts) => {
             const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '2'}
             const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticExtradata: extradata, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3'}
             const sig = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
-            const firstERC20Call = erc20c.methods.transferFrom(accounts[0], accounts[1], 2).encodeABI()
-            const firstERC721Call = erc721c.methods.transferFrom(accounts[0], accounts[1], nfts[0]).encodeABI()
+            const firstERC20Call = erc20c.methods.transferFrom(accounts[0], accounts[6], 2).encodeABI()
+            const firstERC721Call = erc721c.methods.transferFrom(accounts[0], accounts[6], nfts[0]).encodeABI()
             const firstData = atomicizerc.methods.atomicize(
               [erc20.address, erc721.address],
               [0, 0],
@@ -257,7 +260,7 @@ contract('WyvernExchange', (accounts) => {
             const firstCall = {target: atomicizer.address, howToCall: 1, data: firstData}
             const secondCall = {target: atomicizer.address, howToCall: 1, data: secondData}
             return exchange.atomicMatch(one, sig, firstCall, two, sig, secondCall, ZERO_BYTES32).then(() => {
-              return erc20.balanceOf(accounts[1]).then(balance => {
+              return erc20.balanceOf(accounts[6]).then(balance => {
                 assert.equal(2, balance, 'Incorrect balance')
               })
             })
