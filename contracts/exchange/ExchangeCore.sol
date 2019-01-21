@@ -269,10 +269,10 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
         /* EFFECTS */
 
-        /* Mark order as completely filled. */
+        /* Mark order as accordingly filled. */
         fills[msg.sender][hash] = fill;
 
-        /* Log cancellation event. */
+        /* Log order fill change event. */
         emit OrderFillChanged(hash, msg.sender, fill);
     }
 
