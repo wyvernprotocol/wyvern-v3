@@ -13,7 +13,7 @@ contract StaticUtil is StaticCaller {
 
     address public atomicizer;
 
-    function any(address[7] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory, bytes memory, bytes memory)
+    function any(bytes memory, address[5] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory, bytes memory, bytes memory)
         public
         pure
         returns (uint)
@@ -25,7 +25,7 @@ contract StaticUtil is StaticCaller {
         return 1;
     }
 
-    function anyNoFill(address[7] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory, bytes memory, bytes memory)
+    function anyNoFill(bytes memory, address[5] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory, bytes memory, bytes memory)
         public
         pure
         returns (uint)
@@ -37,7 +37,7 @@ contract StaticUtil is StaticCaller {
         return 0;
     }
 
-    function anyAddOne(address[7] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory uints, bytes memory, bytes memory)
+    function anyAddOne(bytes memory, address[5] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory uints, bytes memory, bytes memory)
         public
         pure
         returns (uint)
@@ -50,7 +50,7 @@ contract StaticUtil is StaticCaller {
     }
 
     function split(address firstTarget, bytes memory firstExtradata, address secondTarget, bytes memory secondExtradata,
-                   address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
+                   address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
                    bytes memory data, bytes memory counterdata)
         public
         returns (uint)
@@ -58,10 +58,10 @@ contract StaticUtil is StaticCaller {
         /* Split into two static calls: one for the call, one for the counter-call, both with metadata. */
 
         /* Static call to check the call. */
-        require(staticCall(firstTarget, abi.encodePacked(firstExtradata, [addresses[0], addresses[1], addresses[2], addresses[6]], howToCalls[0], data, uints)));
+        require(staticCall(firstTarget, abi.encodePacked(firstExtradata, [addresses[0], addresses[1], addresses[4]], howToCalls[0], data, uints)));
 
         /* Static call to check the counter-call. */
-        require(staticCall(secondTarget, abi.encodePacked(secondExtradata, [addresses[3], addresses[4], addresses[5], addresses[6]], howToCalls[1], counterdata, uints)));
+        require(staticCall(secondTarget, abi.encodePacked(secondExtradata, [addresses[2], addresses[3], addresses[4]], howToCalls[1], counterdata, uints)));
 
         return 1;
     }
