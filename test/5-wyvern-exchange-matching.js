@@ -45,17 +45,28 @@ contract('WyvernExchange', (accounts) => {
       })
   }
 
+  // Returns an array of two NFTs, one to give and one to get
+  const withAsymmetricalTokens = () => {
+    return withContracts().then(({erc20, erc721}) => {
+      return erc721.mint(accounts[0], 4).then(() => {
+        return erc721.mint(accounts[6], 5).then(() => {
+          return { nfts: [4, 5], erc721 }
+        })
+      })
+    })
+  }
+
   const withSomeTokens = () => {
     return withContracts().then(({erc20, erc721}) => {
       const amount = randomUint()
       return erc20.mint(accounts[0], amount).then(() => {
-        return {tokens: amount, nfts: [1, 2, 3]}
+        return {tokens: amount, nfts: [1, 2, 3], erc20, erc721}
       })
     })
   }
 
   it('should allow proxy transfer approval', () => {
-    return withContracts().then(({registry, erc20, erc721}) => {
+    return withContracts().then(({ registry, erc20, erc721 }) => {
       return registry.registerProxy({from: accounts[0]}).then(() => {
         return registry.proxies(accounts[0]).then(proxy => {
           return erc20.approve(proxy, 100000).then(() => {
@@ -67,10 +78,14 @@ contract('WyvernExchange', (accounts) => {
   })
 
   it('should allow proxy registration', () => {
-    return withContracts().then(({registry}) => {
+    return withContracts().then(({registry, erc20, erc721}) => {
       return registry.registerProxy({from: accounts[6]}).then(() => {
-        return registry.proxies(accounts[6]).then(ret => {
-          assert.equal(true, ret.length > 0, 'no proxy address')
+        return registry.proxies(accounts[6]).then(proxy => {
+          assert.equal(true, proxy.length > 0, 'no proxy address')
+          // Also approve erc20 and erc721
+          return erc20.approve(proxy, 100000, {from: accounts[6]}).then(() => {
+            return erc721.setApprovalForAll(proxy, true, {from: accounts[6]})
+          })
         })
       })
     })
@@ -116,7 +131,7 @@ contract('WyvernExchange', (accounts) => {
                 return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
                   assert.equal(true, false, 'should not have succeeded')
                 }).catch(err => {
-                  assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+                  assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
                 })
               })
             })
@@ -134,7 +149,7 @@ contract('WyvernExchange', (accounts) => {
         return exchange.atomicMatch(one, nullSig, call, one, nullSig, call, ZERO_BYTES32).then(() => {
           assert.equal(true, false, 'should not have succeeded')
         }).catch(err => {
-          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+          assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
         })
       })
   })
@@ -158,12 +173,48 @@ contract('WyvernExchange', (accounts) => {
         return exchange.atomicMatch(one, nullSig, call1, two, nullSig, call2, ZERO_BYTES32).then(() => {
           assert.equal(true, false, 'should not have succeeded')
         }).catch(err => {
-          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: invalid opcode', 'Incorrect error')
+          assert.include(err.message, 'Returned error: VM Exception while processing transaction: invalid opcode', 'Incorrect error')
         })
       })
   })
 
-  it('should match nft-nft order', () => {
+  it('should match nft-nft swap order', () => {
+    return withContracts()
+      .then(({atomicizer, exchange, registry, statici }) => {
+        return withAsymmetricalTokens()
+          .then(({ nfts, erc721 }) => {
+            const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
+            const selector = web3.eth.abi.encodeFunctionSignature('swapOneForOne(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
+            const paramsOne = web3.eth.abi.encodeParameters(
+              ['address[2]', 'uint256[2]'],
+              [[erc721.address, erc721.address], [nfts[0], nfts[1]]]
+            )
+            const paramsTwo = web3.eth.abi.encodeParameters(
+              ['address[2]', 'uint256[2]'],
+              [[erc721.address, erc721.address], [nfts[1], nfts[0]]]
+            )
+
+            const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: paramsOne, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '2'}
+            const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: paramsTwo, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3'}
+
+            const firstData = erc721c.methods.transferFrom(accounts[0], accounts[6], nfts[0]).encodeABI()
+            const secondData = erc721c.methods.transferFrom(accounts[6], accounts[0], nfts[1]).encodeABI()
+
+            const firstCall = {target: erc721.address, howToCall: 0, data: firstData}
+            const secondCall = {target: erc721.address, howToCall: 0, data: secondData}
+            const sigOne = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+            return exchange.sign(two, accounts[6]).then(sigTwo => {
+              return exchange.atomicMatch(one, sigOne, firstCall, two, sigTwo, secondCall, ZERO_BYTES32).then(() => {
+                return erc721.ownerOf(nfts[0]).then(owner => {
+                  assert.equal(owner, accounts[6], 'Incorrect owner')
+                })
+              })
+            })
+          })
+      })
+  })
+
+  it('should match two nft + erc20 orders', () => {
     return withContracts()
       .then(({atomicizer, exchange, registry, statici, erc20, erc721}) => {
         return withSomeTokens()
@@ -175,8 +226,8 @@ contract('WyvernExchange', (accounts) => {
             const one = {maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '2'}
             const two = {maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3'}
             const sig = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
-            const firstERC20Call = erc20c.methods.transferFrom(accounts[0], accounts[1], 2).encodeABI()
-            const firstERC721Call = erc721c.methods.transferFrom(accounts[0], accounts[1], nfts[0]).encodeABI()
+            const firstERC20Call = erc20c.methods.transferFrom(accounts[0], accounts[6], 2).encodeABI()
+            const firstERC721Call = erc721c.methods.transferFrom(accounts[0], accounts[6], nfts[0]).encodeABI()
             const firstData = atomicizerc.methods.atomicize(
               [erc20.address, erc721.address],
               [0, 0],
@@ -194,7 +245,7 @@ contract('WyvernExchange', (accounts) => {
             const firstCall = {target: atomicizer.address, howToCall: 1, data: firstData}
             const secondCall = {target: atomicizer.address, howToCall: 1, data: secondData}
             return exchange.atomicMatch(one, sig, firstCall, two, sig, secondCall, ZERO_BYTES32).then(() => {
-              return erc20.balanceOf(accounts[1]).then(balance => {
+              return erc20.balanceOf(accounts[6]).then(balance => {
                 assert.equal(2, balance, 'Incorrect balance')
               })
             })
@@ -245,7 +296,7 @@ contract('WyvernExchange', (accounts) => {
           return exchange.atomicMatch(one, nullSig, call, two, sig, call, ZERO_BYTES32).then(() => {
             assert.equal(true, false, 'should not have matched')
           }).catch(err => {
-            assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+            assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
           })
         })
       })
@@ -262,7 +313,7 @@ contract('WyvernExchange', (accounts) => {
           return exchange.atomicMatch(one, sig, call, two, nullSig, call, ZERO_BYTES32).then(() => {
             assert.equal(true, false, 'should not have matched')
           }).catch(err => {
-            assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+            assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
           })
         })
       })
@@ -281,7 +332,7 @@ contract('WyvernExchange', (accounts) => {
               return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
                 assert.equal(true, false, 'should not have matched')
               }).catch(err => {
-                assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+                assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
               })
             })
           })
@@ -302,7 +353,7 @@ contract('WyvernExchange', (accounts) => {
               return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
                 assert.equal(true, false, 'should not have matched')
               }).catch(err => {
-                assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+                assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
               })
             })
           })
@@ -322,7 +373,7 @@ contract('WyvernExchange', (accounts) => {
             return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
               assert.equal(true, false, 'should not have matched')
             }).catch(err => {
-              assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+              assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
             })
           })
         })
@@ -341,7 +392,7 @@ contract('WyvernExchange', (accounts) => {
             return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
               assert.equal(true, false, 'should not have matched')
             }).catch(err => {
-              assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+              assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
             })
           })
         })
@@ -360,7 +411,7 @@ contract('WyvernExchange', (accounts) => {
             return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
               assert.equal(true, false, 'should not have matched')
             }).catch(err => {
-              assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+              assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
             })
           })
         })

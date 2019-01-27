@@ -85,7 +85,7 @@ contract StaticUtil is StaticCaller {
     function or(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, bytes memory rest)
         public
     {
-        require(addrs.length == extradataLengths.length);
+        require(addrs.length == extradataLengths.length, "Different number of static call addresses and extradatas");
         
         uint j = 0;
         for (uint i = 0; i < addrs.length; i++) {
@@ -99,7 +99,7 @@ contract StaticUtil is StaticCaller {
             }
         }
 
-        revert();
+        revert("No static calls succeeded");
     }
 
     function sequenceExact(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[6] memory uints)

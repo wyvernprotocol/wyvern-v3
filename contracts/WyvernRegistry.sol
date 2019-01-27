@@ -36,7 +36,7 @@ contract WyvernRegistry is ProxyRegistry {
         onlyOwner
         public
     {   
-        require(!initialAddressSet);
+        require(!initialAddressSet, "Wyvern Protocol Proxy Registry initial address already set");
         initialAddressSet = true;
         contracts[authAddress] = true;
     }   

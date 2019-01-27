@@ -26,7 +26,7 @@ contract OwnedUpgradeabilityProxy is Proxy, OwnedUpgradeabilityStorage {
      * @param implementation representing the address of the new implementation to be set
      */
     function _upgradeTo(address implementation) internal {
-        require(_implementation != implementation);
+        require(_implementation != implementation, "Proxy already uses this implementation");
         _implementation = implementation;
         emit Upgraded(implementation);
     }
@@ -35,7 +35,7 @@ contract OwnedUpgradeabilityProxy is Proxy, OwnedUpgradeabilityStorage {
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyProxyOwner() {
-        require(msg.sender == proxyOwner());
+        require(msg.sender == proxyOwner(), "Only the proxy owner can call this method");
         _;
     }
 
@@ -52,7 +52,7 @@ contract OwnedUpgradeabilityProxy is Proxy, OwnedUpgradeabilityStorage {
      * @param newOwner The address to transfer ownership to.
      */
     function transferProxyOwnership(address newOwner) public onlyProxyOwner {
-        require(newOwner != address(0));
+        require(newOwner != address(0), "New owner cannot be the null address");
         emit ProxyOwnershipTransferred(proxyOwner(), newOwner);
         setUpgradeabilityOwner(newOwner);
     }
@@ -75,6 +75,6 @@ contract OwnedUpgradeabilityProxy is Proxy, OwnedUpgradeabilityStorage {
     function upgradeToAndCall(address implementation, bytes memory data) payable public onlyProxyOwner {
         upgradeTo(implementation);
         (bool success,) = address(this).delegatecall(data);
-        require(success);
+        require(success, "Call failed after proxy upgrade");
     }
 }

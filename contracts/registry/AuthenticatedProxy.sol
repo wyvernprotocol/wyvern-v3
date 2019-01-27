@@ -43,7 +43,7 @@ contract AuthenticatedProxy is TokenRecipient, OwnedUpgradeabilityStorage {
     function initialize (address addrUser, ProxyRegistry addrRegistry)
         public
     {
-        require(!initialized);
+        require(!initialized, "Authenticated proxy already initialized");
         initialized = true;
         user = addrUser;
         registry = addrRegistry;
@@ -58,7 +58,7 @@ contract AuthenticatedProxy is TokenRecipient, OwnedUpgradeabilityStorage {
     function setRevoke(bool revoke)
         public
     {
-        require(msg.sender == user);
+        require(msg.sender == user, "Authenticated proxy can only be revoked by its user");
         revoked = revoke;
         emit Revoked(revoke);
     }
@@ -76,7 +76,7 @@ contract AuthenticatedProxy is TokenRecipient, OwnedUpgradeabilityStorage {
         public
         returns (bool result)
     {
-        require(msg.sender == user || (!revoked && registry.contracts(msg.sender)));
+        require(msg.sender == user || (!revoked && registry.contracts(msg.sender)), "Authenticated proxy can only be called by its user, or by a contract authorized by the registry as long as the user has not revoked access");
         bytes memory ret;
         if (howToCall == HowToCall.Call) {
             (result, ret) = dest.call(data);
@@ -97,7 +97,7 @@ contract AuthenticatedProxy is TokenRecipient, OwnedUpgradeabilityStorage {
     function proxyAssert(address dest, HowToCall howToCall, bytes memory data)
         public
     {
-        require(proxy(dest, howToCall, data));
+        require(proxy(dest, howToCall, data), "Proxy assertion failed");
     }
 
 }

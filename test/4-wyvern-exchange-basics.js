@@ -50,7 +50,7 @@ contract('WyvernExchange', (accounts) => {
         return exchange.setOrderFill(example, '0', {from: accounts[1]}).then(() => {
           assert.equal(true, false, 'should not have suceeded')
         }).catch(err => {
-          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+          assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
         })
       })
   })
@@ -116,7 +116,7 @@ contract('WyvernExchange', (accounts) => {
           return exchange.approveOrder(example, false, {from: accounts[1]}).then(() => {
             assert.equal(true, false, 'should not have succeeded')
           }).catch(err => {
-            assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+            assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
           })
         })
       })
@@ -129,7 +129,7 @@ contract('WyvernExchange', (accounts) => {
         return exchange.approveOrder(example, false, {from: accounts[2]}).then(() => {
           assert.equal(true, false, 'should not have succeeded')
         }).catch(err => {
-          assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+          assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
         })
       })
   })
