@@ -10,10 +10,10 @@ const eip712Order = {
     { name: 'staticTarget', type: 'address' },
     { name: 'staticSelector', type: 'bytes4' },
     { name: 'staticExtradata', type: 'bytes' },
-    { name: 'maximumFill', type: 'uint' },
-    { name: 'listingTime', type: 'uint' },
-    { name: 'expirationTime', type: 'uint' },
-    { name: 'salt', type: 'uint' }
+    { name: 'maximumFill', type: 'uint256' },
+    { name: 'listingTime', type: 'uint256' },
+    { name: 'expirationTime', type: 'uint256' },
+    { name: 'salt', type: 'uint256' }
   ]
 }
 

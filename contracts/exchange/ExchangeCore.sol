@@ -66,7 +66,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
     /* Order typehash for EIP 712 compatibility. */
     bytes32 constant ORDER_TYPEHASH = keccak256(
-        "Order(address maker,address staticTarget,bytes4 staticSelector,bytes staticExtradata,uint maximumFill,uint listingTime,uint expirationTime,uint salt)"
+        "Order(address maker,address staticTarget,bytes4 staticSelector,bytes staticExtradata,uint256 maximumFill,uint256 listingTime,uint256 expirationTime,uint256 salt)"
     );
 
     /* Variables */
@@ -250,7 +250,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         /* CHECKS */
 
         /* Assert sender is authorized to approve order. */
-        require(order.maker == msg.sender, "Sender is not authorized to approve order");
+        require(order.maker == msg.sender, "Sender is not the maker of the order and thus not authorized to approve it");
 
         /* Calculate order hash. */
         bytes32 hash = hashOrder(order);
@@ -268,7 +268,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         /* CHECKS */
 
         /* Assert fill is not already set. */
-        require(fills[msg.sender][hash] != fill, "Fill is already set");
+        require(fills[msg.sender][hash] != fill, "Fill is already set to the desired value");
 
         /* EFFECTS */
 
