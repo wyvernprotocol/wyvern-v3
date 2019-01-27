@@ -94,6 +94,21 @@ contract ProxyRegistry is Ownable, ProxyRegistryInterface {
     }
 
     /**
+     * Register a proxy contract with this registry, overriding any existing proxy
+     *
+     * @dev Must be called by the user which the proxy is for, creates a new AuthenticatedProxy
+     * @return New AuthenticatedProxy contract
+     */
+    function registerProxyOverride()
+        public
+        returns (OwnableDelegateProxy proxy)
+    {
+        proxy = new OwnableDelegateProxy(msg.sender, delegateProxyImplementation, abi.encodeWithSignature("initialize(address,address)", msg.sender, address(this)));
+        proxies[msg.sender] = proxy;
+        return proxy;
+    }
+
+    /**
      * Register a proxy contract with this registry
      *
      * @dev Can be called by any user
