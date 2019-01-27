@@ -34,8 +34,6 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
     /* An order, convenience struct. */
     struct Order {
-        /* Proxy registry contract address (versioning mechanism). */
-        address registry;
         /* Order maker address. */
         address maker;
         /* Order static target. */
@@ -66,10 +64,13 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
     /* Order typehash for EIP 712 compatibility. */
     bytes32 constant ORDER_TYPEHASH = keccak256(
-        "Order(address registry,address maker,address staticTarget,bytes staticExtradata,uint maximumFill,uint listingTime,uint expirationTime,uint salt)"
+        "Order(address maker,address staticTarget,bytes staticExtradata,uint maximumFill,uint listingTime,uint expirationTime,uint salt)"
     );
 
     /* Variables */
+
+    /* Trusted proxy registry contract. */
+    ProxyRegistryInterface public registry;
 
     /* Order fill status, by maker address then by hash. */
     mapping(address => mapping(bytes32 => uint)) public fills;
@@ -81,7 +82,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
     /* Events */
 
-    event OrderApproved     (bytes32 indexed hash, address registry, address indexed maker, address staticTarget, bytes staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired);
+    event OrderApproved     (bytes32 indexed hash, address indexed maker, address staticTarget, bytes staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired);
     event OrderFillChanged  (bytes32 indexed hash, address indexed maker, uint newFill);
     event OrdersMatched     (bytes32 firstHash, bytes32 secondHash, address indexed firstMaker, address indexed secondMaker, uint newFirstFill, uint newSecondFill, bytes32 indexed metadata);
 
@@ -95,7 +96,6 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         /* Per EIP 712. */
         return keccak256(abi.encode(
             ORDER_TYPEHASH,
-            order.registry,
             order.maker,
             order.staticTarget,
             keccak256(order.staticExtradata),
@@ -190,7 +190,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         returns (bytes memory)
     {
         /* This array wrapping is necessary to preserve static call target function stack space. */
-        address[7] memory addresses = [order.registry, order.maker, call.target, counterorder.registry, counterorder.maker, countercall.target, matcher];
+        address[5] memory addresses = [order.maker, call.target, counterorder.maker, countercall.target, matcher];
         AuthenticatedProxy.HowToCall[2] memory howToCalls = [call.howToCall, countercall.howToCall];
         uint[6] memory uints = [value, order.maximumFill, order.listingTime, order.expirationTime, counterorder.listingTime, fill];
         return abi.encodePacked(order.staticExtradata, abi.encode(addresses, howToCalls, uints, call.data, countercall.data));
@@ -204,7 +204,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         return staticCallUint(order.staticTarget, encodeStaticCall(order, call, counterorder, countercall, matcher, value, fill));
     }
 
-    function executeCall(ProxyRegistryInterface registry, address maker, Call memory call)
+    function executeCall(address maker, Call memory call)
         internal
         returns (bool)
     {
@@ -256,7 +256,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         approveOrderHash(hash);
 
         /* Log approval event. */
-        emit OrderApproved(hash, order.registry, order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt, orderbookInclusionDesired);
+        emit OrderApproved(hash, order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt, orderbookInclusionDesired);
     }
 
     function setOrderFill(bytes32 hash, uint fill)
@@ -313,10 +313,10 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
         /* Execute first call, assert success.
            This is the second "asymmetric" part of order matching: execution of the second order can depend on state changes in the first order, but not vice-versa. */
-        assert(executeCall(ProxyRegistryInterface(firstOrder.registry), firstOrder.maker, firstCall));
+        assert(executeCall(firstOrder.maker, firstCall));
 
         /* Execute second call, assert success. */
-        assert(executeCall(ProxyRegistryInterface(secondOrder.registry), secondOrder.maker, secondCall));
+        assert(executeCall(secondOrder.maker, secondCall));
 
         /* Static calls must happen after the effectful calls so that they can check the resulting state. */
 

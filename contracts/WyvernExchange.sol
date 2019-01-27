@@ -22,13 +22,14 @@ contract WyvernExchange is Exchange {
 
     /**
      */
-    constructor (uint chainId) public {
+    constructor (uint chainId, ProxyRegistryInterface registryAddr) public {
         DOMAIN_SEPARATOR = hash(EIP712Domain({
             name: "Wyvern Exchange",
             version: "3",
             chainId: chainId,
             verifyingContract: address(this)
         }));
+        registry = registryAddr;
     }
 
 }
