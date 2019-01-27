@@ -8,6 +8,7 @@ const eip712Order = {
   fields: [
     { name: 'maker', type: 'address' },
     { name: 'staticTarget', type: 'address' },
+    { name: 'staticSelector', type: 'bytes4' },
     { name: 'staticExtradata', type: 'bytes' },
     { name: 'maximumFill', type: 'uint' },
     { name: 'listingTime', type: 'uint' },
@@ -58,27 +59,29 @@ const parseSig = (bytes) => {
 const wrap = (inst) => {
   var obj = {
     inst: inst,
-    hashOrder: (order) => inst.hashOrder_.call(order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt),
+    hashOrder: (order) => inst.hashOrder_.call(order.maker, order.staticTarget, order.staticSelector, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt),
     hashToSign: (order) => {
-      return inst.hashOrder_.call(order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt).then(hash => {
+      return inst.hashOrder_.call(order.maker, order.staticTarget, order.staticSelector, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt).then(hash => {
         return inst.hashToSign_.call(hash)
       })
     },
-    validateOrderParameters: (order) => inst.validateOrderParameters_.call(order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt),
+    validateOrderParameters: (order) => inst.validateOrderParameters_.call(order.maker, order.staticTarget, order.staticSelector, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt),
     validateOrderAuthorization: (hash, maker, sig, misc) => inst.validateOrderAuthorization_.call(hash, maker, sig.v, sig.r, sig.s, misc),
     approveOrderHash: (hash) => inst.approveOrderHash_(hash),
-    approveOrder: (order, inclusion, misc) => inst.approveOrder_(order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt, inclusion, misc),
+    approveOrder: (order, inclusion, misc) => inst.approveOrder_(order.maker, order.staticTarget, order.staticSelector, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt, inclusion, misc),
     setOrderFill: (order, fill) => inst.setOrderFill_(hashOrder(order), fill),
     atomicMatch: (order, sig, call, counterorder, countersig, countercall, metadata) => inst.atomicMatch_(
-      [order.maker, order.staticTarget, call.target, counterorder.maker, counterorder.staticTarget, countercall.target],
-      [order.maximumFill, order.listingTime, order.expirationTime, order.salt, counterorder.maximumFill, counterorder.listingTime, counterorder.expirationTime, counterorder.salt],
+      [order.maker, order.staticTarget, order.maximumFill, order.listingTime, order.expirationTime, order.salt, call.target,
+        counterorder.maker, counterorder.staticTarget, counterorder.maximumFill, counterorder.listingTime, counterorder.expirationTime, counterorder.salt, countercall.target],
+      [order.staticSelector, counterorder.staticSelector],
       order.staticExtradata, call.data, counterorder.staticExtradata, countercall.data,
       [sig.v, call.howToCall, countersig.v, countercall.howToCall],
       [sig.r, sig.s, countersig.r, countersig.s, metadata]
     ),
     atomicMatchWith: (order, sig, call, counterorder, countersig, countercall, metadata, misc) => inst.atomicMatch_(
-      [order.maker, order.staticTarget, call.target, counterorder.maker, counterorder.staticTarget, countercall.target],
-      [order.maximumFill, order.listingTime, order.expirationTime, order.salt, counterorder.maximumFill, counterorder.listingTime, counterorder.expirationTime, counterorder.salt],
+      [order.maker, order.staticTarget, order.maximumFill, order.listingTime, order.expirationTime, order.salt, call.target,
+        counterorder.maker, counterorder.staticTarget, counterorder.maximumFill, counterorder.listingTime, counterorder.expirationTime, counterorder.salt, countercall.target],
+      [order.staticSelector, counterorder.staticSelector],
       order.staticExtradata, call.data, counterorder.staticExtradata, countercall.data,
       [sig.v, call.howToCall, countersig.v, countercall.howToCall],
       [sig.r, sig.s, countersig.r, countersig.s, metadata],

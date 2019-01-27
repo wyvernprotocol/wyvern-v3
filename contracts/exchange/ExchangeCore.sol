@@ -38,6 +38,8 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         address maker;
         /* Order static target. */
         address staticTarget;
+        /* Order static selector. */
+        bytes4 staticSelector;
         /* Order static extradata. */
         bytes staticExtradata;
         /* Order maximum fill factor. */
@@ -64,7 +66,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
     /* Order typehash for EIP 712 compatibility. */
     bytes32 constant ORDER_TYPEHASH = keccak256(
-        "Order(address maker,address staticTarget,bytes staticExtradata,uint maximumFill,uint listingTime,uint expirationTime,uint salt)"
+        "Order(address maker,address staticTarget,bytes4 staticSelector,bytes staticExtradata,uint maximumFill,uint listingTime,uint expirationTime,uint salt)"
     );
 
     /* Variables */
@@ -82,7 +84,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
     /* Events */
 
-    event OrderApproved     (bytes32 indexed hash, address indexed maker, address staticTarget, bytes staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired);
+    event OrderApproved     (bytes32 indexed hash, address indexed maker, address staticTarget, bytes4 staticSelector, bytes staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired);
     event OrderFillChanged  (bytes32 indexed hash, address indexed maker, uint newFill);
     event OrdersMatched     (bytes32 firstHash, bytes32 secondHash, address indexed firstMaker, address indexed secondMaker, uint newFirstFill, uint newSecondFill, bytes32 indexed metadata);
 
@@ -98,6 +100,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
             ORDER_TYPEHASH,
             order.maker,
             order.staticTarget,
+            order.staticSelector,
             keccak256(order.staticExtradata),
             order.maximumFill,
             order.listingTime,
@@ -193,7 +196,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         address[5] memory addresses = [order.maker, call.target, counterorder.maker, countercall.target, matcher];
         AuthenticatedProxy.HowToCall[2] memory howToCalls = [call.howToCall, countercall.howToCall];
         uint[6] memory uints = [value, order.maximumFill, order.listingTime, order.expirationTime, counterorder.listingTime, fill];
-        return abi.encodePacked(order.staticExtradata, abi.encode(addresses, howToCalls, uints, call.data, countercall.data));
+        return abi.encodeWithSelector(order.staticSelector, order.staticExtradata, addresses, howToCalls, uints, call.data, countercall.data);
     }
 
     function executeStaticCall(Order memory order, Call memory call, Order memory counterorder, Call memory countercall, address matcher, uint value, uint fill)
@@ -256,7 +259,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         approveOrderHash(hash);
 
         /* Log approval event. */
-        emit OrderApproved(hash, order.maker, order.staticTarget, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt, orderbookInclusionDesired);
+        emit OrderApproved(hash, order.maker, order.staticTarget, order.staticSelector, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt, orderbookInclusionDesired);
     }
 
     function setOrderFill(bytes32 hash, uint fill)

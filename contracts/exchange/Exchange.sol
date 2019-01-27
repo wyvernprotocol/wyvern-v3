@@ -16,12 +16,12 @@ contract Exchange is ExchangeCore {
 
     /* Public ABI-encodable method wrappers. */
 
-    function hashOrder_(address maker, address staticTarget, bytes memory staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt)
+    function hashOrder_(address maker, address staticTarget, bytes4 staticSelector, bytes memory staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt)
         public
         pure
         returns (bytes32 hash)
     {
-        return hashOrder(Order(maker, staticTarget, staticExtradata, maximumFill, listingTime, expirationTime, salt));
+        return hashOrder(Order(maker, staticTarget, staticSelector, staticExtradata, maximumFill, listingTime, expirationTime, salt));
     }
 
     function hashToSign_(bytes32 orderHash)
@@ -32,12 +32,12 @@ contract Exchange is ExchangeCore {
         return hashToSign(orderHash);
     }
 
-    function validateOrderParameters_(address maker, address staticTarget, bytes memory staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt)
+    function validateOrderParameters_(address maker, address staticTarget, bytes4 staticSelector, bytes memory staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt)
         public
         view
         returns (bool)
     {
-        Order memory order = Order(maker, staticTarget, staticExtradata, maximumFill, listingTime, expirationTime, salt);
+        Order memory order = Order(maker, staticTarget, staticSelector, staticExtradata, maximumFill, listingTime, expirationTime, salt);
         return validateOrderParameters(order, hashOrder(order));
     }
 
@@ -55,10 +55,10 @@ contract Exchange is ExchangeCore {
         return approveOrderHash(hash);
     }
 
-    function approveOrder_(address maker, address staticTarget, bytes memory staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired)
+    function approveOrder_(address maker, address staticTarget, bytes4 staticSelector, bytes memory staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired)
         public
     {
-        return approveOrder(Order(maker, staticTarget, staticExtradata, maximumFill, listingTime, expirationTime, salt), orderbookInclusionDesired);
+        return approveOrder(Order(maker, staticTarget, staticSelector, staticExtradata, maximumFill, listingTime, expirationTime, salt), orderbookInclusionDesired);
     }
 
     function setOrderFill_(bytes32 hash, uint fill)
@@ -67,18 +67,19 @@ contract Exchange is ExchangeCore {
         return setOrderFill(hash, fill);
     }
 
-    function atomicMatch_(address[6] memory addrs, uint[8] memory uints, bytes memory firstExtradata, bytes memory firstCalldata, bytes memory secondExtradata,
-        bytes memory secondCalldata, uint8[4] memory howToCallsVs, bytes32[5] memory rssMetadata)
+    function atomicMatch_(uint[14] memory uints, bytes4[2] memory staticSelectors,
+        bytes memory firstExtradata, bytes memory firstCalldata, bytes memory secondExtradata, bytes memory secondCalldata,
+        uint8[4] memory howToCallsVs, bytes32[5] memory rssMetadata)
         public
         payable
     {
         return atomicMatch(
-            Order(addrs[0], addrs[1], firstExtradata, uints[0], uints[1], uints[2], uints[3]),
+            Order(address(uints[0]), address(uints[1]), staticSelectors[0], firstExtradata, uints[2], uints[3], uints[4], uints[5]),
             Sig(howToCallsVs[0], rssMetadata[0], rssMetadata[1]),
-            Call(addrs[2], AuthenticatedProxy.HowToCall(howToCallsVs[1]), firstCalldata),
-            Order(addrs[3], addrs[4], secondExtradata, uints[4], uints[5], uints[6], uints[7]),
+            Call(address(uints[6]), AuthenticatedProxy.HowToCall(howToCallsVs[1]), firstCalldata),
+            Order(address(uints[7]), address(uints[8]), staticSelectors[1], secondExtradata, uints[9], uints[10], uints[11], uints[12]),
             Sig(howToCallsVs[2], rssMetadata[2], rssMetadata[3]),
-            Call(addrs[5], AuthenticatedProxy.HowToCall(howToCallsVs[3]), secondCalldata),
+            Call(address(uints[13]), AuthenticatedProxy.HowToCall(howToCallsVs[3]), secondCalldata),
             rssMetadata[4]
         );
     }
