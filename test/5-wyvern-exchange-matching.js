@@ -56,6 +56,16 @@ contract('WyvernExchange', (accounts) => {
     })
   }
 
+  const withAsymmetricalTokens2 = () => {
+    return withContracts().then(({erc20, erc721}) => {
+      return erc721.mint(accounts[0], 6).then(() => {
+        return erc721.mint(accounts[6], 7).then(() => {
+          return { nfts: [6, 7], erc721 }
+        })
+      })
+    })
+  }
+
   const withSomeTokens = () => {
     return withContracts().then(({erc20, erc721}) => {
       const amount = randomUint()
@@ -196,6 +206,42 @@ contract('WyvernExchange', (accounts) => {
 
             const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: paramsOne, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '2'}
             const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: paramsTwo, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3'}
+
+            const firstData = erc721c.methods.transferFrom(accounts[0], accounts[6], nfts[0]).encodeABI()
+            const secondData = erc721c.methods.transferFrom(accounts[6], accounts[0], nfts[1]).encodeABI()
+
+            const firstCall = {target: erc721.address, howToCall: 0, data: firstData}
+            const secondCall = {target: erc721.address, howToCall: 0, data: secondData}
+            const sigOne = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+            return exchange.sign(two, accounts[6]).then(sigTwo => {
+              return exchange.atomicMatch(one, sigOne, firstCall, two, sigTwo, secondCall, ZERO_BYTES32).then(() => {
+                return erc721.ownerOf(nfts[0]).then(owner => {
+                  assert.equal(owner, accounts[6], 'Incorrect owner')
+                })
+              })
+            })
+          })
+      })
+  })
+
+  it('should match nft-nft swap order, abi-decoding instead', () => {
+    return withContracts()
+      .then(({atomicizer, exchange, registry, statici }) => {
+        return withAsymmetricalTokens2()
+          .then(({ nfts, erc721 }) => {
+            const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
+            const selector = web3.eth.abi.encodeFunctionSignature('swapOneForOneDecoding(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
+            const paramsOne = web3.eth.abi.encodeParameters(
+              ['address[2]', 'uint256[2]'],
+              [[erc721.address, erc721.address], [nfts[0], nfts[1]]]
+            )
+            const paramsTwo = web3.eth.abi.encodeParameters(
+              ['address[2]', 'uint256[2]'],
+              [[erc721.address, erc721.address], [nfts[1], nfts[0]]]
+            )
+
+            const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: paramsOne, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '333123'}
+            const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: paramsTwo, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '123344'}
 
             const firstData = erc721c.methods.transferFrom(accounts[0], accounts[6], nfts[0]).encodeABI()
             const secondData = erc721c.methods.transferFrom(accounts[6], accounts[0], nfts[1]).encodeABI()
