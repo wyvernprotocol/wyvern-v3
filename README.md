@@ -7,7 +7,7 @@ Wyvern v3
 
 This is version 3 of the Wyvern decentralized exchange protocol, designed to maximize the ease of positive-utility-sum multiparty transactions on a distributed ledger.
 
-See [DESIGN.md](docs/DESIGN.md) for the rationale behind Wyvern v3. Read [USAGE.md](docs/USAGE.md) for a protocol usage guide.
+Check out documentation [here](https://wyvernprotocol.com/docs).
 
 Deployed contract addresses can be found in [config.json](config.json).
 
