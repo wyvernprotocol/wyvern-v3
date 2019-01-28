@@ -57,9 +57,9 @@ contract StaticERC721 {
         require(howToCalls[0] == AuthenticatedProxy.HowToCall.Call, "ERC721: call must be a direct call");
         // Decode calldata
         (address callFrom, address callTo, uint256 nftGive) = abi.decode(ArrayUtils.arraySlice(data, 4), (address, address, uint256));
-        // Assert to
-        require(callFrom == addresses[0]);
         // Assert from
+        require(callFrom == addresses[0]);
+        // Assert to
         require(callTo == addresses[2]);
         // Assert NFT
         require(nftGive == nftGiveGet[0]);
@@ -70,9 +70,9 @@ contract StaticERC721 {
         require(howToCalls[1] == AuthenticatedProxy.HowToCall.Call, "ERC721: countercall must be a direct call");
         // Decode countercalldata
         (address countercallFrom, address countercallTo, uint256 nftGet) = abi.decode(ArrayUtils.arraySlice(counterdata, 4), (address, address, uint256));
-        // Assert to
-        require(countercallFrom == addresses[2]);
         // Assert from
+        require(countercallFrom == addresses[2]);
+        // Assert to
         require(countercallTo == addresses[0]);
         // Assert NFT
         require(nftGet == nftGiveGet[1]);
