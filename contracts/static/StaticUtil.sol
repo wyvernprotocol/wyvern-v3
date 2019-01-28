@@ -49,12 +49,14 @@ contract StaticUtil is StaticCaller {
         return uints[5] + 1;
     }
 
-    function split(address firstTarget, bytes memory firstExtradata, address secondTarget, bytes memory secondExtradata,
+    function split(bytes memory extra,
                    address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
                    bytes memory data, bytes memory counterdata)
         public
         returns (uint)
     {
+        (address firstTarget, bytes memory firstExtradata, address secondTarget, bytes memory secondExtradata) = abi.decode(extra, (address, bytes, address, bytes));
+
         /* Split into two static calls: one for the call, one for the counter-call, both with metadata. */
 
         /* Static call to check the call. */
@@ -66,9 +68,13 @@ contract StaticUtil is StaticCaller {
         return 1;
     }
 
-    function and(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, bytes memory rest)
+    function and(bytes memory extra,
+                 address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
+                 bytes memory data, bytes memory counterdata)
         public
     {
+        (address[] memory addrs, bytes4[] memory selectors, uint[] memory extradataLengths, bytes memory extradatas) = abi.decode(extra, (address[], bytes4[], uint[], bytes));
+
         require(addrs.length == extradataLengths.length);
         
         uint j = 0;
@@ -78,13 +84,17 @@ contract StaticUtil is StaticCaller {
                 extradata[k] = extradatas[j];
                 j++;
             }
-            require(staticCall(addrs[i], abi.encodePacked(extradata, rest)));
+            require(staticCall(addrs[i], abi.encodeWithSelector(selectors[i], extradata, addresses, howToCalls, uints, data, counterdata)));
         }
     }
 
-    function or(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, bytes memory rest)
+    function or(bytes memory extra,
+                address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
+                bytes memory data, bytes memory counterdata)
         public
     {
+        (address[] memory addrs, bytes4[] memory selectors, uint[] memory extradataLengths, bytes memory extradatas) = abi.decode(extra, (address[], bytes4[], uint[], bytes));
+
         require(addrs.length == extradataLengths.length, "Different number of static call addresses and extradatas");
         
         uint j = 0;
@@ -94,7 +104,7 @@ contract StaticUtil is StaticCaller {
                 extradata[k] = extradatas[j];
                 j++;
             }
-            if (staticCall(addrs[i], abi.encodePacked(extradata, rest))) {
+            if (staticCall(addrs[i], abi.encodeWithSelector(selectors[i], extradata, addresses, howToCalls, uints, data, counterdata))) {
                 return;
             }
         }

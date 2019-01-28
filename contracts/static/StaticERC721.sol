@@ -55,8 +55,9 @@ contract StaticERC721 {
         require(addresses[1] == tokenGiveGet[0], "ERC721: call target must equal address of token to give");
         // Call type = call
         require(howToCalls[0] == AuthenticatedProxy.HowToCall.Call, "ERC721: call must be a direct call");
+        // TODO Assert call sig
         // Decode calldata
-        (address callFrom, address callTo, uint256 nftGive) = abi.decode(ArrayUtils.arraySlice(data, 4), (address, address, uint256));
+        (address callFrom, address callTo, uint256 nftGive) = abi.decode(ArrayUtils.arrayDrop(data, 4), (address, address, uint256));
         // Assert from
         require(callFrom == addresses[0]);
         // Assert to
@@ -68,8 +69,9 @@ contract StaticERC721 {
         require(addresses[3] == tokenGiveGet[1], "ERC721: countercall target must equal address of token to get");
         // Countercall type = call
         require(howToCalls[1] == AuthenticatedProxy.HowToCall.Call, "ERC721: countercall must be a direct call");
+        // TODO Assert countercallsig
         // Decode countercalldata
-        (address countercallFrom, address countercallTo, uint256 nftGet) = abi.decode(ArrayUtils.arraySlice(counterdata, 4), (address, address, uint256));
+        (address countercallFrom, address countercallTo, uint256 nftGet) = abi.decode(ArrayUtils.arrayDrop(counterdata, 4), (address, address, uint256));
         // Assert from
         require(countercallFrom == addresses[2]);
         // Assert to

@@ -14,26 +14,28 @@ import "../registry/AuthenticatedProxy.sol";
 contract StaticPayment {
 
     function payExact(
-        address token, uint amount,
-        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[6] memory)
+        bytes memory extra,
+        address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[6] memory)
         public
         pure
     {
+        (address token, uint amount) = abi.decode(extra, (address, uint));
+
         // Call target = token
-        require(addresses[2] == token);
+        require(addresses[1] == token);
         // Call type = call
         require(howToCall == AuthenticatedProxy.HowToCall.Call);
         // Decode call data
-        (address transferDest, uint transferAmt) = abi.decode(data, (address, uint));
+        (address transferDest, uint transferAmt) = abi.decode(ArrayUtils.arrayDrop(data, 4), (address, uint));
         // Transfer dest = counterparty
-        require(transferDest == addresses[3]);
+        require(transferDest == addresses[2]);
         // Transfer amount = payment amount
         require(transferAmt == amount);
     }
 
     function payExactEther(
         uint amount,
-        address[4] memory, AuthenticatedProxy.HowToCall, bytes memory, uint[6] memory uints)
+        address[3] memory, AuthenticatedProxy.HowToCall, bytes memory, uint[6] memory uints)
         public
         pure
     {
@@ -56,8 +58,8 @@ contract StaticPayment {
     }
 
     function payMinAuction(
-        address token, uint[3] memory startEndExtra,
-        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[6] memory)
+        bytes memory extra,
+        address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[6] memory)
         public
         pure
     {
@@ -66,8 +68,8 @@ contract StaticPayment {
     }
 
     function payMaxAuction(
-        address token, uint[3] memory startEndExtra,
-        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[6] memory)
+        bytes memory extra,
+        address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[6] memory)
         public
         pure
     {
@@ -76,8 +78,8 @@ contract StaticPayment {
     }
 
     function payMakerTakerFee(
-        address token, uint[3] memory makerTakerFee,
-        address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[6] memory)
+        bytes memory extra,
+        address[3] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory data, uint[6] memory)
         public
         pure
     {

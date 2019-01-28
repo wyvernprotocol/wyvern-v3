@@ -50,14 +50,14 @@ contract StaticERC20 {
     {
 
         // Decode extradata
-        (address[2] memory tokenGiveGet, uint minimumRatio) = abi.decode(extra, (address[2], uint));
+        (address[2] memory tokenGiveGet, uint[2] memory numeratorDenominator) = abi.decode(extra, (address[2], uint[2]));
 
         // Call target = token to give
         require(addresses[1] == tokenGiveGet[0]);
         // Call type = call
         require(howToCalls[0] == AuthenticatedProxy.HowToCall.Call);
         // Decode calldata
-        (address callFrom, address callTo, uint256 amountGive) = abi.decode(ArrayUtils.arraySlice(data, 4), (address, address, uint256));
+        (address callFrom, address callTo, uint256 amountGive) = abi.decode(ArrayUtils.arrayDrop(data, 4), (address, address, uint256));
         // Assert from
         require(callFrom == addresses[0]);
 
@@ -66,12 +66,13 @@ contract StaticERC20 {
         // Countercall type = call
         require(howToCalls[1] == AuthenticatedProxy.HowToCall.Call);
         // Decode countercalldata
-        (address countercallFrom, address countercallTo, uint256 amountGet) = abi.decode(ArrayUtils.arraySlice(counterdata, 4), (address, address, uint256));
+        (address countercallFrom, address countercallTo, uint256 amountGet) = abi.decode(ArrayUtils.arrayDrop(counterdata, 4), (address, address, uint256));
         // Assert to
         require(countercallTo == addresses[0]);
 
         // Assert ratio
-        require(amountGet >= SafeMath.mul(minimumRatio, amountGive));
+        // ratio = min get/give
+        require(SafeMath.mul(amountGet, numeratorDenominator[1]) >= SafeMath.mul(amountGive, numeratorDenominator[0]));
 
         // Order will be set with maximumFill = 2 (to allow signature caching)
         return 1;

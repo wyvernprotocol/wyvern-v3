@@ -119,20 +119,52 @@ library ArrayUtils {
 
         return success;
     }
+
+    /**
+     * Drop the beginning of an array
+     *
+     * @param _bytes array
+     * @param _start start index
+     * @return Whether or not all bytes in the arrays are equal
+     */
+    function arrayDrop(bytes memory _bytes, uint _start)
+        internal
+        pure
+        returns (bytes memory) {
+
+        uint _length = SafeMath.sub(_bytes.length, _start);
+        return arraySlice(_bytes, _start, _length);
+    }
+
+    /**
+     * Take from the beginning of an array
+     *
+     * @param _bytes array
+     * @param _length elements to take
+     * @return Whether or not all bytes in the arrays are equal
+     */
+    function arrayTake(bytes memory _bytes, uint _length)
+        internal
+        pure
+        returns (bytes memory) {
+
+        return arraySlice(_bytes, 0, _length);
+    }
+
     /**
      * Slice an array
      * Source: https://github.com/GNSPS/solidity-bytes-utils/blob/master/contracts/BytesLib.sol
      *
      * @param _bytes array
      * @param _start start index
+     * @param _length length to take
      * @return Whether or not all bytes in the arrays are equal
      */
-    function arraySlice(bytes memory _bytes, uint _start)
+    function arraySlice(bytes memory _bytes, uint _start, uint _length)
         internal
         pure
         returns (bytes memory) {
 
-        uint _length = SafeMath.sub(_bytes.length, _start);
         bytes memory tempBytes;
 
         assembly {
