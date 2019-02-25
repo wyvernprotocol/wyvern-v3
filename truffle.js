@@ -3,6 +3,13 @@ module.exports = {
     enableTimeouts: false
   },
   networks: {
+    mainnet: {
+      from: '',
+      port: 8545,
+      network_id: '1',
+      gasPrice: 7310000000,
+      confirmations: 2
+    },
     development: {
       host: 'localhost',
       port: 8545,
@@ -17,21 +24,20 @@ module.exports = {
       gasPrice: 0x01
     },
     rinkeby: {
-      host: 'localhost',
-      from: '0x71a1e902fc6a3001951c1eb29b5e039c2eb70557',
+      from: '',
       port: 8545,
       network_id: '4',
       gas: 6700000,
-      gasPrice: 4100000000,
-      confirmations: 3
+      gasPrice: 21110000000,
+      confirmations: 2
     }
   },
   compilers: {
     solc: {
-      version: '0.5.3',
+      version: '0.5.4',
       optimizer: {
         enabled: true,
-        runs: 1000
+        runs: 500
       }
     }
   }

@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.5.3;
+pragma solidity 0.5.4;
 
 /**
  * @title ReentrancyGuarded
