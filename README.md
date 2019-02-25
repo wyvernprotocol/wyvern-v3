@@ -11,8 +11,6 @@ Check out documentation [here](https://wyvernprotocol.com/docs).
 
 Deployed contract addresses can be found in [config.json](config.json).
 
-**This code is presently undergoing audit. You would be well-advised not to use it in production.**
-
 ### Development
 
 #### Setup
