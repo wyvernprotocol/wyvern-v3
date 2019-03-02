@@ -10,11 +10,11 @@
       "TestERC721": "0xa50bd876df59C35BE8fCe3FEd239DCe8C378a25f"
     },
     "mainnet": {
-      "Migrations": "0x244277490798dAA574D93089FE072136042f7a10",
-      "WyvernAtomicizer": "0x6Fc671d0D5eBA1e17edA67C6Cf2aF71F9591d07E",
-      "WyvernStatic": "0x2b11B58DefcaCcCEbC40e5FF0e3cBDfF02CD59dc",
+      "Migrations": "0x2020bc01065f82f1ACfAcD93671FF339bD65f322",
+      "WyvernAtomicizer": "0x63A983B3cbb719024d4203A636118Ea899d14d2a",
+      "WyvernStatic": "0x32Ce15F191aFD85072A594f388A78D3f6Bf6a9Bf",
       "WyvernRegistry": "0xa5409ec958C83C3f309868babACA7c86DCB077c1",
-      "WyvernExchange": "0x1A96C786a3E23b47b3a79005C0AC2Be485C5ce52"
+      "WyvernExchange": "0xd7CA74fF003c90E62505D21ec7Dac36bCfD9F6f2"
     }
   }
 }
