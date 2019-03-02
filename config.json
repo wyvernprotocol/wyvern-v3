@@ -1,11 +1,11 @@
 {
   "deployed": {
     "rinkeby": {
-      "Migrations": "0x06bcbE7D318B2A54BA40deaaBc98a2E8342a93d5",
-      "WyvernAtomicizer": "0x260eB350929Fb111809962345df2eCe947C3d541",
-      "WyvernRegistry": "0xa5409ec958C83C3f309868babACA7c86DCB077c1",
-      "WyvernExchange": "0x8AC8218FAb9892672B19ccF4A5e2A0A4872a4F08",
-      "WyvernStatic": "0x4517b5625C38aa0a5Bcc99482CcbfF8eC938d1f3",
+      "Migrations": "0x8e2B8747B814914c2C12dabc8E85d50c9e4Aeebc",
+      "WyvernAtomicizer": "0x1330d695687099b9b4636d092229e70a1631Bc45",
+      "WyvernRegistry": "0xa0E9928F2eE97CB5210FE2325E82CaD094DD410e",
+      "WyvernExchange": "0xab1BFf4410670CD7B2E5bEAab042e98aC4DC3387",
+      "WyvernStatic": "0x1d7aF8b288b2A708Bc63df4645353ce8d5c059DA",
       "TestERC20": "0x9aEEfb174928ac0c5b70949808Ec6E30ef4D439B",
       "TestERC721": "0xa50bd876df59C35BE8fCe3FEd239DCe8C378a25f"
     },
