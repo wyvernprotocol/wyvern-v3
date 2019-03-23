@@ -22,14 +22,16 @@ contract WyvernExchange is Exchange {
 
     /**
      */
-    constructor (uint chainId, address registryAddr) public {
+    constructor (uint chainId, address[] memory registryAddrs) public {
         DOMAIN_SEPARATOR = hash(EIP712Domain({
             name              : name,
             version           : version,
             chainId           : chainId,
             verifyingContract : address(this)
         }));
-        registries[registryAddr] = true;
+        for (uint ind = 0; ind < registryAddrs.length; ind++) {
+          registries[registryAddrs[ind]] = true;
+        }
     }
 
 }

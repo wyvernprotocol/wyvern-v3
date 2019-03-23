@@ -1,13 +1,20 @@
+var HDWalletProvider = require('truffle-hdwallet-provider')
+var rinkebyMnemonic = ''
+var mainnetMnemonic = ''
+
 module.exports = {
   mocha: {
     enableTimeouts: false
   },
   networks: {
     mainnet: {
+      provider: function () {
+        return new HDWalletProvider(mainnetMnemonic, 'https://mainnet.infura.io')
+      },
       from: '',
       port: 8545,
       network_id: '1',
-      gasPrice: 7310000000,
+      gasPrice: 4310000000,
       confirmations: 2
     },
     development: {
@@ -24,6 +31,9 @@ module.exports = {
       gasPrice: 0x01
     },
     rinkeby: {
+      provider: function () {
+        return new HDWalletProvider(rinkebyMnemonic, 'https://rinkeby.infura.io')
+      },
       from: '',
       port: 8545,
       network_id: '4',
@@ -34,7 +44,7 @@ module.exports = {
   },
   compilers: {
     solc: {
-      version: '0.5.4',
+      version: '0.5.6',
       settings: {
         optimizer: {
           enabled: true,

@@ -14,7 +14,7 @@ const chainIds = {
 module.exports = (deployer, network) => {
   return deployer.deploy(WyvernRegistry).then(() => {
     if (network !== 'development') setConfig('deployed.' + network + '.WyvernRegistry', WyvernRegistry.address)
-    return deployer.deploy(WyvernExchange, chainIds[network], WyvernRegistry.address).then(() => {
+    return deployer.deploy(WyvernExchange, chainIds[network], [WyvernRegistry.address]).then(() => {
       if (network !== 'development') setConfig('deployed.' + network + '.WyvernExchange', WyvernExchange.address)
       return WyvernRegistry.deployed().then(registry => {
         return registry.grantInitialAuthentication(WyvernExchange.address)
