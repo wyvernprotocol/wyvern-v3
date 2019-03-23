@@ -31,7 +31,7 @@
     "solium": "1.2.2",
     "standard": "12.0.1",
     "truffle": "5.0.1",
-    "truffle-flattener": "1.2.10",
+    "truffle-flattener": "^1.3.0",
     "web3": "1.0.0-beta.37"
   },
   "dependencies": {
