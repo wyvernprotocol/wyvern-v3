@@ -13,7 +13,7 @@ contract StaticUtil is StaticCaller {
 
     address public atomicizer;
 
-    function any(bytes memory, address[5] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory, bytes memory, bytes memory)
+    function any(bytes memory, address[7] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory, bytes memory, bytes memory)
         public
         pure
         returns (uint)
@@ -25,7 +25,7 @@ contract StaticUtil is StaticCaller {
         return 1;
     }
 
-    function anyNoFill(bytes memory, address[5] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory, bytes memory, bytes memory)
+    function anyNoFill(bytes memory, address[7] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory, bytes memory, bytes memory)
         public
         pure
         returns (uint)
@@ -37,7 +37,7 @@ contract StaticUtil is StaticCaller {
         return 0;
     }
 
-    function anyAddOne(bytes memory, address[5] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory uints, bytes memory, bytes memory)
+    function anyAddOne(bytes memory, address[7] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory uints, bytes memory, bytes memory)
         public
         pure
         returns (uint)
@@ -50,7 +50,7 @@ contract StaticUtil is StaticCaller {
     }
 
     function split(bytes memory extra,
-                   address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
+                   address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
                    bytes memory data, bytes memory counterdata)
         public
         returns (uint)
@@ -69,7 +69,7 @@ contract StaticUtil is StaticCaller {
     }
 
     function and(bytes memory extra,
-                 address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
+                 address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
                  bytes memory data, bytes memory counterdata)
         public
     {
@@ -89,7 +89,7 @@ contract StaticUtil is StaticCaller {
     }
 
     function or(bytes memory extra,
-                address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
+                address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
                 bytes memory data, bytes memory counterdata)
         public
     {

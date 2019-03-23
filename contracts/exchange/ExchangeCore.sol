@@ -196,7 +196,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         returns (bytes memory)
     {
         /* This array wrapping is necessary to preserve static call target function stack space. */
-        address[5] memory addresses = [order.maker, call.target, counterorder.maker, countercall.target, matcher];
+        address[7] memory addresses = [order.registry, order.maker, call.target, counterorder.registry, counterorder.maker, countercall.target, matcher];
         AuthenticatedProxy.HowToCall[2] memory howToCalls = [call.howToCall, countercall.howToCall];
         uint[6] memory uints = [value, order.maximumFill, order.listingTime, order.expirationTime, counterorder.listingTime, fill];
         return abi.encodeWithSelector(order.staticSelector, order.staticExtradata, addresses, howToCalls, uints, call.data, countercall.data);

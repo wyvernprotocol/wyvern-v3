@@ -14,7 +14,7 @@ import "../registry/AuthenticatedProxy.sol";
 contract StaticERC721 {
 
     function swapOneForOne(bytes memory extra,
-        address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
+        address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
         bytes memory data, bytes memory counterdata)
         public
         pure
@@ -24,25 +24,25 @@ contract StaticERC721 {
         (address[2] memory tokenGiveGet, uint[2] memory nftGiveGet) = abi.decode(extra, (address[2],uint[2]));
 
         // Call target = token to give
-        require(addresses[1] == tokenGiveGet[0], "ERC721: call target must equal address of token to give");
+        require(addresses[2] == tokenGiveGet[0], "ERC721: call target must equal address of token to give");
         // Call type = call
         require(howToCalls[0] == AuthenticatedProxy.HowToCall.Call, "ERC721: call must be a direct call");
         // Assert calldata
-        require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[0], addresses[2], nftGiveGet[0])));
+        require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[1], addresses[4], nftGiveGet[0])));
 
         // Countercall target = token to get
-        require(addresses[3] == tokenGiveGet[1], "ERC721: countercall target must equal address of token to get");
+        require(addresses[5] == tokenGiveGet[1], "ERC721: countercall target must equal address of token to get");
         // Countercall type = call
         require(howToCalls[1] == AuthenticatedProxy.HowToCall.Call, "ERC721: countercall must be a direct call");
         // Assert countercalldata
-        require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[2], addresses[0], nftGiveGet[1])));
+        require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[4], addresses[1], nftGiveGet[1])));
 
         // Mark filled
         return 1;
     }
 
     function swapOneForOneDecoding(bytes memory extra,
-        address[5] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
+        address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
         bytes memory data, bytes memory counterdata)
         public
         pure
@@ -52,30 +52,30 @@ contract StaticERC721 {
         (address[2] memory tokenGiveGet, uint[2] memory nftGiveGet) = abi.decode(extra, (address[2],uint[2]));
 
         // Call target = token to give
-        require(addresses[1] == tokenGiveGet[0], "ERC721: call target must equal address of token to give");
+        require(addresses[2] == tokenGiveGet[0], "ERC721: call target must equal address of token to give");
         // Call type = call
         require(howToCalls[0] == AuthenticatedProxy.HowToCall.Call, "ERC721: call must be a direct call");
         // TODO Assert call sig
         // Decode calldata
         (address callFrom, address callTo, uint256 nftGive) = abi.decode(ArrayUtils.arrayDrop(data, 4), (address, address, uint256));
         // Assert from
-        require(callFrom == addresses[0]);
+        require(callFrom == addresses[1]);
         // Assert to
-        require(callTo == addresses[2]);
+        require(callTo == addresses[4]);
         // Assert NFT
         require(nftGive == nftGiveGet[0]);
 
         // Countercall target = token to get
-        require(addresses[3] == tokenGiveGet[1], "ERC721: countercall target must equal address of token to get");
+        require(addresses[5] == tokenGiveGet[1], "ERC721: countercall target must equal address of token to get");
         // Countercall type = call
         require(howToCalls[1] == AuthenticatedProxy.HowToCall.Call, "ERC721: countercall must be a direct call");
         // TODO Assert countercallsig
         // Decode countercalldata
         (address countercallFrom, address countercallTo, uint256 nftGet) = abi.decode(ArrayUtils.arrayDrop(counterdata, 4), (address, address, uint256));
         // Assert from
-        require(countercallFrom == addresses[2]);
+        require(countercallFrom == addresses[4]);
         // Assert to
-        require(countercallTo == addresses[0]);
+        require(countercallTo == addresses[1]);
         // Assert NFT
         require(nftGet == nftGiveGet[1]);
 
