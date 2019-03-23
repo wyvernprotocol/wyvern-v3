@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.5.4;
+pragma solidity 0.5.6;
 
 import "./static/StaticERC20.sol";
 import "./static/StaticERC721.sol";

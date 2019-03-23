@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.5.4;
+pragma solidity 0.5.6;
 
 import "../lib/ArrayUtils.sol";
 import "../registry/AuthenticatedProxy.sol";

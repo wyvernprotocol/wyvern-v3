@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.5.4;
+pragma solidity 0.5.6;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -34,6 +34,8 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
     /* An order, convenience struct. */
     struct Order {
+        /* Order registry address. */
+        address registry;
         /* Order maker address. */
         address maker;
         /* Order static target. */
@@ -66,13 +68,13 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
     /* Order typehash for EIP 712 compatibility. */
     bytes32 constant ORDER_TYPEHASH = keccak256(
-        "Order(address maker,address staticTarget,bytes4 staticSelector,bytes staticExtradata,uint256 maximumFill,uint256 listingTime,uint256 expirationTime,uint256 salt)"
+        "Order(address registry,address maker,address staticTarget,bytes4 staticSelector,bytes staticExtradata,uint256 maximumFill,uint256 listingTime,uint256 expirationTime,uint256 salt)"
     );
 
     /* Variables */
 
-    /* Trusted proxy registry contract. */
-    ProxyRegistryInterface public registry;
+    /* Trusted proxy registry contracts. */
+    mapping(address => bool) public registries;
 
     /* Order fill status, by maker address then by hash. */
     mapping(address => mapping(bytes32 => uint)) public fills;
@@ -98,6 +100,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         /* Per EIP 712. */
         return keccak256(abi.encode(
             ORDER_TYPEHASH,
+            order.registry,
             order.maker,
             order.staticTarget,
             order.staticSelector,
@@ -207,10 +210,13 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         return staticCallUint(order.staticTarget, encodeStaticCall(order, call, counterorder, countercall, matcher, value, fill));
     }
 
-    function executeCall(address maker, Call memory call)
+    function executeCall(ProxyRegistryInterface registry, address maker, Call memory call)
         internal
         returns (bool)
     {
+        /* Assert valid registry. */
+        require(registries[address(registry)]);
+
         /* Assert target exists. */
         require(exists(call.target), "Call target does not exist");
 
@@ -316,10 +322,10 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
         /* Execute first call, assert success.
            This is the second "asymmetric" part of order matching: execution of the second order can depend on state changes in the first order, but not vice-versa. */
-        assert(executeCall(firstOrder.maker, firstCall));
+        assert(executeCall(ProxyRegistryInterface(firstOrder.registry), firstOrder.maker, firstCall));
 
         /* Execute second call, assert success. */
-        assert(executeCall(secondOrder.maker, secondCall));
+        assert(executeCall(ProxyRegistryInterface(secondOrder.registry), secondOrder.maker, secondCall));
 
         /* Static calls must happen after the effectful calls so that they can check the resulting state. */
 

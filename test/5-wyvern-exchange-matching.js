@@ -105,8 +105,8 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '0'}
-        const two = {maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '1'}
+        const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '0'}
+        const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '1'}
         const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
         return exchange.atomicMatch(one, nullSig, call, two, nullSig, call, ZERO_BYTES32).then(() => {
         })
@@ -117,8 +117,8 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('anyNoFill(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
-        const two = {maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
         return exchange.atomicMatch(one, nullSig, call, two, nullSig, call, ZERO_BYTES32).then(() => {
           return exchange.atomicMatch(one, nullSig, call, two, nullSig, call, ZERO_BYTES32).then(() => {
@@ -131,8 +131,8 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('anyAddOne(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '2', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
-        const two = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '2', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '2', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '2', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
         return exchange.sign(one, accounts[6]).then(oneSig => {
           return exchange.sign(two, accounts[6]).then(twoSig => {
@@ -154,7 +154,7 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '0'}
+        const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '0'}
         const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
         return exchange.atomicMatch(one, nullSig, call, one, nullSig, call, ZERO_BYTES32).then(() => {
           assert.equal(true, false, 'should not have succeeded')
@@ -168,13 +168,13 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '4'}
-        const two = {maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '5'}
+        const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '4'}
+        const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '5'}
         const exchangec = new web3.eth.Contract(exchange.inst.abi, exchange.inst.address)
         const call1 = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
         const data = exchangec.methods.atomicMatch_(
-          [one.maker, one.staticTarget, one.maximumFill, one.listingTime, one.expirationTime, one.salt, call1.target,
-            two.maker, two.staticTarget, two.maximumFill, two.listingTime, two.expirationTime, two.salt, call1.target],
+          [one.registry, one.maker, one.staticTarget, one.maximumFill, one.listingTime, one.expirationTime, one.salt, call1.target,
+            two.registry, two.maker, two.staticTarget, two.maximumFill, two.listingTime, two.expirationTime, two.salt, call1.target],
           [one.staticSelector, two.staticSelector],
           one.staticExtradata, call1.data, two.staticExtradata, call1.data,
           [nullSig.v, call1.howToCall, nullSig.v, call1.howToCall],
@@ -265,12 +265,13 @@ contract('WyvernExchange', (accounts) => {
       .then(({atomicizer, exchange, registry, statici, erc20, erc721}) => {
         return withSomeTokens()
           .then(({tokens, nfts}) => {
-            const atomicizerc = new web3.eth.Contract(atomicizer.abi, atomicizer.address)
+            const abi = [{'constant': false, 'inputs': [{'name': 'addrs', 'type': 'address[]'}, {'name': 'values', 'type': 'uint256[]'}, {'name': 'calldataLengths', 'type': 'uint256[]'}, {'name': 'calldatas', 'type': 'bytes'}], 'name': 'atomicize', 'outputs': [], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}]
+            const atomicizerc = new web3.eth.Contract(abi, atomicizer.address)
             const erc20c = new web3.eth.Contract(erc20.abi, erc20.address)
             const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
             const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-            const one = {maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '2'}
-            const two = {maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3'}
+            const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '2'}
+            const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3'}
             const sig = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
             const firstERC20Call = erc20c.methods.transferFrom(accounts[0], accounts[6], 2).encodeABI()
             const firstERC721Call = erc721c.methods.transferFrom(accounts[0], accounts[6], nfts[0]).encodeABI()
@@ -303,8 +304,8 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
-        const two = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         return exchange.sign(one, accounts[6]).then(oneSig => {
           return exchange.sign(two, accounts[6]).then(twoSig => {
             const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
@@ -319,8 +320,8 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
-        const two = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         return exchange.approveOrder(one, false, {from: accounts[6]}).then(() => {
           return exchange.approveOrder(two, false, {from: accounts[6]}).then(() => {
             const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
@@ -335,8 +336,8 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
-        const two = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         return exchange.sign(one, accounts[6]).then(sig => {
           const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
           return exchange.atomicMatch(one, nullSig, call, two, sig, call, ZERO_BYTES32).then(() => {
@@ -352,8 +353,8 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
-        const two = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         return exchange.sign(two, accounts[6]).then(sig => {
           const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
           return exchange.atomicMatch(one, sig, call, two, nullSig, call, ZERO_BYTES32).then(() => {
@@ -369,8 +370,8 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
-        const two = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         return exchange.inst.setOrderFill_(hashOrder(one), '10', {from: accounts[6]}).then(() => {
           return exchange.sign(one, accounts[6]).then(oneSig => {
             return exchange.sign(two, accounts[6]).then(twoSig => {
@@ -390,8 +391,8 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
-        const two = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         return exchange.inst.setOrderFill_(hashOrder(two), '3', {from: accounts[6]}).then(() => {
           return exchange.sign(one, accounts[6]).then(oneSig => {
             return exchange.sign(two, accounts[6]).then(twoSig => {
@@ -411,8 +412,8 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[7], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
-        const two = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const one = {registry: registry.address, maker: accounts[7], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         return exchange.sign(one, accounts[7]).then(oneSig => {
           return exchange.sign(two, accounts[6]).then(twoSig => {
             const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
@@ -430,8 +431,8 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
-        const two = {maker: accounts[7], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[7], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         return exchange.sign(one, accounts[6]).then(oneSig => {
           return exchange.sign(two, accounts[7]).then(twoSig => {
             const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
@@ -449,8 +450,8 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
-        const two = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         return exchange.sign(one, accounts[6]).then(oneSig => {
           return exchange.sign(two, accounts[6]).then(twoSig => {
             const call = {target: accounts[7], howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
@@ -468,8 +469,8 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[5],uint8[2],uint256[6],bytes,bytes)')
-        const one = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
-        const two = {maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         return exchange.sign(one, accounts[6]).then(oneSig => {
           return exchange.sign(two, accounts[6]).then(twoSig => {
             const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}

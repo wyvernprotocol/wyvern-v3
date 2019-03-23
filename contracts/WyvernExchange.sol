@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.5.4;
+pragma solidity 0.5.6;
 
 import "./exchange/Exchange.sol";
 
@@ -16,20 +16,20 @@ contract WyvernExchange is Exchange {
 
     string public constant name = "Wyvern Exchange";
   
-    string public constant version = "3.0";
+    string public constant version = "3.1";
 
     string public constant codename = "Ancalagon";
 
     /**
      */
-    constructor (uint chainId, ProxyRegistryInterface registryAddr) public {
+    constructor (uint chainId, address registryAddr) public {
         DOMAIN_SEPARATOR = hash(EIP712Domain({
-            name: "Wyvern Exchange",
-            version: "3",
-            chainId: chainId,
-            verifyingContract: address(this)
+            name              : name,
+            version           : version,
+            chainId           : chainId,
+            verifyingContract : address(this)
         }));
-        registry = registryAddr;
+        registries[registryAddr] = true;
     }
 
 }
