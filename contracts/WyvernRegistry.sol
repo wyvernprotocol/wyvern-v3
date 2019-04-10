@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.5.6;
+pragma solidity 0.5.7;
 
 import "./registry/ProxyRegistry.sol";
 import "./registry/AuthenticatedProxy.sol";

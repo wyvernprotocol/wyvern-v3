@@ -6,7 +6,7 @@
 
 */
 
-pragma solidity 0.5.6;
+pragma solidity 0.5.7;
 
 /**
  * @title WyvernAtomicizer
