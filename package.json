@@ -36,6 +36,6 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.4",
-    "truffle-hdwallet-provider": "^1.0.4"
+    "truffle-hdwallet-provider": "^1.0.6"
   }
 }
