@@ -11,6 +11,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../lib/StaticCaller.sol";
 import "../lib/ReentrancyGuarded.sol";
 import "../lib/EIP712.sol";
+import "../lib/EIP1271.sol";
 import "../registry/ProxyRegistryInterface.sol";
 import "../registry/AuthenticatedProxy.sol";
 
@@ -19,6 +20,8 @@ import "../registry/AuthenticatedProxy.sol";
  * @author Wyvern Protocol Developers
  */
 contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
+
+    bytes4 constant internal EIP_1271_MAGICVALUE = 0x20c13b0b;
 
     /* Struct definitions. */
 
@@ -181,9 +184,18 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         if (approved[maker][hash]) {
             return true;
         }
+
+        bytes32 calculatedHashToSign = hashToSign(hash);
+
+        /* (c): Contract-only authentication: EIP/ERC 1271. */
+        /* TODO: Allow other sorts of signature bytes. */
+        /* TODO: Check if `maker` is a contract. */
+        if (ERC1271(maker).isValidSignature(abi.encodePacked(calculatedHashToSign), abi.encodePacked(sig)) == EIP_1271_MAGICVALUE) {
+            return true;
+        }
     
-        /* (c): ECDSA-signed by maker. */
-        if (ecrecover(hashToSign(hash), sig.v, sig.r, sig.s) == maker) {
+        /* (d): ECDSA-signed by maker. */
+        if (ecrecover(calculatedHashToSign, sig.v, sig.r, sig.s) == maker) {
             return true;
         }
 
