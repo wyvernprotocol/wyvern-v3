@@ -25,16 +25,6 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
     /* Struct definitions. */
 
-    /* A signature, convenience struct. */
-    struct Sig {
-        /* v parameter */
-        uint8 v;
-        /* r parameter */
-        bytes32 r;
-        /* s parameter */
-        bytes32 s;
-    }
-
     /* An order, convenience struct. */
     struct Order {
         /* Order registry address. */
@@ -163,7 +153,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         return true;
     }
 
-    function validateOrderAuthorization(bytes32 hash, address maker, Sig memory sig)
+    function validateOrderAuthorization(bytes32 hash, address maker, bytes memory signature)
         internal
         view
         returns (bool)
@@ -185,17 +175,25 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
             return true;
         }
 
+        /* Calculate hash which must be signed. */
         bytes32 calculatedHashToSign = hashToSign(hash);
 
+        /* Determine whether signer is a contract or account. */
+        bool isContract = exists(maker);
+
         /* (c): Contract-only authentication: EIP/ERC 1271. */
-        /* TODO: Allow other sorts of signature bytes. */
-        /* TODO: Check if `maker` is a contract. */
-        if (ERC1271(maker).isValidSignature(abi.encodePacked(calculatedHashToSign), abi.encodePacked(sig)) == EIP_1271_MAGICVALUE) {
-            return true;
+        if (isContract) {
+
+            if (ERC1271(maker).isValidSignature(abi.encodePacked(calculatedHashToSign), signature) == EIP_1271_MAGICVALUE) {
+                return true;
+            }
+
+            return false;
         }
-    
-        /* (d): ECDSA-signed by maker. */
-        if (ecrecover(calculatedHashToSign, sig.v, sig.r, sig.s) == maker) {
+
+        /* (d): Account-only authentication: ECDSA-signed by maker. */
+        (uint8 v, bytes32 r, bytes32 s) = abi.decode(signature, (uint8, bytes32, bytes32));
+        if (ecrecover(calculatedHashToSign, v, r, s) == maker) {
             return true;
         }
 
@@ -297,7 +295,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         emit OrderFillChanged(hash, msg.sender, fill);
     }
 
-    function atomicMatch(Order memory firstOrder, Sig memory firstSig, Call memory firstCall, Order memory secondOrder, Sig memory secondSig, Call memory secondCall, bytes32 metadata)
+    function atomicMatch(Order memory firstOrder, Call memory firstCall, Order memory secondOrder, Call memory secondCall, bytes memory signatures, bytes32 metadata)
         internal
         reentrancyGuard
     {
@@ -309,20 +307,25 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         /* Check first order validity. */
         require(validateOrderParameters(firstOrder, firstHash), "First order has invalid parameters");
 
-        /* Check first order authorization. */
-        require(validateOrderAuthorization(firstHash, firstOrder.maker, firstSig), "First order failed authorization");
-
         /* Calculate second order hash. */
         bytes32 secondHash = hashOrder(secondOrder);
 
         /* Check second order validity. */
         require(validateOrderParameters(secondOrder, secondHash), "Second order has invalid parameters");
 
-        /* Check second order authorization. */
-        require(validateOrderAuthorization(secondHash, secondOrder.maker, secondSig), "Second order failed authorization");
-
         /* Prevent self-matching (possibly unnecessary, but safer). */
         require(firstHash != secondHash, "Self-matching orders is prohibited");
+
+        {
+            /* Calculate signatures (must be awkwardly decoded here due to stack size constraints). */
+            (bytes memory firstSignature, bytes memory secondSignature) = abi.decode(signatures, (bytes, bytes));
+
+            /* Check first order authorization. */
+            require(validateOrderAuthorization(firstHash, firstOrder.maker, signatures), "First order failed authorization");
+
+            /* Check second order authorization. */
+            require(validateOrderAuthorization(secondHash, secondOrder.maker, signatures), "Second order failed authorization");
+        }
 
         /* INTERACTIONS */
 
