@@ -67,7 +67,7 @@ const wrap = (inst) => {
       })
     },
     validateOrderParameters: (order) => inst.validateOrderParameters_.call(order.registry, order.maker, order.staticTarget, order.staticSelector, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt),
-    validateOrderAuthorization: (hash, maker, sig, misc) => inst.validateOrderAuthorization_.call(hash, maker, sig.v, sig.r, sig.s, misc),
+    validateOrderAuthorization: (hash, maker, sig, misc) => inst.validateOrderAuthorization_.call(hash, maker, web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [sig.v, sig.r, sig.s]), misc),
     approveOrderHash: (hash) => inst.approveOrderHash_(hash),
     approveOrder: (order, inclusion, misc) => inst.approveOrder_(order.registry, order.maker, order.staticTarget, order.staticSelector, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt, inclusion, misc),
     setOrderFill: (order, fill) => inst.setOrderFill_(hashOrder(order), fill),
@@ -76,16 +76,24 @@ const wrap = (inst) => {
         counterorder.registry, counterorder.maker, counterorder.staticTarget, counterorder.maximumFill, counterorder.listingTime, counterorder.expirationTime, counterorder.salt, countercall.target],
       [order.staticSelector, counterorder.staticSelector],
       order.staticExtradata, call.data, counterorder.staticExtradata, countercall.data,
-      [sig.v, call.howToCall, countersig.v, countercall.howToCall],
-      [sig.r, sig.s, countersig.r, countersig.s, metadata]
+      [call.howToCall, countercall.howToCall],
+      metadata,
+      web3.eth.abi.encodeParameters(['bytes', 'bytes'], [
+        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [sig.v, sig.r, sig.s]),
+        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [countersig.v, countersig.r, countersig.s])
+      ])
     ),
     atomicMatchWith: (order, sig, call, counterorder, countersig, countercall, metadata, misc) => inst.atomicMatch_(
       [order.registry, order.maker, order.staticTarget, order.maximumFill, order.listingTime, order.expirationTime, order.salt, call.target,
         counterorder.registry, counterorder.maker, counterorder.staticTarget, counterorder.maximumFill, counterorder.listingTime, counterorder.expirationTime, counterorder.salt, countercall.target],
       [order.staticSelector, counterorder.staticSelector],
       order.staticExtradata, call.data, counterorder.staticExtradata, countercall.data,
-      [sig.v, call.howToCall, countersig.v, countercall.howToCall],
-      [sig.r, sig.s, countersig.r, countersig.s, metadata],
+      [call.howToCall, countercall.howToCall],
+      metadata,
+      web3.eth.abi.encodeParameters(['bytes', 'bytes'], [
+        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [sig.v, sig.r, sig.s]),
+        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [countersig.v, countersig.r, countersig.s])
+      ]),
       misc
     )
   }

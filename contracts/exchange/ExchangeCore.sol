@@ -321,10 +321,10 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
             (bytes memory firstSignature, bytes memory secondSignature) = abi.decode(signatures, (bytes, bytes));
 
             /* Check first order authorization. */
-            require(validateOrderAuthorization(firstHash, firstOrder.maker, signatures), "First order failed authorization");
+            require(validateOrderAuthorization(firstHash, firstOrder.maker, firstSignature), "First order failed authorization");
 
             /* Check second order authorization. */
-            require(validateOrderAuthorization(secondHash, secondOrder.maker, signatures), "Second order failed authorization");
+            require(validateOrderAuthorization(secondHash, secondOrder.maker, secondSignature), "Second order failed authorization");
         }
 
         /* INTERACTIONS */

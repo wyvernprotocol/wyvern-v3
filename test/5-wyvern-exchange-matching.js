@@ -177,8 +177,12 @@ contract('WyvernExchange', (accounts) => {
             two.registry, two.maker, two.staticTarget, two.maximumFill, two.listingTime, two.expirationTime, two.salt, call1.target],
           [one.staticSelector, two.staticSelector],
           one.staticExtradata, call1.data, two.staticExtradata, call1.data,
-          [nullSig.v, call1.howToCall, nullSig.v, call1.howToCall],
-          [nullSig.r, nullSig.s, nullSig.r, nullSig.s, ZERO_BYTES32]).encodeABI()
+          [call1.howToCall, call1.howToCall],
+          ZERO_BYTES32,
+          web3.eth.abi.encodeParameters(['bytes', 'bytes'], [
+            web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [nullSig.v, nullSig.r, nullSig.s]),
+            web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [nullSig.v, nullSig.r, nullSig.s])
+          ])).encodeABI()
         const call2 = {target: exchange.inst.address, howToCall: 0, data: data}
         return exchange.atomicMatch(one, nullSig, call1, two, nullSig, call2, ZERO_BYTES32).then(() => {
           assert.equal(true, false, 'should not have succeeded')
