@@ -20,6 +20,9 @@ contract StaticERC20 {
         pure
         returns (uint)
     {
+        // Zero-value
+        require(uints[0] == 0);
+
         // Decode extradata
         (address[2] memory tokenGiveGet, uint[2] memory amountGiveGet) = abi.decode(extra, (address[2], uint[2]));
 
@@ -48,6 +51,8 @@ contract StaticERC20 {
         pure
         returns (uint)
     {
+        // Zero-value
+        require(uints[0] == 0);
 
         // Decode extradata
         (address[2] memory tokenGiveGet, uint[2] memory numeratorDenominator) = abi.decode(extra, (address[2], uint[2]));
@@ -59,7 +64,9 @@ contract StaticERC20 {
         // Decode calldata
         (address callFrom, address callTo, uint256 amountGive) = abi.decode(ArrayUtils.arrayDrop(data, 4), (address, address, uint256));
         // Assert from
-        require(callFrom == addresses[1]);
+        require(callFrom == addresses[0]);
+        // Assert to
+        require(callTo == addresses[2]);
 
         // Countercall target = token to get
         require(addresses[5] == tokenGiveGet[1]);
@@ -67,8 +74,10 @@ contract StaticERC20 {
         require(howToCalls[1] == AuthenticatedProxy.HowToCall.Call);
         // Decode countercalldata
         (address countercallFrom, address countercallTo, uint256 amountGet) = abi.decode(ArrayUtils.arrayDrop(counterdata, 4), (address, address, uint256));
+        // Assert from
+        require(countercallFrom == addresses[2]);
         // Assert to
-        require(countercallTo == addresses[1]);
+        require(countercallTo == addresses[0]);
 
         // Assert ratio
         // ratio = min get/give

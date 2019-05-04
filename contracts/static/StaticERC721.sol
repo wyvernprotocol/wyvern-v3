@@ -20,6 +20,9 @@ contract StaticERC721 {
         pure
         returns (uint)
     {
+        // Zero-value
+        require(uints[0] == 0);
+
         // Decode extradata
         (address[2] memory tokenGiveGet, uint[2] memory nftGiveGet) = abi.decode(extra, (address[2],uint[2]));
 
@@ -48,6 +51,9 @@ contract StaticERC721 {
         pure
         returns (uint)
     {
+        // Zero-value
+        require(uints[0] == 0);
+
         // Decode extradata
         (address[2] memory tokenGiveGet, uint[2] memory nftGiveGet) = abi.decode(extra, (address[2],uint[2]));
 

@@ -53,6 +53,7 @@ contract StaticUtil is StaticCaller {
                    address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
                    bytes memory data, bytes memory counterdata)
         public
+        view
         returns (uint)
     {
         (address firstTarget, bytes memory firstExtradata, address secondTarget, bytes memory secondExtradata) = abi.decode(extra, (address, bytes, address, bytes));
@@ -72,6 +73,7 @@ contract StaticUtil is StaticCaller {
                  address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
                  bytes memory data, bytes memory counterdata)
         public
+        view
     {
         (address[] memory addrs, bytes4[] memory selectors, uint[] memory extradataLengths, bytes memory extradatas) = abi.decode(extra, (address[], bytes4[], uint[], bytes));
 
@@ -92,6 +94,7 @@ contract StaticUtil is StaticCaller {
                 address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
                 bytes memory data, bytes memory counterdata)
         public
+        view
     {
         (address[] memory addrs, bytes4[] memory selectors, uint[] memory extradataLengths, bytes memory extradatas) = abi.decode(extra, (address[], bytes4[], uint[], bytes));
 
@@ -114,6 +117,7 @@ contract StaticUtil is StaticCaller {
 
     function sequenceExact(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[6] memory uints)
         public
+        view
     {
         /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly.
            e.g. transferring two CryptoKitties in sequence. */
@@ -131,6 +135,7 @@ contract StaticUtil is StaticCaller {
 
     function sequenceAnyAfter(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[6] memory uints)
         public
+        view
     {
         /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly.
            e.g. transferring two CryptoKitties in sequence. */
@@ -148,6 +153,7 @@ contract StaticUtil is StaticCaller {
 
     function sequence(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[] memory caddrs, uint[] memory cvals, uint[] memory clengths, bytes memory calldatas, address[4] memory addresses, uint[6] memory uints)
         internal
+        view
     {
         uint j = 0;
         uint l = 0;
