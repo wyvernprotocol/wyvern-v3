@@ -194,43 +194,42 @@ contract('WyvernExchange', (accounts) => {
 
   it('should match nft-nft swap order', () => {
     return withContracts()
-      .then(({atomicizer, exchange, registry, statici }) => {
-        return withAsymmetricalTokens()
-          .then(({ nfts, erc721 }) => {
-            const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
-            const selector = web3.eth.abi.encodeFunctionSignature('swapOneForOne(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
-            const paramsOne = web3.eth.abi.encodeParameters(
-              ['address[2]', 'uint256[2]'],
-              [[erc721.address, erc721.address], [nfts[0], nfts[1]]]
-            )
-            const paramsTwo = web3.eth.abi.encodeParameters(
-              ['address[2]', 'uint256[2]'],
-              [[erc721.address, erc721.address], [nfts[1], nfts[0]]]
-            )
+      .then(({atomicizer, exchange, registry, statici}) => {
+        return withAsymmetricalTokens().then(({ nfts, erc721 }) => {
+          const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
+          const selector = web3.eth.abi.encodeFunctionSignature('swapOneForOne(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+          const paramsOne = web3.eth.abi.encodeParameters(
+            ['address[2]', 'uint256[2]'],
+            [[erc721.address, erc721.address], [nfts[0], nfts[1]]]
+          )
+          const paramsTwo = web3.eth.abi.encodeParameters(
+            ['address[2]', 'uint256[2]'],
+            [[erc721.address, erc721.address], [nfts[1], nfts[0]]]
+          )
 
-            const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: paramsOne, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '2'}
-            const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: paramsTwo, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3'}
+          const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: paramsOne, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '2'}
+          const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: paramsTwo, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3'}
 
-            const firstData = erc721c.methods.transferFrom(accounts[0], accounts[6], nfts[0]).encodeABI()
-            const secondData = erc721c.methods.transferFrom(accounts[6], accounts[0], nfts[1]).encodeABI()
+          const firstData = erc721c.methods.transferFrom(accounts[0], accounts[6], nfts[0]).encodeABI()
+          const secondData = erc721c.methods.transferFrom(accounts[6], accounts[0], nfts[1]).encodeABI()
 
-            const firstCall = {target: erc721.address, howToCall: 0, data: firstData}
-            const secondCall = {target: erc721.address, howToCall: 0, data: secondData}
-            const sigOne = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
-            return exchange.sign(two, accounts[6]).then(sigTwo => {
-              return exchange.atomicMatch(one, sigOne, firstCall, two, sigTwo, secondCall, ZERO_BYTES32).then(() => {
-                return erc721.ownerOf(nfts[0]).then(owner => {
-                  assert.equal(owner, accounts[6], 'Incorrect owner')
-                })
+          const firstCall = {target: erc721.address, howToCall: 0, data: firstData}
+          const secondCall = {target: erc721.address, howToCall: 0, data: secondData}
+          const sigOne = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+          return exchange.sign(two, accounts[6]).then(sigTwo => {
+            return exchange.atomicMatch(one, sigOne, firstCall, two, sigTwo, secondCall, ZERO_BYTES32).then(() => {
+              return erc721.ownerOf(nfts[0]).then(owner => {
+                assert.equal(owner, accounts[6], 'Incorrect owner')
               })
             })
           })
+        })
       })
   })
 
   it('should match nft-nft swap order, abi-decoding instead', () => {
     return withContracts()
-      .then(({atomicizer, exchange, registry, statici }) => {
+      .then(({atomicizer, exchange, registry, statici}) => {
         return withAsymmetricalTokens2()
           .then(({ nfts, erc721 }) => {
             const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
@@ -308,12 +307,63 @@ contract('WyvernExchange', (accounts) => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: 2344}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: 2345}
+        return exchange.sign(one, accounts[6]).then(oneSig => {
+          return exchange.sign(two, accounts[6]).then(twoSig => {
+            const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
+            return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
+            })
+          })
+        })
+      })
+  })
+
+  it('should not match with signatures twice', () => {
+    return withContracts()
+      .then(({exchange, registry, statici}) => {
+        const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: 2344}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: 2345}
+        return exchange.sign(one, accounts[6]).then(oneSig => {
+          return exchange.sign(two, accounts[6]).then(twoSig => {
+            const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
+            return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
+              assert.equal(true, false, 'Should not have matched twice')
+            }).catch(err => {
+              assert.equal(err.message, 'Returned error: VM Exception while processing transaction: revert First order has invalid parameters -- Reason given: First order has invalid parameters.', '')
+            })
+          })
+        })
+      })
+  })
+
+  it('should match with signatures no-fill', () => {
+    return withContracts()
+      .then(({exchange, registry, statici}) => {
+        const selector = web3.eth.abi.encodeFunctionSignature('anyNoFill(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
         const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         return exchange.sign(one, accounts[6]).then(oneSig => {
           return exchange.sign(two, accounts[6]).then(twoSig => {
             const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
             return exchange.atomicMatch(one, oneSig, call, two, twoSig, call, ZERO_BYTES32).then(() => {
+            })
+          })
+        })
+      })
+  })
+
+  it('should match with signatures no-fill, value', () => {
+    return withContracts()
+      .then(({exchange, registry, statici}) => {
+        const selector = web3.eth.abi.encodeFunctionSignature('anyNoFill(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+        const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
+        return exchange.sign(one, accounts[6]).then(oneSig => {
+          return exchange.sign(two, accounts[6]).then(twoSig => {
+            const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
+            return exchange.atomicMatchWith(one, oneSig, call, two, twoSig, call, ZERO_BYTES32, {value: 3}).then(() => {
             })
           })
         })
