@@ -4,6 +4,7 @@ const WyvernAtomicizer = artifacts.require('./WyvernAtomicizer.sol')
 const WyvernStatic = artifacts.require('./WyvernStatic.sol')
 const TestERC20 = artifacts.require('./TestERC20.sol')
 const TestERC721 = artifacts.require('./TestERC721.sol')
+const TestERC1271 = artifacts.require('./TestERC1271.sol')
 const TestAuthenticatedProxy = artifacts.require('./TestAuthenticatedProxy.sol')
 
 const { setConfig } = require('./config.js')
@@ -20,6 +21,9 @@ module.exports = (deployer, network) => {
           if (network !== 'development') setConfig('deployed.' + network + '.TestERC721', TestERC721.address)
           return deployer.deploy(TestAuthenticatedProxy).then(() => {
             if (network !== 'development') setConfig('deployed.' + network + '.TestAuthenticatedProxy', TestAuthenticatedProxy.address)
+            return deployer.deploy(TestERC1271).then(() => {
+              if (network !== 'development') setConfig('deployed.' + network + '.TestERC1271', TestERC1271.address)
+            })
           })
         })
       })
