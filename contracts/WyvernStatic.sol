@@ -18,8 +18,6 @@ contract WyvernStatic is StaticERC20, StaticERC721, StaticUtil {
 
     string public constant name = "Wyvern Static";
 
-    /**
-     */
     constructor (address atomicizerAddress)
         public
     {

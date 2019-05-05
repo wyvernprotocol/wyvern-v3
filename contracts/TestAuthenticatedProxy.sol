@@ -1,5 +1,7 @@
 /**
 
+  << TestAuthenticatedProxy >>
+
   Just for DelegateCall testing.
 
 **/

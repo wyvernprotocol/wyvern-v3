@@ -130,7 +130,8 @@ library ArrayUtils {
     function arrayDrop(bytes memory _bytes, uint _start)
         internal
         pure
-        returns (bytes memory) {
+        returns (bytes memory)
+    {
 
         uint _length = SafeMath.sub(_bytes.length, _start);
         return arraySlice(_bytes, _start, _length);
@@ -146,7 +147,8 @@ library ArrayUtils {
     function arrayTake(bytes memory _bytes, uint _length)
         internal
         pure
-        returns (bytes memory) {
+        returns (bytes memory)
+    {
 
         return arraySlice(_bytes, 0, _length);
     }
@@ -163,7 +165,8 @@ library ArrayUtils {
     function arraySlice(bytes memory _bytes, uint _start, uint _length)
         internal
         pure
-        returns (bytes memory) {
+        returns (bytes memory)
+    {
 
         bytes memory tempBytes;
 

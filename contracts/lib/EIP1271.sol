@@ -21,9 +21,9 @@ contract ERC1271 {
    * MUST allow external calls
    */
   function isValidSignature(
-    bytes memory _data,
-    bytes memory _signature)
-    public
-    view
-    returns (bytes4 magicValue);
+      bytes memory _data,
+      bytes memory _signature)
+      public
+      view
+      returns (bytes4 magicValue);
 }

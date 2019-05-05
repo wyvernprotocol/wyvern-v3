@@ -1,5 +1,7 @@
 /*
 
+  << Migrations >>
+
   Standard migrations contract for Truffle deployment tracking.
 
 */

@@ -1,7 +1,7 @@
 {
   "name": "wyvern-v3",
-  "version": "0.1.0",
-  "description": "Wyvern Protocol v3, Ethereum implementation",
+  "version": "3.1.0",
+  "description": "Wyvern Protocol v3.1, Ethereum implementation",
   "main": "index.js",
   "scripts": {
     "analyze": "scripts/analyze.sh",

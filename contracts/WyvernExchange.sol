@@ -20,8 +20,6 @@ contract WyvernExchange is Exchange {
 
     string public constant codename = "Ancalagon";
 
-    /**
-     */
     constructor (uint chainId, address[] memory registryAddrs) public {
         DOMAIN_SEPARATOR = hash(EIP712Domain({
             name              : name,
