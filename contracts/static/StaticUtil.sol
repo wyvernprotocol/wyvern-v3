@@ -18,9 +18,11 @@ contract StaticUtil is StaticCaller {
         pure
         returns (uint)
     {
-        /* Accept any call.
+        /*
+           Accept any call.
            Useful e.g. for matching-by-transaction, where you authorize the counter-call by sending the transaction and don't need to re-check it.
-           Might be more efficient to implement in ExchangeCore. */
+           Return fill "1".
+        */
 
         return 1;
     }
@@ -30,9 +32,11 @@ contract StaticUtil is StaticCaller {
         pure
         returns (uint)
     {
-        /* Accept any call.
+        /*
+           Accept any call.
            Useful e.g. for matching-by-transaction, where you authorize the counter-call by sending the transaction and don't need to re-check it.
-           Might be more efficient to implement in ExchangeCore. */
+           Return fill "0".
+        */
 
         return 0;
     }
@@ -42,9 +46,11 @@ contract StaticUtil is StaticCaller {
         pure
         returns (uint)
     {
-        /* Accept any call.
+        /*
+           Accept any call.
            Useful e.g. for matching-by-transaction, where you authorize the counter-call by sending the transaction and don't need to re-check it.
-           Might be more efficient to implement in ExchangeCore. */
+           Return the current fill plus 1.
+        */
 
         return uints[5] + 1;
     }
@@ -61,10 +67,10 @@ contract StaticUtil is StaticCaller {
         /* Split into two static calls: one for the call, one for the counter-call, both with metadata. */
 
         /* Static call to check the call. */
-        require(staticCall(firstTarget, abi.encodePacked(firstExtradata, [addresses[0], addresses[1], addresses[4]], howToCalls[0], data, uints)));
+        require(staticCall(firstTarget, abi.encodePacked(firstExtradata, addresses, howToCalls[0], uints, data)));
 
         /* Static call to check the counter-call. */
-        require(staticCall(secondTarget, abi.encodePacked(secondExtradata, [addresses[2], addresses[3], addresses[4]], howToCalls[1], counterdata, uints)));
+        require(staticCall(secondTarget, abi.encodePacked(secondExtradata, [addresses[3], addresses[4], addresses[5], addresses[0], addresses[1], addresses[2], addresses[6]], howToCalls[1], uints, counterdata)));
 
         return 1;
     }
@@ -115,10 +121,14 @@ contract StaticUtil is StaticCaller {
         revert("No static calls succeeded");
     }
 
-    function sequenceExact(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[6] memory uints)
+    function sequenceExact(bytes memory extra,
+        address[7] memory addresses, AuthenticatedProxy.HowToCall howToCall, uint[6] memory uints,
+        bytes memory cdata)
         public
         view
     {
+        (address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas) = abi.decode(extra, (address[], uint[], bytes));
+
         /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly.
            e.g. transferring two CryptoKitties in sequence. */
 
@@ -130,13 +140,21 @@ contract StaticUtil is StaticCaller {
         require(howToCall == AuthenticatedProxy.HowToCall.DelegateCall);
         require(addrs.length == caddrs.length); // Exact calls only
 
-        sequence(addrs, extradataLengths, extradatas, caddrs, cvals, clengths, calldatas, addresses, uints);
+        for (uint i = 0; i < addrs.length; i++) {
+            require(cvals[i] == 0);
+        }
+
+        sequence(caddrs, clengths, calldatas, addresses, uints, addrs, extradataLengths, extradatas);
     }
 
-    function sequenceAnyAfter(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[4] memory addresses, AuthenticatedProxy.HowToCall howToCall, bytes memory cdata, uint[6] memory uints)
+    function sequenceAnyAfter(bytes memory extra,
+        address[7] memory addresses, AuthenticatedProxy.HowToCall howToCall, uint[6] memory uints,
+        bytes memory cdata)
         public
         view
     {
+        (address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas) = abi.decode(extra, (address[], uint[], bytes));
+
         /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly.
            e.g. transferring two CryptoKitties in sequence. */
 
@@ -148,10 +166,17 @@ contract StaticUtil is StaticCaller {
         require(howToCall == AuthenticatedProxy.HowToCall.DelegateCall);
         require(addrs.length <= caddrs.length); // Extra calls OK
 
-        sequence(addrs, extradataLengths, extradatas, caddrs, cvals, clengths, calldatas, addresses, uints);
+        for (uint i = 0; i < addrs.length; i++) {
+            require(cvals[i] == 0);
+        }
+
+        sequence(caddrs, clengths, calldatas, addresses, uints, addrs, extradataLengths, extradatas);
     }
 
-    function sequence(address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas, address[] memory caddrs, uint[] memory cvals, uint[] memory clengths, bytes memory calldatas, address[4] memory addresses, uint[6] memory uints)
+    function sequence(
+        address[] memory caddrs, uint[] memory clengths, bytes memory calldatas,
+        address[7] memory addresses, uint[6] memory uints,
+        address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas)
         internal
         view
     {
@@ -168,10 +193,8 @@ contract StaticUtil is StaticCaller {
                 data[m] = calldatas[l];
                 l++;
             }
-            // Not supported in the standard interface.
-            require(cvals[i] == 0);
-            address[3] memory taddrs = [addresses[0], caddrs[i], addresses[2]];
-            require(staticCall(addrs[i], abi.encodePacked(extradata, taddrs, AuthenticatedProxy.HowToCall.Call, data, uints)));
+            address[7] memory taddrs = [addresses[0], addresses[1], caddrs[i], addresses[3], addresses[4], addresses[5], addresses[6]];
+            require(staticCall(addrs[i], abi.encodePacked(extradata, taddrs, AuthenticatedProxy.HowToCall.Call, uints, data)));
         }
     }
 

@@ -44,10 +44,12 @@ contract StaticPayment {
     }
 
     function payMinAuctionEther(
+
         )
         public
         pure
     {
+        // decode token, amount vs. time
     }
 
     function payMaxAuctionEther(
@@ -55,6 +57,7 @@ contract StaticPayment {
         public
         pure
     {
+        // decode token, amount vs. time
     }
 
     function payMinAuction(

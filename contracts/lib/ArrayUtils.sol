@@ -1,5 +1,7 @@
 /*
 
+  << ArrayUtils >>
+
   Various functions for manipulating arrays in Solidity.
   This library is completely inlined and does not need to be deployed or linked.
 
