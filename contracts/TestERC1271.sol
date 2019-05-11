@@ -16,8 +16,13 @@ contract TestERC1271 is ERC1271 {
     address internal owner;
 
     /**
+     * Set a new owner (for testing)
+     *
+     * @param ownerAddr Address of owner
      */
-    constructor (address ownerAddr) public {
+    function setOwner (address ownerAddr)
+        public
+    {
         owner = ownerAddr;
     }
 
