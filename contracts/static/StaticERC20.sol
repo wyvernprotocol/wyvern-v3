@@ -31,14 +31,14 @@ contract StaticERC20 {
         // Call type = call
         require(howToCalls[0] == AuthenticatedProxy.HowToCall.Call);
         // Assert calldata
-        require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,uint256,uint256)", addresses[0], addresses[2], amountGiveGet[0])));
+        require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[0], addresses[2], amountGiveGet[0])));
 
         // Countercall target = token to get
         require(addresses[5] == tokenGiveGet[1]);
         // Countercall type = call
         require(howToCalls[1] == AuthenticatedProxy.HowToCall.Call);
         // Assert countercalldata
-        require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("transferFrom(address,uint256,uint256)", addresses[2], addresses[0], amountGiveGet[1])));
+        require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[2], addresses[0], amountGiveGet[1])));
 
         // Mark filled.
         return 1;
@@ -51,6 +51,9 @@ contract StaticERC20 {
         pure
         returns (uint)
     {
+        // Calculate function signature
+        bytes memory sig = ArrayUtils.arrayTake(abi.encodeWithSignature("transferFrom(address,address,uint256)"), 4);
+
         // Zero-value
         require(uints[0] == 0);
 
@@ -61,6 +64,8 @@ contract StaticERC20 {
         require(addresses[2] == tokenGiveGet[0]);
         // Call type = call
         require(howToCalls[0] == AuthenticatedProxy.HowToCall.Call);
+        // Check signature
+        require(ArrayUtils.arrayEq(sig, ArrayUtils.arrayTake(data, 4)));
         // Decode calldata
         (address callFrom, address callTo, uint256 amountGive) = abi.decode(ArrayUtils.arrayDrop(data, 4), (address, address, uint256));
         // Assert from
@@ -72,6 +77,8 @@ contract StaticERC20 {
         require(addresses[5] == tokenGiveGet[1]);
         // Countercall type = call
         require(howToCalls[1] == AuthenticatedProxy.HowToCall.Call);
+        // Check signature
+        require(ArrayUtils.arrayEq(sig, ArrayUtils.arrayTake(counterdata, 4)));
         // Decode countercalldata
         (address countercallFrom, address countercallTo, uint256 amountGet) = abi.decode(ArrayUtils.arrayDrop(counterdata, 4), (address, address, uint256));
         // Assert from
