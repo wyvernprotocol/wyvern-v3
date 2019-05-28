@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.5.7;
+pragma solidity 0.5.9;
 
 import "./static/StaticExamples.sol";
 

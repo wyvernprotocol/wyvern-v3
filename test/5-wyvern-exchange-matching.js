@@ -73,9 +73,20 @@ contract('WyvernExchange', (accounts) => {
 
   const withSomeTokens = () => {
     return withContracts().then(({erc20, erc721}) => {
-      const amount = randomUint()
+      const amount = randomUint() + 2
       return erc20.mint(accounts[0], amount).then(() => {
         return {tokens: amount, nfts: [1, 2, 3], erc20, erc721}
+      })
+    })
+  }
+
+  const withTokens = () => {
+    return withContracts().then(({erc20, erc721}) => {
+      const amount = randomUint() + 2
+      return erc20.mint(accounts[0], amount).then(() => {
+        return erc20.mint(accounts[6], amount).then(() => {
+          return { erc20 }
+        })
       })
     })
   }
@@ -84,6 +95,7 @@ contract('WyvernExchange', (accounts) => {
     return withContracts().then(({ registry, erc20, erc721 }) => {
       return registry.registerProxy({from: accounts[0]}).then(() => {
         return registry.proxies(accounts[0]).then(proxy => {
+          assert.equal(true, proxy.length > 0, 'no proxy address')
           return erc20.approve(proxy, 100000).then(() => {
             return erc721.setApprovalForAll(proxy, true)
           })
@@ -97,7 +109,6 @@ contract('WyvernExchange', (accounts) => {
       return registry.registerProxy({from: accounts[6]}).then(() => {
         return registry.proxies(accounts[6]).then(proxy => {
           assert.equal(true, proxy.length > 0, 'no proxy address')
-          // Also approve erc20 and erc721
           return erc20.approve(proxy, 100000, {from: accounts[6]}).then(() => {
             return erc721.setApprovalForAll(proxy, true, {from: accounts[6]})
           })
@@ -332,6 +343,40 @@ contract('WyvernExchange', (accounts) => {
             })
           })
       })
+  })
+
+  it('should match erc20-erc20 swap order', () => {
+    return withContracts().then(({atomicizer, exchange, registry, statici}) => {
+      return withTokens().then(({ erc20 }) => {
+        const erc20c = new web3.eth.Contract(erc20.abi, erc20.address)
+
+        const selector = web3.eth.abi.encodeFunctionSignature('swapExact(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+        const paramsOne = web3.eth.abi.encodeParameters(
+          ['address[2]', 'uint256[2]'],
+          [[erc20.address, erc20.address], ['1', '2']]
+        )
+        const paramsTwo = web3.eth.abi.encodeParameters(
+          ['address[2]', 'uint256[2]'],
+          [[erc20.address, erc20.address], ['2', '1']]
+        )
+
+        const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: paramsOne, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '412312'}
+        const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: paramsTwo, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '4434'}
+
+        const firstData = erc20c.methods.transferFrom(accounts[0], accounts[6], 1).encodeABI()
+        const secondData = erc20c.methods.transferFrom(accounts[6], accounts[0], 2).encodeABI()
+
+        const firstCall = {target: erc20.address, howToCall: 0, data: firstData}
+        const secondCall = {target: erc20.address, howToCall: 0, data: secondData}
+        const sigOne = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+        return exchange.sign(two, accounts[6]).then(sigTwo => {
+          return exchange.atomicMatch(one, sigOne, firstCall, two, sigTwo, secondCall, ZERO_BYTES32).then(() => {
+            return erc20.balanceOf(accounts[0]).then(balance => {
+            })
+          })
+        })
+      })
+    })
   })
 
   it('should match with signatures', () => {

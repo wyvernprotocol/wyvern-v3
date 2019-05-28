@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.5.7;
+pragma solidity 0.5.9;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
@@ -48,14 +48,13 @@ contract StaticERC20 {
         // Call type = call
         require(howToCalls[0] == AuthenticatedProxy.HowToCall.Call);
         // Assert calldata
-        require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[0], addresses[2], amountGiveGet[0])));
+        require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[1], addresses[4], amountGiveGet[0])));
 
-        // Countercall target = token to get
         require(addresses[5] == tokenGiveGet[1]);
         // Countercall type = call
         require(howToCalls[1] == AuthenticatedProxy.HowToCall.Call);
         // Assert countercalldata
-        require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[2], addresses[0], amountGiveGet[1])));
+        require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[4], addresses[1], amountGiveGet[1])));
 
         // Mark filled.
         return 1;
@@ -86,9 +85,9 @@ contract StaticERC20 {
         // Decode calldata
         (address callFrom, address callTo, uint256 amountGive) = abi.decode(ArrayUtils.arrayDrop(data, 4), (address, address, uint256));
         // Assert from
-        require(callFrom == addresses[0]);
+        require(callFrom == addresses[1]);
         // Assert to
-        require(callTo == addresses[2]);
+        require(callTo == addresses[4]);
 
         // Countercall target = token to get
         require(addresses[5] == tokenGiveGet[1]);
@@ -99,9 +98,9 @@ contract StaticERC20 {
         // Decode countercalldata
         (address countercallFrom, address countercallTo, uint256 amountGet) = abi.decode(ArrayUtils.arrayDrop(counterdata, 4), (address, address, uint256));
         // Assert from
-        require(countercallFrom == addresses[2]);
+        require(countercallFrom == addresses[4]);
         // Assert to
-        require(countercallTo == addresses[0]);
+        require(countercallTo == addresses[1]);
 
         // Assert ratio
         // ratio = min get/give
