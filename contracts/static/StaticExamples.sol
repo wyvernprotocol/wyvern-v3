@@ -12,4 +12,5 @@ import "../lib/ArrayUtils.sol";
 import "../registry/AuthenticatedProxy.sol";
 
 contract StaticExamples {
+
 }

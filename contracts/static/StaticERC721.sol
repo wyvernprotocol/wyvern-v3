@@ -13,6 +13,23 @@ import "../registry/AuthenticatedProxy.sol";
 
 contract StaticERC721 {
 
+    function transferERC721Exact(bytes memory extra,
+        address[7] memory addresses, AuthenticatedProxy.HowToCall howToCall, uint[6] memory,
+        bytes memory data)
+        public
+        pure
+    {
+        // Decode extradata
+        (address token, uint amount) = abi.decode(extra, (address, uint));
+
+        // Call target = token to give
+        require(addresses[2] == token);
+        // Call type = call
+        require(howToCall == AuthenticatedProxy.HowToCall.Call);
+        // Assert calldata
+        require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[0], addresses[2], amount)));
+    }
+
     function swapOneForOne(bytes memory extra,
         address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
         bytes memory data, bytes memory counterdata)
