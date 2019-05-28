@@ -6,6 +6,7 @@ const WyvernStatic = artifacts.require('WyvernStatic')
 const WyvernRegistry = artifacts.require('WyvernRegistry')
 const TestERC20 = artifacts.require('TestERC20')
 const TestERC721 = artifacts.require('TestERC721')
+const TestERC1271 = artifacts.require('TestERC1271')
 
 const Web3 = require('web3')
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')
@@ -36,7 +37,11 @@ contract('WyvernExchange', (accounts) => {
                         return WyvernAtomicizer
                           .deployed()
                           .then(atomicizer => {
-                            return { atomicizer, exchange, statici, registry, erc20, erc721 }
+                            return TestERC1271
+                              .deployed()
+                              .then(erc1271 => {
+                                return { atomicizer, exchange, statici, registry, erc20, erc721, erc1271 }
+                              })
                           })
                       })
                   })
@@ -101,6 +106,16 @@ contract('WyvernExchange', (accounts) => {
     })
   })
 
+  it('should allow proxy registration, erc1271', () => {
+    return withContracts().then(({registry, erc20, erc721, erc1271}) => {
+      return registry.registerProxyFor(erc1271.address).then(() => {
+        return registry.proxies(erc1271.address).then(proxy => {
+          assert.equal(true, proxy.length > 0, 'no proxy address')
+        })
+      })
+    })
+  })
+
   it('should match any-any nop order', () => {
     return withContracts()
       .then(({exchange, registry, statici}) => {
@@ -109,6 +124,22 @@ contract('WyvernExchange', (accounts) => {
         const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '1'}
         const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
         return exchange.atomicMatch(one, nullSig, call, two, nullSig, call, ZERO_BYTES32).then(() => {
+        })
+      })
+  })
+
+  it('should match any-any nop order, erc 1271', () => {
+    return withContracts()
+      .then(({exchange, registry, statici, erc1271}) => {
+        erc1271.setOwner(accounts[0]).then(() => {
+          const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+          const one = {registry: registry.address, maker: erc1271.address, staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '410'}
+          const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '411'}
+          const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
+          return exchange.sign(one, accounts[0]).then(oneSig => {
+            return exchange.atomicMatch(one, oneSig, call, two, nullSig, call, ZERO_BYTES32).then(() => {
+            })
+          })
         })
       })
   })
