@@ -345,6 +345,62 @@ contract('WyvernExchange', (accounts) => {
       })
   })
 
+  it('should match two nft + erc20 orders, real static call', () => {
+    return withContracts()
+      .then(({atomicizer, exchange, registry, statici, erc20, erc721}) => {
+        return withSomeTokens()
+          .then(({tokens, nfts}) => {
+            const abi = [{'constant': false, 'inputs': [{'name': 'addrs', 'type': 'address[]'}, {'name': 'values', 'type': 'uint256[]'}, {'name': 'calldataLengths', 'type': 'uint256[]'}, {'name': 'calldatas', 'type': 'bytes'}], 'name': 'atomicize', 'outputs': [], 'payable': false, 'stateMutability': 'nonpayable', 'type': 'function'}]
+            const atomicizerc = new web3.eth.Contract(abi, atomicizer.address)
+            const erc20c = new web3.eth.Contract(erc20.abi, erc20.address)
+            const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
+            const selectorOne = web3.eth.abi.encodeFunctionSignature('dumbSequenceAnyAfter(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+            // const selectorAnyAfter = web3.eth.abi.encodeFunctionSignature('sequenceAnyAfter(bytes,address[7],uint8,uint256[6],bytes)')
+            /*
+            const paramsAnyAfter = web3.eth.abi.encodeParameters(
+              ['address[]', 'uint256[]', 'bytes'],
+              [[], [], '0x']
+            )
+            */
+            const extradataOne = web3.eth.abi.encodeParameters(
+              ['address[]', 'uint256[]', 'bytes'],
+              [[], [], '0x']
+              // ['address', 'bytes', 'address', 'bytes'],
+              // [statici.address, selectorAnyAfter + paramsAnyAfter.slice(2), statici.address, selectorAnyAfter + paramsAnyAfter.slice(2)]
+            )
+            const selectorTwo = web3.eth.abi.encodeFunctionSignature('any(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+            const extradataTwo = '0x'
+            const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selectorOne, staticExtradata: extradataOne, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3352'}
+            const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selectorTwo, staticExtradata: extradataTwo, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3335'}
+            const sig = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+            const firstERC20Call = erc20c.methods.transferFrom(accounts[0], accounts[6], 2).encodeABI()
+            const firstERC721Call = erc721c.methods.transferFrom(accounts[0], accounts[6], nfts[2]).encodeABI()
+            const firstData = atomicizerc.methods.atomicize(
+              [erc20.address, erc721.address],
+              [0, 0],
+              [(firstERC20Call.length - 2) / 2, (firstERC721Call.length - 2) / 2],
+              firstERC20Call + firstERC721Call.slice(2)
+            ).encodeABI()
+            const secondERC721Call = erc721c.methods.transferFrom(accounts[6], accounts[0], nfts[0]).encodeABI()
+            const secondData = atomicizerc.methods.atomicize(
+              [erc721.address],
+              [0],
+              [(secondERC721Call.length - 2) / 2],
+              secondERC721Call
+            ).encodeABI()
+            const firstCall = {target: atomicizer.address, howToCall: 1, data: firstData}
+            const secondCall = {target: atomicizer.address, howToCall: 1, data: secondData}
+            return exchange.sign(two, accounts[6]).then(twoSig => {
+              return exchange.atomicMatch(one, sig, firstCall, two, twoSig, secondCall, ZERO_BYTES32).then(() => {
+                return erc20.balanceOf(accounts[6]).then(balance => {
+                  assert.equal(4, balance, 'Incorrect balance')
+                })
+              })
+            })
+          })
+      })
+  })
+
   it('should match erc20-erc20 swap order', () => {
     return withContracts().then(({atomicizer, exchange, registry, statici}) => {
       return withTokens().then(({ erc20 }) => {
