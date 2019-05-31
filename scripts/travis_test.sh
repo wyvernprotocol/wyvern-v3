@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -x
+set -xe
+
 pkill -f testrpc
 set -e
 sleep 2
