@@ -3,12 +3,13 @@ module.exports = {
   copyPackages: ['openzeppelin-solidity'],
   skipFiles: [
     'static/',
-    'lib/',
+    'WyvernStatic.sol',
+    'WyvernStaticExamples.sol',
+    'lib/ArrayUtils.sol',
     'TestERC20.sol',
     'TestERC721.sol',
     'TestAuthenticatedProxy.sol',
-    'WyvernAtomicizer.sol',
-    'WyvernStatic.sol'
+    'WyvernAtomicizer.sol'
   ],
   compileCommand: '../node_modules/.bin/truffle compile',
   testCommand: '../node_modules/.bin/truffle test --network coverage'

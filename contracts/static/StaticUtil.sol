@@ -150,7 +150,7 @@ contract StaticUtil is StaticCaller {
 
     function dumbSequenceAnyAfter(bytes memory extra,
         address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
-        bytes memory cdata, bytes memory counterdata)
+        bytes memory cdata, bytes memory)
         public
         view
         returns (uint)
