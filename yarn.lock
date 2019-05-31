@@ -2492,24 +2492,7 @@ ethereumjs-vm@2.4.0:
     rustbn.js "~0.2.0"
     safe-buffer "^5.1.1"
 
-ethereumjs-vm@^2.1.0, ethereumjs-vm@^2.3.4, ethereumjs-vm@^2.6.0:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/ethereumjs-vm/-/ethereumjs-vm-2.6.0.tgz#76243ed8de031b408793ac33907fb3407fe400c6"
-  integrity sha512-r/XIUik/ynGbxS3y+mvGnbOKnuLo40V5Mj1J25+HEO63aWYREIqvWeRO/hnROlMBE5WoniQmPmhiaN0ctiHaXw==
-  dependencies:
-    async "^2.1.2"
-    async-eventemitter "^0.2.2"
-    ethereumjs-account "^2.0.3"
-    ethereumjs-block "~2.2.0"
-    ethereumjs-common "^1.1.0"
-    ethereumjs-util "^6.0.0"
-    fake-merkle-patricia-tree "^1.0.1"
-    functional-red-black-tree "^1.0.1"
-    merkle-patricia-tree "^2.3.2"
-    rustbn.js "~0.2.0"
-    safe-buffer "^5.1.1"
-
-"ethereumjs-vm@https://github.com/leapdao/ethereumjs-vm-sc.git#master":
+ethereumjs-vm@^2.1.0, ethereumjs-vm@^2.3.4, ethereumjs-vm@^2.6.0, "ethereumjs-vm@https://github.com/leapdao/ethereumjs-vm-sc.git#master":
   version "2.6.0"
   resolved "https://github.com/leapdao/ethereumjs-vm-sc.git#1fdd9d832f93bf948bdcf9421a6aa627dde8f574"
   dependencies:
@@ -6060,8 +6043,8 @@ solc@0.5.0:
     yargs "^11.0.0"
 
 "solidity-coverage@https://github.com/wyvernprotocol/solidity-coverage.git":
-  version "0.5.11"
-  resolved "https://github.com/wyvernprotocol/solidity-coverage.git#ff6e1191cd158d9e4fd5b28ccab3f8ee6c0459cf"
+  version "0.5.13"
+  resolved "https://github.com/wyvernprotocol/solidity-coverage.git#85430efd1277acde06bc6b78805a36e6dbdd4fd6"
   dependencies:
     death "^1.1.0"
     ethereumjs-testrpc-sc "https://github.com/leapdao/testrpc-sc.git#master"
@@ -6070,7 +6053,7 @@ solc@0.5.0:
     req-cwd "^1.0.1"
     shelljs "^0.7.4"
     sol-explore "^1.6.2"
-    solidity-parser-sc "https://github.com/leapdao/solidity-parser.git#master"
+    solidity-parser-sc "https://github.com/leapdao/solidity-parser.git#fd9d5c809e4795c9f703cb7f5eb0bf2935cf5f35"
     tree-kill "^1.2.0"
     web3 "^0.20.6"
 
@@ -6079,7 +6062,7 @@ solidity-parser-antlr@^0.4.0:
   resolved "https://registry.yarnpkg.com/solidity-parser-antlr/-/solidity-parser-antlr-0.4.3.tgz#ff452a8e45c24cb982717bda207cbb633733371d"
   integrity sha512-+0Sm/NCrYxCouzT8lJPrM2T8vT3PPW0enlHtAnxDgv/lBUjymHeFfEPjaNdwCNueR9w/lUOv7ivDm8ypHUcZMQ==
 
-"solidity-parser-sc@https://github.com/leapdao/solidity-parser.git#master":
+"solidity-parser-sc@https://github.com/leapdao/solidity-parser.git#fd9d5c809e4795c9f703cb7f5eb0bf2935cf5f35":
   version "0.4.13"
   resolved "https://github.com/leapdao/solidity-parser.git#fd9d5c809e4795c9f703cb7f5eb0bf2935cf5f35"
   dependencies:
