@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.4",
+    "ethereumjs-testrpc-sc": "https://github.com/leapdao/testrpc-sc.git#master",
     "truffle-hdwallet-provider": "^1.0.6"
   }
 }
