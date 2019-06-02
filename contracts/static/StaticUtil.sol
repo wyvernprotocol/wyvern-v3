@@ -209,6 +209,7 @@ contract StaticUtil is StaticCaller {
             addresses[2] = caddrs[i];
             require(staticCall(addrs[i], abi.encodeWithSelector(selectors[i], extradata, addresses, AuthenticatedProxy.HowToCall.Call, uints, data)));
         }
+        require(j == extradatas.length);
     }
 
 }
