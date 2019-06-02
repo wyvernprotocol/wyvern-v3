@@ -355,18 +355,14 @@ contract('WyvernExchange', (accounts) => {
             const erc20c = new web3.eth.Contract(erc20.abi, erc20.address)
             const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
             const selectorOne = web3.eth.abi.encodeFunctionSignature('dumbSequenceAnyAfter(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
-            // const selectorAnyAfter = web3.eth.abi.encodeFunctionSignature('sequenceAnyAfter(bytes,address[7],uint8,uint256[6],bytes)')
-            /*
-            const paramsAnyAfter = web3.eth.abi.encodeParameters(
-              ['address[]', 'uint256[]', 'bytes'],
-              [[], [], '0x']
+            const firstEDSelector = web3.eth.abi.encodeFunctionSignature('transferERC20Exact(bytes,address[7],uint8,uint256[6],bytes)')
+            const firstEDParams = web3.eth.abi.encodeParameters(
+              ['bytes'],
+              [web3.eth.abi.encodeParameters(['address', 'uint256'], [erc20.address, '2'])]
             )
-            */
             const extradataOne = web3.eth.abi.encodeParameters(
-              ['address[]', 'uint256[]', 'bytes'],
-              [[], [], '0x']
-              // ['address', 'bytes', 'address', 'bytes'],
-              // [statici.address, selectorAnyAfter + paramsAnyAfter.slice(2), statici.address, selectorAnyAfter + paramsAnyAfter.slice(2)]
+              ['address[]', 'uint256[]', 'bytes4[]', 'bytes'],
+              [[statici.address], [(firstEDParams.length - 2) / 2], [firstEDSelector], firstEDParams]
             )
             const selectorTwo = web3.eth.abi.encodeFunctionSignature('any(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
             const extradataTwo = '0x'

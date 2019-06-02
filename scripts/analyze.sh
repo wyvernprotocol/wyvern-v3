@@ -4,20 +4,9 @@ set -x
 
 yarn flatten
 
-# docker pull mythril/myth
-# docker pull luongnguyen/oyente
-# docker pull trailofbits/slither
-
-alias myth="docker run -v $(pwd):/opt mythril/myth"
-alias oyente="docker run -v $(pwd):/opt luongnguyen/oyente /oyente/oyente/oyente.py"
-alias slither="docker run -v $(pwd):/opt trailofbits/slither"
+find ./temp -type f -name "*.sol" -exec sed -i -e 's/pragma solidity 0.5.9/pragma solidity 0.5.8/g' {} +;
 
 for contract in $(ls temp/); do
-  sed -i -e 's/0.5.0/>0.4.9/g' temp/$contract
-  # echo "Analyzing $contract with Mythril..."
-  # myth -x /opt/temp/$contract
-  # echo "Analyzing $contract with Oyente..."
-  # oyente -s /opt/temp/$contract
   echo "Analyzing $contract with Slither..."
-  slither /opt/temp/$contract
+  echo "slither /opt/temp/$contract" | docker run -i -v $(pwd):/opt trailofbits/eth-security-toolbox
 done

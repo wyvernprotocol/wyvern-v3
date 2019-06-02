@@ -3,8 +3,6 @@ module.exports = {
   copyPackages: ['openzeppelin-solidity'],
   skipFiles: [
     'static/',
-    'WyvernStatic.sol',
-    'WyvernStaticExamples.sol',
     'lib/ArrayUtils.sol',
     'TestERC20.sol',
     'TestERC721.sol',

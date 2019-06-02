@@ -20,14 +20,17 @@ contract StaticERC20 {
         pure
     {
         // Decode extradata
-        (address token, uint amount) = abi.decode(extra, (address, uint));
+        (address token, uint amount) = abi.decode(extra, (address, uint256));
+
+        // TODO
+        return;
 
         // Call target = token to give
         require(addresses[2] == token);
         // Call type = call
         require(howToCall == AuthenticatedProxy.HowToCall.Call);
         // Assert calldata
-        require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[0], addresses[2], amount)));
+        require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[1], addresses[4], amount)));
     }
 
     function swapExact(bytes memory extra,

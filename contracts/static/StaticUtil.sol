@@ -128,7 +128,7 @@ contract StaticUtil is StaticCaller {
         public
         view
     {
-        (address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas) = abi.decode(extra, (address[], uint[], bytes));
+        (address[] memory addrs, uint[] memory extradataLengths, bytes4[] memory selectors, bytes memory extradatas) = abi.decode(extra, (address[], uint[], bytes4[], bytes));
 
         /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly.
            e.g. transferring two CryptoKitties in sequence. */
@@ -145,7 +145,7 @@ contract StaticUtil is StaticCaller {
             require(cvals[i] == 0);
         }
 
-        sequence(caddrs, clengths, calldatas, addresses, uints, addrs, extradataLengths, extradatas);
+        sequence(caddrs, clengths, calldatas, addresses, uints, addrs, extradataLengths, selectors, extradatas);
     }
 
     function dumbSequenceAnyAfter(bytes memory extra,
@@ -166,7 +166,7 @@ contract StaticUtil is StaticCaller {
         public
         view
     {
-        (address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas) = abi.decode(extra, (address[], uint[], bytes));
+        (address[] memory addrs, uint[] memory extradataLengths, bytes4[] memory selectors, bytes memory extradatas) = abi.decode(extra, (address[], uint[], bytes4[], bytes));
 
         /* Assert DELEGATECALL to atomicizer library with given call sequence, split up predicates accordingly.
            e.g. transferring two CryptoKitties in sequence. */
@@ -183,13 +183,13 @@ contract StaticUtil is StaticCaller {
             require(cvals[i] == 0);
         }
 
-        sequence(caddrs, clengths, calldatas, addresses, uints, addrs, extradataLengths, extradatas);
+        sequence(caddrs, clengths, calldatas, addresses, uints, addrs, extradataLengths, selectors, extradatas);
     }
 
     function sequence(
         address[] memory caddrs, uint[] memory clengths, bytes memory calldatas,
         address[7] memory addresses, uint[6] memory uints,
-        address[] memory addrs, uint[] memory extradataLengths, bytes memory extradatas)
+        address[] memory addrs, uint[] memory extradataLengths, bytes4[] memory selectors, bytes memory extradatas)
         internal
         view
     {
@@ -206,8 +206,8 @@ contract StaticUtil is StaticCaller {
                 data[m] = calldatas[l];
                 l++;
             }
-            address[7] memory taddrs = [addresses[0], addresses[1], caddrs[i], addresses[3], addresses[4], addresses[5], addresses[6]];
-            require(staticCall(addrs[i], abi.encodePacked(extradata, taddrs, AuthenticatedProxy.HowToCall.Call, uints, data)));
+            addresses[2] = caddrs[i];
+            require(staticCall(addrs[i], abi.encodeWithSelector(selectors[i], extradata, addresses, AuthenticatedProxy.HowToCall.Call, uints, data)));
         }
     }
 
