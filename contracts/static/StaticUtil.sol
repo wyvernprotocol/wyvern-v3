@@ -28,6 +28,12 @@ contract StaticUtil is StaticCaller {
         return 1;
     }
 
+    function anySingle(bytes memory,  address[7] memory, AuthenticatedProxy.HowToCall, uint[6] memory, bytes memory)
+        public
+        pure
+    {
+    }
+
     function anyNoFill(bytes memory, address[7] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory, bytes memory, bytes memory)
         public
         pure
@@ -63,15 +69,15 @@ contract StaticUtil is StaticCaller {
         view
         returns (uint)
     {
-        (address firstTarget, bytes memory firstExtradata, address secondTarget, bytes memory secondExtradata) = abi.decode(extra, (address, bytes, address, bytes));
+        (address[2] memory targets, bytes4[2] memory selectors, bytes memory firstExtradata, bytes memory secondExtradata) = abi.decode(extra, (address[2], bytes4[2], bytes, bytes));
 
         /* Split into two static calls: one for the call, one for the counter-call, both with metadata. */
 
         /* Static call to check the call. */
-        require(staticCall(firstTarget, abi.encodePacked(firstExtradata, addresses, howToCalls[0], uints, data)));
+        require(staticCall(targets[0], abi.encodeWithSelector(selectors[0], firstExtradata, addresses, howToCalls[0], uints, data)));
 
         /* Static call to check the counter-call. */
-        require(staticCall(secondTarget, abi.encodePacked(secondExtradata, [addresses[3], addresses[4], addresses[5], addresses[0], addresses[1], addresses[2], addresses[6]], howToCalls[1], uints, counterdata)));
+        require(staticCall(targets[1], abi.encodeWithSelector(selectors[0], secondExtradata, [addresses[3], addresses[4], addresses[5], addresses[0], addresses[1], addresses[2], addresses[6]], howToCalls[1], uints, counterdata)));
 
         return 1;
     }

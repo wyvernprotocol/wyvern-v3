@@ -354,18 +354,27 @@ contract('WyvernExchange', (accounts) => {
             const atomicizerc = new web3.eth.Contract(abi, atomicizer.address)
             const erc20c = new web3.eth.Contract(erc20.abi, erc20.address)
             const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
-            const selectorOne = web3.eth.abi.encodeFunctionSignature('dumbSequenceExact(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+            const selectorOne = web3.eth.abi.encodeFunctionSignature('split(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+            const selectorOneA = web3.eth.abi.encodeFunctionSignature('sequenceExact(bytes,address[7],uint8,uint256[6],bytes)')
+            const selectorOneB = web3.eth.abi.encodeFunctionSignature('anySingle(bytes,address[7],uint8,uint256[6],bytes)')
             const firstEDSelector = web3.eth.abi.encodeFunctionSignature('transferERC20Exact(bytes,address[7],uint8,uint256[6],bytes)')
             const firstEDParams = web3.eth.abi.encodeParameters(['address', 'uint256'], [erc20.address, '2'])
             const secondEDSelector = web3.eth.abi.encodeFunctionSignature('transferERC721Exact(bytes,address[7],uint8,uint256[6],bytes)')
             const secondEDParams = web3.eth.abi.encodeParameters(['address', 'uint256'], [erc721.address, nfts[2]])
-            const extradataOne = web3.eth.abi.encodeParameters(
+            const extradataOneA = web3.eth.abi.encodeParameters(
               ['address[]', 'uint256[]', 'bytes4[]', 'bytes'],
               [[statici.address, statici.address],
                 [(firstEDParams.length - 2) / 2, (secondEDParams.length - 2) / 2],
                 [firstEDSelector, secondEDSelector],
                 firstEDParams + secondEDParams.slice(2)]
             )
+            const paramsOneA = web3.eth.abi.encodeParameters(
+              ['address[2]', 'bytes4[2]', 'bytes', 'bytes'],
+              [[statici.address, statici.address],
+                [selectorOneB, selectorOneB],
+                extradataOneA, '0x']
+            )
+            const extradataOne = paramsOneA
             const selectorTwo = web3.eth.abi.encodeFunctionSignature('any(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
             const extradataTwo = '0x'
             const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selectorOne, staticExtradata: extradataOne, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3352'}
