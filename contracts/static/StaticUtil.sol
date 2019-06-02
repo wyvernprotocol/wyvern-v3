@@ -135,7 +135,7 @@ contract StaticUtil is StaticCaller {
 
         require(addrs.length == extradataLengths.length);
 
-        (address[] memory caddrs, uint[] memory cvals, uint[] memory clengths, bytes memory calldatas) = abi.decode(cdata, (address[], uint[], uint[], bytes));
+        (address[] memory caddrs, uint[] memory cvals, uint[] memory clengths, bytes memory calldatas) = abi.decode(ArrayUtils.arrayDrop(cdata, 4), (address[], uint[], uint[], bytes));
 
         require(addresses[2] == atomicizer);
         require(howToCall == AuthenticatedProxy.HowToCall.DelegateCall);
@@ -148,14 +148,14 @@ contract StaticUtil is StaticCaller {
         sequence(caddrs, clengths, calldatas, addresses, uints, addrs, extradataLengths, selectors, extradatas);
     }
 
-    function dumbSequenceAnyAfter(bytes memory extra,
+    function dumbSequenceExact(bytes memory extra,
         address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
         bytes memory cdata, bytes memory)
         public
         view
         returns (uint)
     {
-        sequenceAnyAfter(extra, addresses, howToCalls[0], uints, cdata);
+        sequenceExact(extra, addresses, howToCalls[0], uints, cdata);
 
         return 1;
     }

@@ -27,7 +27,7 @@ contract StaticERC721 {
         // Call type = call
         require(howToCall == AuthenticatedProxy.HowToCall.Call);
         // Assert calldata
-        require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[0], addresses[2], amount)));
+        require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[1], addresses[4], amount)));
     }
 
     function swapOneForOne(bytes memory extra,
