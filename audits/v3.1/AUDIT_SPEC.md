@@ -22,7 +22,6 @@
             1. [OwnedUpgradabilityStorage](#ownedupgradabilitystorage)
         1. [TokenRecipient](#tokenrecipient)
     1. [WyvernAtomicizer](#wyvernatomicizer)
-    1. [WyvernStatic](#wyvernstatic)
 1. [Deployments](#deployments)
     1. [Rinkeby](#rinkeby)
     1. [Metropolis](#metropolis)
