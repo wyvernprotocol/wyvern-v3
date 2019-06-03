@@ -263,7 +263,7 @@ contract('WyvernExchange', (accounts) => {
         return exchange.atomicMatch(one, nullSig, call1, two, nullSig, call2, ZERO_BYTES32).then(() => {
           assert.equal(true, false, 'should not have succeeded')
         }).catch(err => {
-          assert.include(err.message, 'Returned error: VM Exception while processing transaction: invalid opcode', 'Incorrect error')
+          assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert Second call failed -- Reason given: Second call failed.')
         })
       })
   })

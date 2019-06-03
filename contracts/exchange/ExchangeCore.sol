@@ -337,10 +337,10 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
         /* Execute first call, assert success.
            This is the second "asymmetric" part of order matching: execution of the second order can depend on state changes in the first order, but not vice-versa. */
-        assert(executeCall(ProxyRegistryInterface(firstOrder.registry), firstOrder.maker, firstCall));
+        require(executeCall(ProxyRegistryInterface(firstOrder.registry), firstOrder.maker, firstCall), "First call failed");
 
         /* Execute second call, assert success. */
-        assert(executeCall(ProxyRegistryInterface(secondOrder.registry), secondOrder.maker, secondCall));
+        require(executeCall(ProxyRegistryInterface(secondOrder.registry), secondOrder.maker, secondCall), "Second call failed");
 
         /* Static calls must happen after the effectful calls so that they can check the resulting state. */
 
