@@ -77,7 +77,7 @@ contract StaticUtil is StaticCaller {
         require(staticCall(targets[0], abi.encodeWithSelector(selectors[0], firstExtradata, addresses, howToCalls[0], uints, data)));
 
         /* Static call to check the counter-call. */
-        require(staticCall(targets[1], abi.encodeWithSelector(selectors[0], secondExtradata, [addresses[3], addresses[4], addresses[5], addresses[0], addresses[1], addresses[2], addresses[6]], howToCalls[1], uints, counterdata)));
+        require(staticCall(targets[1], abi.encodeWithSelector(selectors[1], secondExtradata, [addresses[3], addresses[4], addresses[5], addresses[0], addresses[1], addresses[2], addresses[6]], howToCalls[1], uints, counterdata)));
 
         return 1;
     }

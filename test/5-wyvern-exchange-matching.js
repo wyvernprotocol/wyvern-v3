@@ -389,7 +389,7 @@ contract('WyvernExchange', (accounts) => {
             const erc20c = new web3.eth.Contract(erc20.abi, erc20.address)
             const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
             const selectorOne = web3.eth.abi.encodeFunctionSignature('split(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
-            // const selectorOneA = web3.eth.abi.encodeFunctionSignature('sequenceExact(bytes,address[7],uint8,uint256[6],bytes)')
+            const selectorOneA = web3.eth.abi.encodeFunctionSignature('sequenceAnyAfter(bytes,address[7],uint8,uint256[6],bytes)')
             const selectorOneB = web3.eth.abi.encodeFunctionSignature('anySingle(bytes,address[7],uint8,uint256[6],bytes)')
             const firstEDSelector = web3.eth.abi.encodeFunctionSignature('transferERC20Exact(bytes,address[7],uint8,uint256[6],bytes)')
             const firstEDParams = web3.eth.abi.encodeParameters(['address', 'uint256'], [erc20.address, '2'])
@@ -405,7 +405,7 @@ contract('WyvernExchange', (accounts) => {
             const paramsOneA = web3.eth.abi.encodeParameters(
               ['address[2]', 'bytes4[2]', 'bytes', 'bytes'],
               [[statici.address, statici.address],
-                [selectorOneB, selectorOneB],
+                [selectorOneA, selectorOneB],
                 extradataOneA, '0x']
             )
             const extradataOne = paramsOneA
