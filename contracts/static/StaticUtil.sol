@@ -32,6 +32,7 @@ contract StaticUtil is StaticCaller {
         public
         pure
     {
+        /* No checks. */
     }
 
     function anyNoFill(bytes memory, address[7] memory, AuthenticatedProxy.HowToCall[2] memory, uint[6] memory, bytes memory, bytes memory)
