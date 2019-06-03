@@ -139,6 +139,21 @@ contract('WyvernExchange', (accounts) => {
       })
   })
 
+  it('should not match any-any nop order with wrong registry', () => {
+    return withContracts()
+      .then(({exchange, registry, statici}) => {
+        const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+        const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '2330'}
+        const two = {registry: statici.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '2331'}
+        const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
+        return exchange.atomicMatch(one, nullSig, call, two, nullSig, call, ZERO_BYTES32).then(() => {
+          assert.equal(true, false, 'should not have matched')
+        }).catch(err => {
+          assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
+        })
+      })
+  })
+
   it('should match any-any nop order, erc 1271', () => {
     return withContracts()
       .then(({exchange, registry, statici, erc1271}) => {
@@ -150,6 +165,25 @@ contract('WyvernExchange', (accounts) => {
           return exchange.sign(one, accounts[0]).then(oneSig => {
             return exchange.atomicMatch(one, oneSig, call, two, nullSig, call, ZERO_BYTES32).then(() => {
             })
+          })
+        })
+      })
+  })
+
+  it('should not match any-any nop order with bad sig, erc 1271', () => {
+    return withContracts()
+      .then(({exchange, registry, statici, erc1271}) => {
+        erc1271.setOwner(accounts[0]).then(() => {
+          const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+          const one = {registry: registry.address, maker: erc1271.address, staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '410'}
+          const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '411'}
+          const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
+          return exchange.sign(two, accounts[0]).then(oneSig => {
+            return exchange.atomicMatch(one, oneSig, call, two, nullSig, call, ZERO_BYTES32).then(() => {
+              assert.equal(true, false, 'should not have matched')
+            })
+          }).catch(err => {
+            assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
           })
         })
       })
@@ -355,7 +389,7 @@ contract('WyvernExchange', (accounts) => {
             const erc20c = new web3.eth.Contract(erc20.abi, erc20.address)
             const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
             const selectorOne = web3.eth.abi.encodeFunctionSignature('split(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
-            const selectorOneA = web3.eth.abi.encodeFunctionSignature('sequenceExact(bytes,address[7],uint8,uint256[6],bytes)')
+            // const selectorOneA = web3.eth.abi.encodeFunctionSignature('sequenceExact(bytes,address[7],uint8,uint256[6],bytes)')
             const selectorOneB = web3.eth.abi.encodeFunctionSignature('anySingle(bytes,address[7],uint8,uint256[6],bytes)')
             const firstEDSelector = web3.eth.abi.encodeFunctionSignature('transferERC20Exact(bytes,address[7],uint8,uint256[6],bytes)')
             const firstEDParams = web3.eth.abi.encodeParameters(['address', 'uint256'], [erc20.address, '2'])
@@ -548,7 +582,7 @@ contract('WyvernExchange', (accounts) => {
         const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
         const one = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
         const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
-        return exchange.sign(two, accounts[6]).then(sig => {
+        return exchange.sign(one, accounts[6]).then(sig => {
           const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
           return exchange.atomicMatch(one, sig, call, two, nullSig, call, ZERO_BYTES32).then(() => {
             assert.equal(true, false, 'should not have matched')
