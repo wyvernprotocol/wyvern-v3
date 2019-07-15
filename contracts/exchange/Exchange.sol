@@ -14,10 +14,10 @@ import "./ExchangeCore.sol";
  */
 contract Exchange is ExchangeCore {
 
-    /* Public ABI-encodable method wrappers. */
+    /* external ABI-encodable method wrappers. */
 
-    function hashOrder_(address registry, address maker, address staticTarget, bytes4 staticSelector, bytes memory staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt)
-        public
+    function hashOrder_(address registry, address maker, address staticTarget, bytes4 staticSelector, bytes calldata staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt)
+        external
         pure
         returns (bytes32 hash)
     {
@@ -32,8 +32,8 @@ contract Exchange is ExchangeCore {
         return hashToSign(orderHash);
     }
 
-    function validateOrderParameters_(address registry, address maker, address staticTarget, bytes4 staticSelector, bytes memory staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt)
-        public
+    function validateOrderParameters_(address registry, address maker, address staticTarget, bytes4 staticSelector, bytes calldata staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt)
+        external
         view
         returns (bool)
     {
@@ -55,8 +55,8 @@ contract Exchange is ExchangeCore {
         return approveOrderHash(hash);
     }
 
-    function approveOrder_(address registry, address maker, address staticTarget, bytes4 staticSelector, bytes memory staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired)
-        public
+    function approveOrder_(address registry, address maker, address staticTarget, bytes4 staticSelector, bytes calldata staticExtradata, uint maximumFill, uint listingTime, uint expirationTime, uint salt, bool orderbookInclusionDesired)
+        external
     {
         return approveOrder(Order(registry, maker, staticTarget, staticSelector, staticExtradata, maximumFill, listingTime, expirationTime, salt), orderbookInclusionDesired);
     }
@@ -67,10 +67,10 @@ contract Exchange is ExchangeCore {
         return setOrderFill(hash, fill);
     }
 
-    function atomicMatch_(uint[16] memory uints, bytes4[2] memory staticSelectors,
-        bytes memory firstExtradata, bytes memory firstCalldata, bytes memory secondExtradata, bytes memory secondCalldata,
-        uint8[2] memory howToCalls, bytes32 metadata, bytes memory signatures)
-        public
+    function atomicMatch_(uint[16] calldata uints, bytes4[2] calldata staticSelectors,
+        bytes calldata firstExtradata, bytes calldata firstCalldata, bytes calldata secondExtradata, bytes calldata secondCalldata,
+        uint8[2] calldata howToCalls, bytes32 metadata, bytes calldata signatures)
+        external
         payable
     {
         return atomicMatch(
