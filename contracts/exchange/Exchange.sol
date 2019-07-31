@@ -67,10 +67,10 @@ contract Exchange is ExchangeCore {
         return setOrderFill(hash, fill);
     }
 
-    function atomicMatch_(uint[16] calldata uints, bytes4[2] calldata staticSelectors,
-        bytes calldata firstExtradata, bytes calldata firstCalldata, bytes calldata secondExtradata, bytes calldata secondCalldata,
-        uint8[2] calldata howToCalls, bytes32 metadata, bytes calldata signatures)
-        external
+    function atomicMatch_(uint[16] memory uints, bytes4[2] memory staticSelectors,
+        bytes memory firstExtradata, bytes memory firstCalldata, bytes memory secondExtradata, bytes memory secondCalldata,
+        uint8[2] memory howToCalls, bytes32 metadata, bytes memory signatures)
+        public
         payable
     {
         return atomicMatch(
