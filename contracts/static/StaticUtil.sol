@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.5.9;
+pragma solidity 0.5.11;
 
 import "../lib/StaticCaller.sol";
 import "../lib/ArrayUtils.sol";

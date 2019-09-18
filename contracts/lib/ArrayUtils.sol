@@ -7,7 +7,7 @@
 
 */
 
-pragma solidity 0.5.9;
+pragma solidity 0.5.11;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
