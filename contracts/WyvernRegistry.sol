@@ -23,7 +23,10 @@ contract WyvernRegistry is ProxyRegistry {
     constructor ()
         public
     {   
-        delegateProxyImplementation = address (new AuthenticatedProxy());
+        AuthenticatedProxy impl = new AuthenticatedProxy();
+        impl.initialize(address(this), this);
+        impl.setRevoke(true);
+        delegateProxyImplementation = address(impl);
     }   
 
     /** 
