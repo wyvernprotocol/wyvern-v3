@@ -6,7 +6,7 @@
 
 */
 
-pragma solidity 0.5.11;
+pragma solidity 0.7.5;
 
 /**
  * @title WyvernAtomicizer
@@ -26,7 +26,7 @@ library WyvernAtomicizer {
                 cd[k] = calldatas[j];
                 j++;
             }
-            (bool success,) = addrs[i].call.value(values[i])(cd);
+            (bool success,) = addrs[i].call{value: values[i]}(cd);
             require(success, "Atomicizer subcall failed");
         }
     }

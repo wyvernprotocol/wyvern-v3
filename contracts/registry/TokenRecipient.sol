@@ -4,7 +4,7 @@
 
 */
 
-pragma solidity 0.5.11;
+pragma solidity 0.7.5;
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
@@ -32,7 +32,7 @@ contract TokenRecipient {
     /**
      * @dev Receive Ether and generate a log event
      */
-    function () payable external {
+    fallback () payable external {
         emit ReceivedEther(msg.sender, msg.value);
     }
 }

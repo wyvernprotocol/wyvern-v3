@@ -4,9 +4,9 @@
 
 */
 
-pragma solidity 0.5.11;
+pragma solidity 0.7.5;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/access/Ownable.sol";
 
 import "../lib/StaticCaller.sol";
 import "../lib/ReentrancyGuarded.sol";

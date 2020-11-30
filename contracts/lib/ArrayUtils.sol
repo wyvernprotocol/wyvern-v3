@@ -7,7 +7,7 @@
 
 */
 
-pragma solidity 0.5.11;
+pragma solidity 0.7.5;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
@@ -20,12 +20,12 @@ library ArrayUtils {
     /**
      * Replace bytes in an array with bytes in another array, guarded by a bitmask
      * Efficiency of this function is a bit unpredictable because of the EVM's word-specific model (arrays under 32 bytes will be slower)
+     * Modifies the provided byte array parameter in place
      * 
      * @dev Mask must be the size of the byte array. A nonzero byte means the byte array can be changed.
      * @param array The original array
      * @param desired The target array
      * @param mask The mask specifying which bits can be changed
-     * @return The updated byte array (the parameter will be modified inplace)
      */
     function guardedArrayReplace(bytes memory array, bytes memory desired, bytes memory mask)
         internal
