@@ -10,7 +10,6 @@ import "./lib/EIP1271.sol";
 
 contract TestERC1271 is ERC1271 {
 
-    bytes4 constant internal MAGICVALUE = 0x20c13b0b;
     bytes4 constant internal SIGINVALID = 0x00000000;
 
     address internal owner;
@@ -31,11 +30,12 @@ contract TestERC1271 is ERC1271 {
      *
      * @param _data Data signed over
      * @param _signature Encoded signature
-     * @return Magic value if valid, zero-value otherwise
+     * @return magicValue Magic value if valid, zero-value otherwise
      */
     function isValidSignature(
         bytes memory _data,
         bytes memory _signature)
+        override
         public
         view
         returns (bytes4 magicValue)

@@ -8,7 +8,7 @@
 
 pragma solidity 0.7.5;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/access/Ownable.sol";
 
 import "./OwnableDelegateProxy.sol";
 import "./ProxyRegistryInterface.sol";
@@ -20,10 +20,10 @@ import "./ProxyRegistryInterface.sol";
 contract ProxyRegistry is Ownable, ProxyRegistryInterface {
 
     /* DelegateProxy implementation contract. Must be initialized. */
-    address public delegateProxyImplementation;
+    address public override delegateProxyImplementation;
 
     /* Authenticated proxies by user. */
-    mapping(address => OwnableDelegateProxy) public proxies;
+    mapping(address => OwnableDelegateProxy) public override proxies;
 
     /* Contracts pending access. */
     mapping(address => uint) public pending;
@@ -49,7 +49,7 @@ contract ProxyRegistry is Ownable, ProxyRegistryInterface {
         onlyOwner
     {
         require(!contracts[addr] && pending[addr] == 0, "Contract is already allowed in registry, or pending");
-        pending[addr] = now;
+        pending[addr] = block.timestamp;
     }
 
     /**
@@ -62,7 +62,7 @@ contract ProxyRegistry is Ownable, ProxyRegistryInterface {
         public
         onlyOwner
     {
-        require(!contracts[addr] && pending[addr] != 0 && ((pending[addr] + DELAY_PERIOD) < now), "Contract is no longer pending or has already been approved by registry");
+        require(!contracts[addr] && pending[addr] != 0 && ((pending[addr] + DELAY_PERIOD) < block.timestamp), "Contract is no longer pending or has already been approved by registry");
         pending[addr] = 0;
         contracts[addr] = true;
     }
@@ -84,7 +84,7 @@ contract ProxyRegistry is Ownable, ProxyRegistryInterface {
      * Register a proxy contract with this registry
      *
      * @dev Must be called by the user which the proxy is for, creates a new AuthenticatedProxy
-     * @return New AuthenticatedProxy contract
+     * @return proxy New AuthenticatedProxy contract
      */
     function registerProxy()
         public
@@ -97,7 +97,7 @@ contract ProxyRegistry is Ownable, ProxyRegistryInterface {
      * Register a proxy contract with this registry, overriding any existing proxy
      *
      * @dev Must be called by the user which the proxy is for, creates a new AuthenticatedProxy
-     * @return New AuthenticatedProxy contract
+     * @return proxy New AuthenticatedProxy contract
      */
     function registerProxyOverride()
         public
@@ -112,7 +112,7 @@ contract ProxyRegistry is Ownable, ProxyRegistryInterface {
      * Register a proxy contract with this registry
      *
      * @dev Can be called by any user
-     * @return New AuthenticatedProxy contract
+     * @return proxy New AuthenticatedProxy contract
      */
     function registerProxyFor(address user)
         public

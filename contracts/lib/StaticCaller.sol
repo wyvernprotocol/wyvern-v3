@@ -18,7 +18,7 @@ contract StaticCaller {
         returns (bool result)
     {
         assembly {
-            result := staticcall(gas, target, add(data, 0x20), mload(data), mload(0x40), 0)
+            result := staticcall(gas(), target, add(data, 0x20), mload(data), mload(0x40), 0)
         }
         return result;
     }
@@ -32,7 +32,7 @@ contract StaticCaller {
         assembly {
             let size := 0x20
             let free := mload(0x40)
-            result := staticcall(gas, target, add(data, 0x20), mload(data), free, size)
+            result := staticcall(gas(), target, add(data, 0x20), mload(data), free, size)
             ret := mload(free)
         }
         require(result, "Static call failed");

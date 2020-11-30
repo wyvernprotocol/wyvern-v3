@@ -6,7 +6,7 @@
 
 pragma solidity 0.7.5;
 
-contract ERC1271 {
+abstract contract ERC1271 {
 
   // bytes4(keccak256("isValidSignature(bytes,bytes)")
   bytes4 constant internal MAGICVALUE = 0x20c13b0b;
@@ -23,6 +23,7 @@ contract ERC1271 {
   function isValidSignature(
       bytes memory _data,
       bytes memory _signature)
+      virtual
       public
       view
       returns (bytes4 magicValue);

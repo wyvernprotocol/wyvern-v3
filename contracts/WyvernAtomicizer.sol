@@ -26,7 +26,7 @@ library WyvernAtomicizer {
                 cd[k] = calldatas[j];
                 j++;
             }
-            (bool success,) = addrs[i].call.value(values[i])(cd);
+            (bool success,) = addrs[i].call{value: values[i]}(cd);
             require(success, "Atomicizer subcall failed");
         }
     }

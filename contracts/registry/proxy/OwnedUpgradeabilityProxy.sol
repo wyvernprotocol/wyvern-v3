@@ -22,6 +22,22 @@ contract OwnedUpgradeabilityProxy is Proxy, OwnedUpgradeabilityStorage {
     event Upgraded(address indexed implementation);
 
     /**
+     * @dev Tells the address of the current implementation
+     * @return address of the current implementation
+     */
+    function implementation() override public view returns (address) {
+        return _implementation;
+    }
+
+    /**
+     * @dev Tells the proxy type (EIP 897)
+     * @return proxyTypeId Proxy type, 2 for forwarding proxy
+     */
+    function proxyType() override public pure returns (uint256 proxyTypeId) {
+        return 2;
+    }
+
+    /**
      * @dev Upgrades the implementation address
      * @param implementation representing the address of the new implementation to be set
      */

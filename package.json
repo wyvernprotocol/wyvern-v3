@@ -23,21 +23,20 @@
   },
   "homepage": "https://github.com/wyvernprotocol/wyvern-v3#readme",
   "devDependencies": {
-    "coveralls": "3.0.2",
-    "ganache-cli": "6.2.5",
-    "ganache-core": "2.3.3",
-    "openzeppelin-solidity": "2.1.1",
-    "solidity-coverage": "https://github.com/wyvernprotocol/solidity-coverage.git",
-    "solium": "1.2.2",
-    "standard": "12.0.1",
-    "truffle": "5.0.1",
-    "truffle-flattener": "^1.3.0",
-    "web3": "1.0.0-beta.37"
+    "@babel/runtime": "^7.12.5",
+    "coveralls": "^3.1.0",
+    "ethereumjs-testrpc-sc": "^6.5.1-sc.1",
+    "ganache-cli": "^6.12.1",
+    "ganache-core": "^2.13.1",
+    "lodash": "^4.17.20",
+    "openzeppelin-solidity": "^3.3.0",
+    "solidity-coverage": "^0.7.12",
+    "solium": "^1.2.5",
+    "standard": "^16.0.3",
+    "truffle": "^5.1.55",
+    "truffle-flattener": "^1.5.0",
+    "truffle-hdwallet-provider": "^1.0.17",
+    "web3": "^1.3.0"
   },
-  "dependencies": {
-    "@babel/runtime": "^7.3.4",
-    "ethereumjs-testrpc-sc": "https://github.com/leapdao/testrpc-sc.git#master",
-    "lodash": "^4.17.19",
-    "truffle-hdwallet-provider": "^1.0.6"
-  }
+  "dependencies": {}
 }

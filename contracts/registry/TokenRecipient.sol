@@ -32,7 +32,7 @@ contract TokenRecipient {
     /**
      * @dev Receive Ether and generate a log event
      */
-    function () payable external {
+    fallback () payable external {
         emit ReceivedEther(msg.sender, msg.value);
     }
 }

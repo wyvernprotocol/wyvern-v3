@@ -70,7 +70,7 @@ contract AuthenticatedProxy is TokenRecipient, OwnedUpgradeabilityStorage {
      * @param dest Address to which the call will be sent
      * @param howToCall Which kind of call to make
      * @param data Calldata to send
-     * @return Result of the call (success or failure)
+     * @return result Result of the call (success or failure)
      */
     function proxy(address dest, HowToCall howToCall, bytes memory data)
         public

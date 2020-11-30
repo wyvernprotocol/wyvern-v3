@@ -44,7 +44,7 @@ module.exports = {
   },
   compilers: {
     solc: {
-      version: '0.5.11',
+      version: '0.7.5',
       settings: {
         optimizer: {
           enabled: true,
