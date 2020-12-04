@@ -2,10 +2,8 @@
 
 const WyvernAtomicizer = artifacts.require('WyvernAtomicizer')
 
-contract('WyvernAtomicizer', (accounts) => {
-  it('should be deployed', () => {
-    return WyvernAtomicizer
-      .deployed()
-      .then(() => {})
+contract('WyvernAtomicizer',() => {
+  it('should be deployed',async () => {
+    return await WyvernAtomicizer.deployed()
   })
 })

@@ -3,6 +3,38 @@ const provider = new Web3.providers.HttpProvider('http://localhost:8545')
 var web3 = new Web3(provider)
 const { eip712Domain, structHash, signHash } = require('./eip712.js')
 
+
+// Truffle does not expose chai so it is impossible to add chai-as-promised.
+// This is a simple replacement function.
+// https://github.com/trufflesuite/truffle/issues/2090
+const assertIsRejected = (promise,error_match,message) =>
+  {
+    return promise
+      .then(() => assert.fail(message || 'Expected promise to be rejected'))
+      .catch(error =>
+        {
+        if (error_match)
+          {
+          if (typeof error_match === 'string')
+            return assert.equal(error_match,error.message,message);
+          if (error_match instanceof RegExp)
+            return error.message.match(error_match) || assert.fail(error.message,error_match.toString(),`'${error.message}' does not match ${error_match.toString()}: ${message}`);
+          return assert.instanceOf(error,error_match,message);
+          }
+        })
+  }
+
+const increaseTime = seconds => {
+  return new Promise(resolve =>
+    web3.currentProvider.send({
+    jsonrpc: '2.0',
+    method: 'evm_increaseTime',
+    params: [seconds],
+    id: 0
+    }, resolve)
+    )
+  }
+
 const eip712Order = {
   name: 'Order',
   fields: [
@@ -125,6 +157,8 @@ const ZERO_BYTES32 = '0x00000000000000000000000000000000000000000000000000000000
 module.exports = {
   hashOrder,
   hashToSign,
+  increaseTime,
+  assertIsRejected,
   wrap,
   randomUint,
   ZERO_ADDRESS,

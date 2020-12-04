@@ -4,3 +4,4 @@ node_modules/
 coverageEnv/
 scTopics
 temp/
+.DS_Store
