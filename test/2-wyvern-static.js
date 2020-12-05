@@ -3,25 +3,13 @@
 const WyvernAtomicizer = artifacts.require('WyvernAtomicizer')
 const WyvernStatic = artifacts.require('WyvernStatic')
 
-contract('WyvernStatic', (accounts) => {
-  it('should be deployed', () => {
-    return WyvernStatic
-      .deployed()
-      .then(() => {})
+contract('WyvernStatic',() => {
+  it('is deployed',async () => {
+    return await WyvernStatic.deployed();
   })
 
-  it('should have correct atomicizer address', () => {
-    return WyvernAtomicizer
-      .deployed()
-      .then(atomicizerInstance => {
-        return WyvernStatic
-          .deployed()
-          .then(staticInstance => {
-            return staticInstance.atomicizer()
-              .then(address => {
-                assert.equal(address, WyvernAtomicizer.address, 'incorrect atomicizer address')
-              })
-          })
-      })
+  it('has the correct atomicizer address',async () => {
+    let [atomicizerInstance,staticInstance] = await Promise.all([WyvernAtomicizer.deployed(),WyvernStatic.deployed()])
+    assert.equal(await staticInstance.atomicizer(),atomicizerInstance.address,'incorrect atomicizer address')
   })
 })

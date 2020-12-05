@@ -10,415 +10,243 @@ const Web3 = require('web3')
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')
 const web3 = new Web3(provider)
 
-const increaseTime = (addSeconds, callback) => {
-  return web3.currentProvider.send({
-    jsonrpc: '2.0',
-    method: 'evm_increaseTime',
-    params: [addSeconds],
-    id: 0
-  }, callback)
-}
+const {increaseTime,increaseTimePromise,assertIsRejected} = require('./aux')
 
-contract('WyvernRegistry', (accounts) => {
-  it('should be deployed', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(() => {})
+contract('WyvernRegistry',accounts => {
+  it('is deployed',async () => {
+    return await WyvernRegistry.deployed()
   })
 
-  it('should not allow additional grant', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registry => {
-        return registry.grantInitialAuthentication(registry.address).then(() => {
-          assert.equal(true, false, 'Should not have succeeded')
-        }).catch(err => {
-          assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
-        })
-      })
+  it('does not allow additional grant',async () => {
+    let registry = await WyvernRegistry.deployed()
+    return assertIsRejected(
+      registry.grantInitialAuthentication(registry.address),
+      /Wyvern Protocol Proxy Registry initial address already set/,
+      'Should not have allowed additional grant'
+      )
   })
 
-  it('should have a delegateproxyimpl', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registryInstance => {
-        return registryInstance.delegateProxyImplementation().then(ret => {
-          assert.equal(ret.length, 42, 'delegateproxyimpl was not set')
-        })
-      })
+  it('has a delegateproxyimpl',async () => {
+    let registry = await WyvernRegistry.deployed()
+    let delegateproxyimpl = await registry.delegateProxyImplementation()
+    assert.equal(delegateproxyimpl.length,42,'delegateproxyimpl was not set')
   })
 
-  it('should allow proxy registration', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(instance => {
-        return instance.registerProxy({from: accounts[3]}).then(() => {
-          return instance.proxies(accounts[3]).then(addr => {
-            assert.equal(addr.length > 0, true)
-          })
-        })
-      })
+  it('allows proxy registration',async () => {
+    let registry = await WyvernRegistry.deployed()
+    await registry.registerProxy({from: accounts[3]})
+    let proxy = await registry.proxies(accounts[3])
+    assert.ok(proxy.length > 0)
   })
 
-  it('should allow proxy registration', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(instance => {
-        return instance.registerProxy({from: accounts[2]}).then(() => {
-          return instance.proxies(accounts[2]).then(addr => {
-            assert.equal(addr.length > 0, true)
-          })
-        })
-      })
+  it('allows proxy registration',async () => {
+    let registry = await WyvernRegistry.deployed()
+    await registry.registerProxy({from: accounts[2]})
+    let proxy = await registry.proxies(accounts[2])
+    assert.ok(proxy.length > 0)
   })
 
-  it('should allow proxy override', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(instance => {
-        return instance.registerProxyOverride({from: accounts[2]}).then(() => {
-          return instance.proxies(accounts[2]).then(addr => {
-            assert.equal(addr.length > 0, true)
-          })
-        })
-      })
+  it('allows proxy override',async () => {
+    let registry = await WyvernRegistry.deployed()
+    await registry.registerProxyOverride({from: accounts[2]})
+    let proxy = await registry.proxies(accounts[2])
+    assert.isTrue(proxy.length > 0)
   })
 
-  it('should allow proxy upgrade', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registryInstance => {
-        return registryInstance.registerProxy({from: accounts[5]}).then(() => {
-          return registryInstance.proxies(accounts[5])
-            .then(ret => {
-              const contract = new web3.eth.Contract(OwnableDelegateProxy.abi, ret)
-              return registryInstance.delegateProxyImplementation().then(impl => {
-                return new Promise((resolve, reject) => {
-                  contract.methods.upgradeTo(registryInstance.address).send({from: accounts[5]}, (err) => {
-                    if (err) reject(err)
-                    contract.methods.upgradeTo(impl).send({from: accounts[5]}, (err) => {
-                      if (err) reject(err)
-                      else resolve()
-                    })
-                  })
-                })
-              })
-            })
-        })
-      })
+  it('allows proxy upgrade',async () => {
+    let registry = await WyvernRegistry.deployed()
+    await registry.registerProxy({from: accounts[5]})
+    let proxy = await registry.proxies(accounts[5])
+    let contract = new web3.eth.Contract(OwnableDelegateProxy.abi, proxy)
+    let implementation = await registry.delegateProxyImplementation()
+    assert.isOk(await contract.methods.upgradeTo(registry.address).send({from: accounts[5]}))
+    assert.isOk(await contract.methods.upgradeTo(implementation).send({from: accounts[5]}))
   })
 
-  it('should allow proxy to receive ether', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registryInstance => {
-        return registryInstance.proxies(accounts[3])
-          .then(ret => {
-            return web3.eth.sendTransaction({to: ret, from: accounts[0], value: 1000}).then(() => {})
-          })
-      })
+  it('allows proxy to receive ether',async () => {
+    let registry = await WyvernRegistry.deployed()
+    let proxy = await registry.proxies(accounts[3])
+    assert.isOk(await web3.eth.sendTransaction({to: proxy, from: accounts[0], value: 1000}))
   })
 
-  it('should not allow proxy to receive tokens before approval', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registryInstance => {
-        return registryInstance.proxies(accounts[3])
-          .then(ret => {
-            return TestERC20.deployed().then(erc20 => {
-              const contract = new web3.eth.Contract(AuthenticatedProxy.abi, ret)
-              return new Promise((resolve, reject) => {
-                const amount = '1000'
-                contract.methods.receiveApproval(accounts[3], amount, erc20.address, '0x').send({from: accounts[3]}, (err) => {
-                  if (err) resolve()
-                  else reject(new Error('should not have succeeded'))
-                })
-              })
-            })
-          })
-      })
+  it('allows proxy to receive tokens before approval',async () => {
+    const amount = '1000'
+    let registry = await WyvernRegistry.deployed()
+    let proxy = await registry.proxies(accounts[3])
+    let erc20 = await TestERC20.deployed()
+    let contract = new web3.eth.Contract(AuthenticatedProxy.abi,proxy)
+    return assertIsRejected(
+      contract.methods.receiveApproval(accounts[3],amount,erc20.address,'0x').send({from: accounts[3]}),
+      /ERC20: transfer amount exceeds balance/,
+      'Should not have succeeded'
+      )
   })
 
-  it('should allow proxy to receive tokens', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registryInstance => {
-        return registryInstance.proxies(accounts[3])
-          .then(ret => {
-            return TestERC20.deployed().then(erc20 => {
-              const amount = '1000'
-              return erc20.mint(accounts[3], amount).then(() => {
-                return erc20.approve(ret, amount, {from: accounts[3]}).then(() => {
-                  const contract = new web3.eth.Contract(AuthenticatedProxy.abi, ret)
-                  return new Promise((resolve, reject) => {
-                    contract.methods.receiveApproval(accounts[3], amount, erc20.address, '0x').send({from: accounts[3]}, (err) => {
-                      if (err) reject(err)
-                      else resolve()
-                    })
-                  })
-                })
-              })
-            })
-          })
-      })
+  it('allows proxy to receive tokens',async () => {
+    const amount = '1000'
+    let registry = await WyvernRegistry.deployed()
+    let proxy = await registry.proxies(accounts[3])
+    let erc20 = await TestERC20.deployed()
+    await Promise.all([erc20.mint(accounts[3],amount),erc20.approve(proxy,amount,{from: accounts[3]})])
+    let contract = new web3.eth.Contract(AuthenticatedProxy.abi,proxy)
+    assert.isOk(contract.methods.receiveApproval(accounts[3],amount,erc20.address,'0x').send({from: accounts[3]}))
   })
 
-  it('should not allow proxy upgrade to same implementation', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registryInstance => {
-        return registryInstance.proxies(accounts[3])
-          .then(ret => {
-            return registryInstance.delegateProxyImplementation().then(impl => {
-              const contract = new web3.eth.Contract(OwnableDelegateProxy.abi, ret)
-              return contract.methods.upgradeTo(impl).send({from: accounts[3]}).then(() => {
-                assert.equal(true, false, 'Allowed upgrade to same implementation')
-              }).catch(err => {
-                assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert')
-              })
-            })
-          })
-      })
+  it('does not allow proxy upgrade to same implementation',async () => {
+    let registry = await WyvernRegistry.deployed()
+    let proxy = await registry.proxies(accounts[3])
+    let implementation = await registry.delegateProxyImplementation()
+    let contract = new web3.eth.Contract(OwnableDelegateProxy.abi,proxy)
+    return assertIsRejected(
+      contract.methods.upgradeTo(implementation).send({from: accounts[3]}),
+      /Returned error: VM Exception while processing transaction: revert/,
+      'Allowed upgrade to same implementation'
+      )
   })
 
-  it('should return proxy type', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registryInstance => {
-        return registryInstance.proxies(accounts[3])
-          .then(ret => {
-            const contract = new web3.eth.Contract(OwnableDelegateProxy.abi, ret)
-            return contract.methods.proxyType().call().then(ty => {
-              assert.equal(ty, 2, 'Incorrect proxy type')
-            })
-          })
-      })
+  it('returns proxy type',async () => {
+    let registry = await WyvernRegistry.deployed()
+    let proxy = await registry.proxies(accounts[3])
+    let contract = new web3.eth.Contract(OwnableDelegateProxy.abi,proxy)
+    assert.equal(await contract.methods.proxyType().call(),2,'Incorrect proxy type')
   })
 
-  it('should not allow proxy update from another account', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registryInstance => {
-        return registryInstance.proxies(accounts[3])
-          .then(ret => {
-            const contract = new web3.eth.Contract(OwnableDelegateProxy.abi, ret)
-            return contract.methods.upgradeTo(registryInstance.address).send({from: accounts[1]}).then(() => {
-              assert.equal(true, false, 'allowed proxy update from another account')
-            }).catch(err => {
-              assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert')
-            })
-          })
-      })
+  it('does not allow proxy update from another account',async () => {
+    let registry = await WyvernRegistry.deployed()
+    let proxy = await registry.proxies(accounts[3])
+    let contract = new web3.eth.Contract(OwnableDelegateProxy.abi,proxy)
+    return assertIsRejected(
+      contract.methods.upgradeTo(registry.address).send({from: accounts[1]}),
+      /Returned error: VM Exception while processing transaction: revert/,
+      'Allowed proxy update from another account'
+      )
   })
 
-  it('should allow proxy ownership transfer', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registryInstance => {
-        return registryInstance.proxies(accounts[3])
-          .then(ret => {
-            const contract = new web3.eth.Contract(OwnableDelegateProxy.abi, ret)
-            return contract.methods.transferProxyOwnership(accounts[4]).send({from: accounts[3]}).then(() => {
-              return contract.methods.transferProxyOwnership(accounts[3]).send({from: accounts[4]}).then(() => {
-              })
-            })
-          })
-      })
+  it('allows proxy ownership transfer',async () => {
+    let registry = await WyvernRegistry.deployed()
+    let proxy = await registry.proxies(accounts[3])
+    let contract = new web3.eth.Contract(OwnableDelegateProxy.abi,proxy)
+    assert.isOk(await contract.methods.transferProxyOwnership(accounts[4]).send({from: accounts[3]}))
+    assert.isOk(await contract.methods.transferProxyOwnership(accounts[3]).send({from: accounts[4]}))
   })
 
-  it('should allow start but not end of authentication process', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registryInstance => {
-        return registryInstance.startGrantAuthentication(accounts[0]).then(() => {
-          return registryInstance.pending.call(accounts[0]).then(r => {
-            assert.equal(r.toNumber() > 0, true, 'Invalid timestamp')
-            return registryInstance.endGrantAuthentication(accounts[0]).then(() => {
-              assert.equal(true, false, 'End of authentication process allowed without time period passing')
-            }).catch(err => {
-              assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
-            })
-          })
-        })
-      })
+  it('allows start but not end of authentication process',async () => {
+    let registry = await WyvernRegistry.deployed()
+    await registry.startGrantAuthentication(accounts[0])
+    let timestamp = await registry.pending.call(accounts[0])
+    assert.isTrue(timestamp.toNumber() > 0,'Invalid timestamp')
+    return assertIsRejected(
+      registry.endGrantAuthentication(accounts[0]),
+      /Contract is no longer pending or has already been approved by registry/,
+      'Allowed end authentication process')
   })
 
-  it('should not allow start twice', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registryInstance => {
-        return registryInstance.startGrantAuthentication(accounts[0]).then(() => {
-          assert.equal(true, false, 'Start of authentication process allowed twice')
-        }).catch(err => {
-          assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
-        })
-      })
+  it('does not allow start twice',async () => {
+    let registry = await WyvernRegistry.deployed()
+    return assertIsRejected(
+      registry.startGrantAuthentication(accounts[0]),
+      /Contract is already allowed in registry, or pending/,
+      'Start of authentication process allowed twice'
+      )
   })
 
-  it('should not allow end without start', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registryInstance => {
-        return registryInstance.endGrantAuthentication(accounts[1]).then(() => {
-          assert.equal(true, false, 'End of authentication process allowed without start')
-        }).catch(err => {
-          assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
-        })
-      })
+  it('does not allow end without start',async () => {
+    let registry = await WyvernRegistry.deployed()
+    return assertIsRejected(
+      registry.endGrantAuthentication(accounts[1]),
+      /Contract is no longer pending or has already been approved by registry/,
+      'End of authentication process allowed without start'
+      )
   })
 
-  it('should allow end after time has passed', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registryInstance => {
-        return increaseTime(86400 * 7 * 3, () => {
-          return registryInstance.endGrantAuthentication(accounts[0]).then(() => {
-            return registryInstance.contracts.call(accounts[0]).then(ret => {
-              assert.equal(ret, true, 'Auth was not granted')
-              return registryInstance.revokeAuthentication(accounts[0]).then(() => {
-                return registryInstance.contracts.call(accounts[0]).then(ret => {
-                  assert.equal(ret, false, 'Auth was not revoked')
-                })
-              })
-            })
-          })
-        })
-      })
+  it('allows end after time has passed',async () => {
+    let registry = await WyvernRegistry.deployed()
+    await increaseTime(86400 * 7 * 3)
+    await registry.endGrantAuthentication(accounts[0])
+    let result = await registry.contracts.call(accounts[0])
+    assert.isTrue(result,'Auth was not granted')
+    await registry.revokeAuthentication(accounts[0])
+    result = await registry.contracts.call(accounts[0])
+    assert.isFalse(result,'Auth was not revoked')
   })
 
-  it('should allow proxy registration for another user', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(instance => {
-        return instance.registerProxyFor(accounts[1]).then(() => {
-          return instance.proxies(accounts[1]).then(addr => {
-            assert.equal(addr.length > 0, true)
-          })
-        })
-      })
+  it('allows proxy registration for another user',async () => {
+    let registry = await WyvernRegistry.deployed()
+    await registry.registerProxyFor(accounts[1])
+    let proxy = await registry.proxies(accounts[1])
+    assert.isTrue(proxy.length > 0)
   })
 
-  it('should not allow proxy registration for another user if a proxy already exists', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(instance => {
-        return instance.registerProxyFor(accounts[1]).then(() => {
-          assert.equal(true, false, 'should not have succeeded')
-        }).catch(err => {
-          assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
-        })
-      })
+  it('does not allow proxy registration for another user if a proxy already exists',async () => {
+    let registry = await WyvernRegistry.deployed()
+    return assertIsRejected(
+      registry.registerProxyFor(accounts[1]),
+      /User already has a proxy/,
+      'Should not have succeeded'
+      )
   })
 
-  it('should not allow proxy transfer from another account', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(instance => {
-        return instance.proxies(accounts[2]).then(ret => {
-          return instance.transferAccessTo(ret, accounts[2]).then(() => {
-            assert.equal(true, false, 'should not have succeeded')
-          }).catch(err => {
-            assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
-          })
-        })
-      })
+  it('does not allow proxy transfer from another account',async () => {
+    let registry = await WyvernRegistry.deployed()
+    let proxy = await registry.proxies(accounts[2])
+    return assertIsRejected(
+      registry.transferAccessTo(proxy,accounts[2]),
+      /Proxy transfer can only be called by the proxy/,
+      'Should not have succeeded'
+      )
   })
 
-  it('should allow proxy revocation', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registry => {
-        return TestAuthenticatedProxy
-          .deployed()
-          .then(testProxy => {
-            return registry.proxies(accounts[1]).then(addr => {
-              return AuthenticatedProxy.at(addr).then(proxy => {
-                return proxy.user().then(user => {
-                  assert.equal(user, accounts[1])
-                  const inst = new web3.eth.Contract(AuthenticatedProxy.abi, addr)
-                  return inst.methods.setRevoke(true).send({from: accounts[1]}).then(() => {
-                    return inst.methods.revoked().call().then(ret => {
-                      assert.equal(ret, true, 'Should be revoked')
-                      return inst.methods.setRevoke(false).send({from: accounts[1]}).then(() => {
-                        return inst.methods.revoked().call().then(ret => {
-                          assert.equal(ret, false, 'Should be unrevoked')
-                        })
-                      })
-                    })
-                  })
-                })
-              })
-            })
-          })
-      })
+  it('allows proxy revocation',async () => {
+    let [registry,testProxy] = await Promise.all([WyvernRegistry.deployed(),TestAuthenticatedProxy.deployed()])
+    let proxy = await registry.proxies(accounts[1])
+    let contract_at = await AuthenticatedProxy.at(proxy)
+    let contract = new web3.eth.Contract(AuthenticatedProxy.abi,proxy)
+    let user = await contract_at.user()
+    assert.equal(user,accounts[1])
+    await contract.methods.setRevoke(true).send({from: accounts[1]})
+    assert.isTrue(await contract.methods.revoked().call(),'Should be revoked')
+    assert.isOk(await contract.methods.setRevoke(false).send({from: accounts[1]}),'Should be unrevoked')
   })
 
-  it('should not allow revoke from another account', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registryInstance => {
-        return registryInstance.proxies(accounts[3]).then(proxy => {
-          const proxyInst = new web3.eth.Contract(AuthenticatedProxy.abi, proxy)
-          return proxyInst.methods.setRevoke(true).send({from: accounts[1]}).then(() => {
-            assert.equal(true, false, 'Revocation was allowed from another account')
-          }).catch(err => {
-            assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
-          })
-        })
-      })
+  it('does not allow revoke from another account',async () => {
+    let registry = await WyvernRegistry.deployed()
+    let proxy = await registry.proxies(accounts[3])
+    let contract = new web3.eth.Contract(AuthenticatedProxy.abi,proxy)
+    return assertIsRejected(
+      contract.methods.setRevoke(true).send({from: accounts[1]}),
+      /Authenticated proxy can only be revoked by its user/,
+      'Revocation was allowed from another account'
+      )
   })
 
-  it('should not allow proxy reinitialization', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registry => {
-        return TestAuthenticatedProxy
-          .deployed()
-          .then(testProxy => {
-            return registry.proxies(accounts[1]).then(addr => {
-              return AuthenticatedProxy.at(addr).then(proxy => {
-                return proxy.user().then(user => {
-                  assert.equal(user, accounts[1])
-                  const inst = new web3.eth.Contract(AuthenticatedProxy.abi, addr)
-                  return inst.methods.initialize(registry.address, registry.address).send({from: accounts[1]}).then(ret => {
-                    assert.equal(true, false, 'Should not have succeeded')
-                  }).catch(err => {
-                    assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
-                  })
-                })
-              })
-            })
-          })
-      })
+  it('should not allow proxy reinitialization',async () => {
+    let [registry,testProxy] = await Promise.all([WyvernRegistry.deployed(),TestAuthenticatedProxy.deployed()])
+    let proxy = await registry.proxies(accounts[1])
+    let contract_at = await AuthenticatedProxy.at(proxy)
+    let user = await contract_at.user()
+    let contract = new web3.eth.Contract(AuthenticatedProxy.abi,proxy)
+    return assertIsRejected(
+      contract.methods.initialize(registry.address, registry.address).send({from: accounts[1]}),
+      /Authenticated proxy already initialized/,
+      'Should not have succeeded'
+      )
   })
 
-  it('should allow delegateproxy owner change, but only from owner', () => {
-    return WyvernRegistry
-      .deployed()
-      .then(registry => {
-        return TestAuthenticatedProxy
-          .deployed()
-          .then(testProxy => {
-            return registry.proxies(accounts[1]).then(addr => {
-              return AuthenticatedProxy.at(addr).then(proxy => {
-                return proxy.user().then(user => {
-                  assert.equal(user, accounts[1])
-                  const inst = new web3.eth.Contract(TestAuthenticatedProxy.abi, testProxy.address)
-                  const call = inst.methods.setUser(accounts[4]).encodeABI()
-                  return proxy.proxyAssert(testProxy.address, 1, call, {from: accounts[4]}).then(() => {
-                    assert.equal(true, false, 'Should not have succeeded')
-                  }).catch(err => {
-                    assert.include(err.message, 'Returned error: VM Exception while processing transaction: revert', 'Incorrect error')
-                    return proxy.proxyAssert(testProxy.address, 1, call, {from: accounts[1]}).then(() => {
-                      return proxy.user().then(user => {
-                        assert.equal(user, accounts[4], 'User was not changed')
-                      })
-                    })
-                  })
-                })
-              })
-            })
-          })
-      })
+  it('allows delegateproxy owner change, but only from owner',async () => {
+    let [registry,testProxy] = await Promise.all([WyvernRegistry.deployed(),TestAuthenticatedProxy.deployed()])
+    let proxy = await registry.proxies(accounts[1])
+    let contract_at = await AuthenticatedProxy.at(proxy)
+    let user = await contract_at.user()
+    assert.equal(user,accounts[1])
+    let contract = new web3.eth.Contract(TestAuthenticatedProxy.abi, testProxy.address)
+    let call = contract.methods.setUser(accounts[4]).encodeABI()
+    await assertIsRejected(
+      contract_at.proxyAssert(testProxy.address,1,call,{from: accounts[4]}),
+      /Authenticated proxy can only be called by its user, or by a contract authorized by the registry as long as the user has not revoked access/,
+      'Should not have succeeded'
+      )
+    await contract_at.proxyAssert(testProxy.address,1,call,{from: accounts[1]})
+    user = await contract_at.user()
+    assert.equal(user,accounts[4],'User was not changed')
   })
 })
