@@ -20,17 +20,17 @@ contract StaticERC721 {
         pure
     {
         // Decode extradata
-        (address token, uint amount) = abi.decode(extra, (address, uint));
+        (address token, uint tokenId) = abi.decode(extra, (address, uint));
 
         // Call target = token to give
         require(addresses[2] == token);
         // Call type = call
         require(howToCall == AuthenticatedProxy.HowToCall.Call);
         // Assert calldata
-        require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[1], addresses[4], amount)));
+        require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[1], addresses[4], tokenId)));
     }
 
-    function swapOneForOne(bytes memory extra,
+    function swapOneForOneERC721(bytes memory extra,
         address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
         bytes memory data, bytes memory counterdata)
         public
@@ -61,7 +61,7 @@ contract StaticERC721 {
         return 1;
     }
 
-    function swapOneForOneDecoding(bytes memory extra,
+    function swapOneForOneERC721Decoding(bytes memory extra,
         address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
         bytes memory data, bytes memory counterdata)
         public

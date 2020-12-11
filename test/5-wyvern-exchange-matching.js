@@ -12,9 +12,7 @@ const Web3 = require('web3')
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')
 const web3 = new Web3(provider)
 
-const { wrap,hashOrder,ZERO_BYTES32,randomUint,assertIsRejected} = require('./aux')
-
-const nullSig = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+const { wrap,hashOrder,ZERO_BYTES32,randomUint,NULL_SIG,assertIsRejected} = require('./aux')
 
 contract('WyvernExchange', (accounts) => {
   const deploy = async contracts => Promise.all(contracts.map(contract => contract.deployed()))
@@ -86,7 +84,7 @@ contract('WyvernExchange', (accounts) => {
     const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '0'}
     const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '1'}
     const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
-    assert.isOk(await exchange.atomicMatch(one, nullSig, call, two, nullSig, call, ZERO_BYTES32))
+    assert.isOk(await exchange.atomicMatch(one, NULL_SIG, call, two, NULL_SIG, call, ZERO_BYTES32))
   })
 
   it('does not match any-any nop order with wrong registry',async () => {
@@ -96,7 +94,7 @@ contract('WyvernExchange', (accounts) => {
     const two = {registry: statici.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '2331'}
     const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
     return assertIsRejected(
-      exchange.atomicMatch(one, nullSig, call, two, nullSig, call, ZERO_BYTES32),
+      exchange.atomicMatch(one, NULL_SIG, call, two, NULL_SIG, call, ZERO_BYTES32),
       /VM Exception while processing transaction: revert/,
       'Should not have matched'
       )
@@ -110,7 +108,7 @@ contract('WyvernExchange', (accounts) => {
     const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '411'}
     const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
     let signature = await exchange.sign(one, accounts[0])
-    assert.isOk(await exchange.atomicMatch(one, signature, call, two, nullSig, call, ZERO_BYTES32))
+    assert.isOk(await exchange.atomicMatch(one, signature, call, two, NULL_SIG, call, ZERO_BYTES32))
   })
 
   it('does not match any-any nop order with bad sig, erc 1271',async () => {
@@ -122,7 +120,7 @@ contract('WyvernExchange', (accounts) => {
     const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
     let signature = await exchange.sign(two, accounts[0])
     return assertIsRejected(
-      exchange.atomicMatch(one, signature, call, two, nullSig, call, ZERO_BYTES32),
+      exchange.atomicMatch(one, signature, call, two, NULL_SIG, call, ZERO_BYTES32),
       /First order has invalid parameters/,
       'Should not have matched'
       )
@@ -134,8 +132,8 @@ contract('WyvernExchange', (accounts) => {
     const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
     const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: randomUint()}
     const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
-    assert.isOk(await exchange.atomicMatch(one, nullSig, call, two, nullSig, call, ZERO_BYTES32))
-    assert.isOk(await exchange.atomicMatch(one, nullSig, call, two, nullSig, call, ZERO_BYTES32))
+    assert.isOk(await exchange.atomicMatch(one, NULL_SIG, call, two, NULL_SIG, call, ZERO_BYTES32))
+    assert.isOk(await exchange.atomicMatch(one, NULL_SIG, call, two, NULL_SIG, call, ZERO_BYTES32))
   })
 
   it('matches exactly twice with two-fill',async () => {
@@ -163,7 +161,7 @@ contract('WyvernExchange', (accounts) => {
     const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '0'}
     const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
     return assertIsRejected(
-      exchange.atomicMatch(one, nullSig, call, one, nullSig, call, ZERO_BYTES32),
+      exchange.atomicMatch(one, NULL_SIG, call, one, NULL_SIG, call, ZERO_BYTES32),
       /Self-matching orders is prohibited/,
       'Should not have succeeded'
     )
@@ -184,12 +182,12 @@ contract('WyvernExchange', (accounts) => {
       [call1.howToCall, call1.howToCall],
       ZERO_BYTES32,
       web3.eth.abi.encodeParameters(['bytes', 'bytes'], [
-        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [nullSig.v, nullSig.r, nullSig.s]),
-        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [nullSig.v, nullSig.r, nullSig.s])
+        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [NULL_SIG.v, NULL_SIG.r, NULL_SIG.s]),
+        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [NULL_SIG.v, NULL_SIG.r, NULL_SIG.s])
       ])).encodeABI()
     const call2 = {target: exchange.inst.address, howToCall: 0, data: data}
     return assertIsRejected(
-      exchange.atomicMatch(one, nullSig, call1, two, nullSig, call2, ZERO_BYTES32),
+      exchange.atomicMatch(one, NULL_SIG, call1, two, NULL_SIG, call2, ZERO_BYTES32),
       /Second call failed/,
       'Should not have succeeded'
       )
@@ -199,7 +197,7 @@ contract('WyvernExchange', (accounts) => {
     let {atomicizer, exchange, registry, statici} = await withContracts()
     let {nfts, erc721} = await withAsymmetricalTokens()
     const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
-    const selector = web3.eth.abi.encodeFunctionSignature('swapOneForOne(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+    const selector = web3.eth.abi.encodeFunctionSignature('swapOneForOneERC721(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
     const paramsOne = web3.eth.abi.encodeParameters(
       ['address[2]', 'uint256[2]'],
       [[erc721.address, erc721.address], [nfts[0], nfts[1]]]
@@ -216,7 +214,7 @@ contract('WyvernExchange', (accounts) => {
 
     const firstCall = {target: erc721.address, howToCall: 0, data: firstData}
     const secondCall = {target: erc721.address, howToCall: 0, data: secondData}
-    const sigOne = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+    const sigOne = NULL_SIG
     
     let sigTwo = await exchange.sign(two, accounts[6])
     await exchange.atomicMatch(one, sigOne, firstCall, two, sigTwo, secondCall, ZERO_BYTES32)
@@ -227,7 +225,7 @@ contract('WyvernExchange', (accounts) => {
     let {atomicizer, exchange, registry, statici} = await withContracts()
     let {nfts, erc721} = await withAsymmetricalTokens2()
     const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
-    const selector = web3.eth.abi.encodeFunctionSignature('swapOneForOneDecoding(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+    const selector = web3.eth.abi.encodeFunctionSignature('swapOneForOneERC721Decoding(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
     const paramsOne = web3.eth.abi.encodeParameters(
       ['address[2]', 'uint256[2]'],
       [[erc721.address, erc721.address], [nfts[0], nfts[1]]]
@@ -245,7 +243,7 @@ contract('WyvernExchange', (accounts) => {
 
     const firstCall = {target: erc721.address, howToCall: 0, data: firstData}
     const secondCall = {target: erc721.address, howToCall: 0, data: secondData}
-    const sigOne = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+    const sigOne = NULL_SIG
     
     let sigTwo = await exchange.sign(two, accounts[6])
     await exchange.atomicMatch(one, sigOne, firstCall, two, sigTwo, secondCall, ZERO_BYTES32)
@@ -262,7 +260,7 @@ contract('WyvernExchange', (accounts) => {
     const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
     const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '2'}
     const two = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3'}
-    const sig = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+    const sig = NULL_SIG
     
     const firstERC20Call = erc20c.methods.transferFrom(accounts[0], accounts[6], 2).encodeABI()
     const firstERC721Call = erc721c.methods.transferFrom(accounts[0], accounts[6], nfts[0]).encodeABI()
@@ -327,7 +325,7 @@ contract('WyvernExchange', (accounts) => {
     const extradataTwo = '0x'
     const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selectorOne, staticExtradata: extradataOne, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3352'}
     const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selectorTwo, staticExtradata: extradataTwo, maximumFill: '1', listingTime: '0', expirationTime: '10000000000', salt: '3335'}
-    const sig = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+    const sig = NULL_SIG
     const firstERC20Call = erc20c.methods.transferFrom(accounts[0], accounts[6], 2).encodeABI()
     const firstERC721Call = erc721c.methods.transferFrom(accounts[0], accounts[6], nfts[2]).encodeABI()
     const firstData = atomicizerc.methods.atomicize(
@@ -376,7 +374,7 @@ contract('WyvernExchange', (accounts) => {
 
     const firstCall = {target: erc20.address, howToCall: 0, data: firstData}
     const secondCall = {target: erc20.address, howToCall: 0, data: secondData}
-    const sigOne = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+    const sigOne = NULL_SIG
     
     let sigTwo = await exchange.sign(two, accounts[6])
     await exchange.atomicMatch(one, sigOne, firstCall, two, sigTwo, secondCall, ZERO_BYTES32)
@@ -439,7 +437,7 @@ contract('WyvernExchange', (accounts) => {
     
     await Promise.all([exchange.approveOrder(one, false, {from: accounts[6]}),exchange.approveOrder(two, false, {from: accounts[6]})])
     const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
-    assert.isOk(exchange.atomicMatch(one, nullSig, call, two, nullSig, call, ZERO_BYTES32))
+    assert.isOk(exchange.atomicMatch(one, NULL_SIG, call, two, NULL_SIG, call, ZERO_BYTES32))
   })
 
   it('does not match with invalid first order auth',async () => {
@@ -451,7 +449,7 @@ contract('WyvernExchange', (accounts) => {
     let signature = await exchange.sign(one, accounts[6])
     const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
     return assertIsRejected(
-      exchange.atomicMatch(one, nullSig, call, two, signature, call, ZERO_BYTES32),
+      exchange.atomicMatch(one, NULL_SIG, call, two, signature, call, ZERO_BYTES32),
       /First order failed authorization/,
       'Should not have matched'
       )
@@ -466,7 +464,7 @@ contract('WyvernExchange', (accounts) => {
     let signature = await exchange.sign(one, accounts[6])
     const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
     return assertIsRejected(
-      exchange.atomicMatch(one, signature, call, two, nullSig, call, ZERO_BYTES32),
+      exchange.atomicMatch(one, signature, call, two, NULL_SIG, call, ZERO_BYTES32),
       /Second order failed authorization/,
       'Should not have matched'
     )
