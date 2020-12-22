@@ -15,6 +15,13 @@
       "WyvernStatic": "0x32Ce15F191aFD85072A594f388A78D3f6Bf6a9Bf",
       "WyvernRegistry": "0xa5409ec958C83C3f309868babACA7c86DCB077c1",
       "WyvernExchange": "0xd7CA74fF003c90E62505D21ec7Dac36bCfD9F6f2"
+    },
+    "mumbai": {
+      "Migrations": "0xAF9922A95b8003ead7049b2c48E5d0F96746BE51",
+      "WyvernAtomicizer": "0xb5aA89f557E2B94f2eC37e83dCB5774b74590143",
+      "WyvernStatic": "0x489bA5784794A488FE791a13a8BcFDF73a9fbc1b",
+      "WyvernRegistry": "0x4F9da1e9Ca5b6363D5fEf16724b3437a18B2A3f1",
+      "WyvernExchange": "0x2BfDC44a24DA6Dd8bCc632c174254B268cB11aa0"
     }
   }
 }

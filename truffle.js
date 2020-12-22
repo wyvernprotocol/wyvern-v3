@@ -1,5 +1,7 @@
 var HDWalletProvider = require('truffle-hdwallet-provider')
+
 var rinkebyMnemonic = ''
+var mumbaiMnemonic = ''
 var mainnetMnemonic = ''
 
 module.exports = {
@@ -40,7 +42,14 @@ module.exports = {
       gas: 6700000,
       gasPrice: 21110000000,
       confirmations: 2
-    }
+    },
+    mumbai: {
+      provider: function () {
+        return new HDWalletProvider(mumbaiMnemonic, 'https://rpc-mumbai.matic.today')
+      },
+      from: '',
+      network_id: '80001'
+      }
   },
   compilers: {
     solc: {
