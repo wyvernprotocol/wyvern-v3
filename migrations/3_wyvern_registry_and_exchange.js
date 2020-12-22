@@ -8,6 +8,7 @@ const chainIds = {
   development: 50,
   coverage: 50,
   rinkeby: 4,
+  mumbai: 80001,
   main: 1
 }
 
