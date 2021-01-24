@@ -7,6 +7,7 @@
 pragma solidity 0.7.5;
 
 import "./lib/EIP1271Mod.sol";
+import "./lib/ArrayUtils.sol";
 
 /**
  * @title GlobalMaker
@@ -34,11 +35,17 @@ contract GlobalMaker is ERC1271Mod {
         view
         returns (bytes4 magicValue)
     {
-        // Decode what the user 
-        // TODO
+        // assert signature
+        bytes memory sig = ArrayUtils.arrayTake(abi.encodeWithSignature("transferFrom(address,address,uint256)"), 4);
+        require(ArrayUtils.arrayEq(sig, ArrayUtils.arrayTake(_extradata, 4)));
+
+        // decode calldata
+        (address callFrom, address callTo, uint256 token) = abi.decode(ArrayUtils.arrayDrop(_extradata, 4), (address, address, uint256));
+
+        // check that the user (whoever is sending the tokens) signed the order hash
         bytes32 hash = abi.decode(_data, (bytes32));
         (uint8 v, bytes32 r, bytes32 s) = abi.decode(_signature, (uint8, bytes32, bytes32));
-        if (address(0) == ecrecover(hash, v, r, s)) {
+        if (callFrom == ecrecover(hash, v, r, s)) {
             return MAGICVALUE;
         } else {
             return SIGINVALID;
