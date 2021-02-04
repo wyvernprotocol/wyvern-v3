@@ -78,7 +78,7 @@ contract('WyvernExchange', (accounts) => {
     assert.isTrue(proxy.length > 0,'No proxy address')
   })
 
-  it('matchs any-any nop order',async () => {
+  it('matches any-any nop order',async () => {
     let {exchange, registry, statici} = await withContracts()
     const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
     const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '0'}
