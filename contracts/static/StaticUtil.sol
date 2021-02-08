@@ -83,6 +83,17 @@ contract StaticUtil is StaticCaller {
         return 1;
     }
 
+    function splitAddOne(bytes memory extra,
+                   address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
+                   bytes memory data, bytes memory counterdata)
+        public
+        view
+        returns (uint)
+    {
+        split(extra,addresses,howToCalls,uints,data,counterdata);
+        return uints[5] + 1;
+    }
+
     function and(bytes memory extra,
                  address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
                  bytes memory data, bytes memory counterdata)
