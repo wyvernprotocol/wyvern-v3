@@ -226,7 +226,7 @@ contract('WyvernExchange', (accounts) =>
 		const price = 10000
 
 		return assertIsRejected(
-				any_erc1155_for_erc20_test({
+			any_erc1155_for_erc20_test({
 				nftId: 5,
 				sellAmount: nftAmount,
 				sellingPrice: price,
@@ -250,7 +250,7 @@ contract('WyvernExchange', (accounts) =>
 		const price = 10000
 
 		return assertIsRejected(
-				any_erc1155_for_erc20_test({
+			any_erc1155_for_erc20_test({
 				nftId: 5,
 				sellAmount: nftAmount,
 				sellingPrice: price,
@@ -460,7 +460,7 @@ contract('WyvernExchange', (accounts) =>
 		const price = 10000
 
 		return assertIsRejected(
-				any_erc20_for_erc20_test({
+			any_erc20_for_erc20_test({
 				sellAmount,
 				sellingPrice: price,
 				buyingPrice: 1,
@@ -483,7 +483,7 @@ contract('WyvernExchange', (accounts) =>
 		const price = 10000
 
 		return assertIsRejected(
-				any_erc20_for_erc20_test({
+			any_erc20_for_erc20_test({
 				sellAmount,
 				sellingPrice: price,
 				buyingPrice: 1,
