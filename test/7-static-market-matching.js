@@ -4,8 +4,9 @@ const WyvernAtomicizer = artifacts.require('WyvernAtomicizer')
 const WyvernExchange = artifacts.require('WyvernExchange')
 const StaticMarket = artifacts.require('StaticMarket')
 const WyvernRegistry = artifacts.require('WyvernRegistry')
-const TestERC1155 = artifacts.require('TestERC1155')
 const TestERC20 = artifacts.require('TestERC20')
+const TestERC721 = artifacts.require('TestERC721')
+const TestERC1155 = artifacts.require('TestERC1155')
 
 const Web3 = require('web3')
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')
@@ -29,7 +30,8 @@ contract('WyvernExchange', (accounts) =>
 
 	const any_erc1155_for_erc20_test = async (options) =>
 		{
-		const {nftId,
+		const {tokenId,
+			buyTokenId,
 			sellAmount,
 			sellingPrice,
 			buyingPrice,
@@ -55,27 +57,30 @@ contract('WyvernExchange', (accounts) =>
 		assert.equal(true, proxy2.length > 0, 'no proxy address for account b')
 		
 		await Promise.all([erc1155.setApprovalForAll(proxy1,true,{from: account_a}),erc20.approve(proxy2,erc20MintAmount,{from: account_b})])
-		await Promise.all([erc1155.mint(account_a,nftId,erc1155MintAmount),erc20.mint(account_b,erc20MintAmount)])
+		await Promise.all([erc1155.mint(account_a,tokenId,erc1155MintAmount),erc20.mint(account_b,erc20MintAmount)])
+
+		if (buyTokenId)
+			await erc1155.mint(account_a,buyTokenId,erc1155MintAmount)
 
 		const erc1155c = new web3.eth.Contract(erc1155.abi, erc1155.address)
 		const erc20c = new web3.eth.Contract(erc20.abi, erc20.address)
-		const selector_one = web3.eth.abi.encodeFunctionSignature('anyERC1155ForERC20(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
-		const selector_two = web3.eth.abi.encodeFunctionSignature('anyERC20ForERC1155(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+		const selectorOne = web3.eth.abi.encodeFunctionSignature('anyERC1155ForERC20(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+		const selectorTwo = web3.eth.abi.encodeFunctionSignature('anyERC20ForERC1155(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
 			
 		const paramsOne = web3.eth.abi.encodeParameters(
 			['address[2]', 'uint256[2]'],
-			[[erc1155.address, erc20.address], [nftId, sellingPrice]]
+			[[erc1155.address, erc20.address], [tokenId, sellingPrice]]
 			) 
 	
 		const paramsTwo = web3.eth.abi.encodeParameters(
 			['address[2]', 'uint256[2]'],
-			[[erc20.address, erc1155.address], [nftId, buyingPrice]]
+			[[erc20.address, erc1155.address], [buyTokenId || tokenId, buyingPrice]]
 			)
 
-		const one = {registry: registry.address, maker: account_a, staticTarget: statici.address, staticSelector: selector_one, staticExtradata: paramsOne, maximumFill: sellAmount, listingTime: '0', expirationTime: '10000000000', salt: '11'}
-		const two = {registry: registry.address, maker: account_b, staticTarget: statici.address, staticSelector: selector_two, staticExtradata: paramsTwo, maximumFill: buyingPrice*buyAmount, listingTime: '0', expirationTime: '10000000000', salt: '12'}
+		const one = {registry: registry.address, maker: account_a, staticTarget: statici.address, staticSelector: selectorOne, staticExtradata: paramsOne, maximumFill: sellAmount, listingTime: '0', expirationTime: '10000000000', salt: '11'}
+		const two = {registry: registry.address, maker: account_b, staticTarget: statici.address, staticSelector: selectorTwo, staticExtradata: paramsTwo, maximumFill: buyingPrice*buyAmount, listingTime: '0', expirationTime: '10000000000', salt: '12'}
 
-		const firstData = erc1155c.methods.safeTransferFrom(account_a, account_b, nftId, buyAmount, "0x").encodeABI() + ZERO_BYTES32.substr(2)
+		const firstData = erc1155c.methods.safeTransferFrom(account_a, account_b, tokenId, buyAmount, "0x").encodeABI() + ZERO_BYTES32.substr(2)
 		const secondData = erc20c.methods.transferFrom(account_b, account_a, buyAmount*buyingPrice).encodeABI()
 		
 		const firstCall = {target: erc1155.address, howToCall: 0, data: firstData}
@@ -90,7 +95,7 @@ contract('WyvernExchange', (accounts) =>
 			two.salt++
 			}
 		
-		let [account_a_erc20_balance,account_b_erc1155_balance] = await Promise.all([erc20.balanceOf(account_a),erc1155.balanceOf(account_b, nftId)])
+		let [account_a_erc20_balance,account_b_erc1155_balance] = await Promise.all([erc20.balanceOf(account_a),erc1155.balanceOf(account_b, tokenId)])
 		assert.equal(account_a_erc20_balance.toNumber(), sellingPrice*buyAmount*txCount,'Incorrect ERC20 balance')
 		assert.equal(account_b_erc1155_balance.toNumber(), buyAmount*txCount,'Incorrect ERC1155 balance')
 		}
@@ -100,7 +105,7 @@ contract('WyvernExchange', (accounts) =>
 		const price = 10000
 
 		return any_erc1155_for_erc20_test({
-			nftId: 5,
+			tokenId: 5,
 			sellAmount: 1,
 			sellingPrice: price,
 			buyingPrice: price,
@@ -119,7 +124,7 @@ contract('WyvernExchange', (accounts) =>
 		const price = 10000
 
 		return any_erc1155_for_erc20_test({
-			nftId: 5,
+			tokenId: 5,
 			sellAmount: amount,
 			sellingPrice: price,
 			buyingPrice: price,
@@ -140,7 +145,7 @@ contract('WyvernExchange', (accounts) =>
 		const transactions = 3
 
 		return any_erc1155_for_erc20_test({
-			nftId: 5,
+			tokenId: 5,
 			sellAmount: nftAmount,
 			sellingPrice: price,
 			buyingPrice: price,
@@ -161,7 +166,7 @@ contract('WyvernExchange', (accounts) =>
 		const price = 10000
 
 		return any_erc1155_for_erc20_test({
-			nftId: 5,
+			tokenId: 5,
 			sellAmount: nftAmount,
 			sellingPrice: price,
 			buyingPrice: price,
@@ -180,7 +185,7 @@ contract('WyvernExchange', (accounts) =>
 
 		return assertIsRejected(
 			any_erc1155_for_erc20_test({
-				nftId: 5,
+				tokenId: 5,
 				sellAmount: 1,
 				sellingPrice: price,
 				buyingPrice: price,
@@ -197,13 +202,13 @@ contract('WyvernExchange', (accounts) =>
 			)
 		})
 
-	it('StaticMarket: does not accept erc1155 <> erc20 order with different taker price',async () =>
+	it('StaticMarket: does not fill erc1155 <> erc20 order with different prices',async () =>
 		{
 		const price = 10000
 
 		return assertIsRejected(
 			any_erc1155_for_erc20_test({
-				nftId: 5,
+				tokenId: 5,
 				sellAmount: 1,
 				sellingPrice: price,
 				buyingPrice: price-10,
@@ -227,7 +232,7 @@ contract('WyvernExchange', (accounts) =>
 
 		return assertIsRejected(
 			any_erc1155_for_erc20_test({
-				nftId: 5,
+				tokenId: 5,
 				sellAmount: nftAmount,
 				sellingPrice: price,
 				buyingPrice: price,
@@ -251,7 +256,7 @@ contract('WyvernExchange', (accounts) =>
 
 		return assertIsRejected(
 			any_erc1155_for_erc20_test({
-				nftId: 5,
+				tokenId: 5,
 				sellAmount: nftAmount,
 				sellingPrice: price,
 				buyingPrice: price,
@@ -264,6 +269,29 @@ contract('WyvernExchange', (accounts) =>
 				}),
 			/Second call failed/,
 			'Order should not fill'
+			)
+		})
+
+	it('StaticMarket: does not fill erc1155 <> erc20 order if the token IDs are different',async () =>
+		{
+		const price = 10000
+
+		return assertIsRejected(
+			any_erc1155_for_erc20_test({
+				tokenId: 5,
+				buyTokenId: 6,
+				sellAmount: 1,
+				sellingPrice: price,
+				buyingPrice: price,
+				buyAmount: 1,
+				erc1155MintAmount: 1,
+				erc20MintAmount: price,
+				account_a: accounts[0],
+				account_b: accounts[6],
+				sender: accounts[1],
+				}),
+			/Static call failed/,
+			'Order should not match the second time.'
 			)
 		})
 
@@ -431,7 +459,7 @@ contract('WyvernExchange', (accounts) =>
 			)
 		})
 
-	it('StaticMarket: does not accept erc20 <> erc20 order with different taker price',async () =>
+	it('StaticMarket: does not fill erc20 <> erc20 order with different taker price',async () =>
 		{
 		const price = 10000
 
@@ -496,6 +524,140 @@ contract('WyvernExchange', (accounts) =>
 				}),
 			/Second call failed/,
 			'Order should not fill'
+			)
+		})
+
+	const erc721_for_erc20_test = async (options) =>
+		{
+		const {
+			tokenId,
+			buyTokenId,
+			sellingPrice,
+			buyingPrice,
+			erc20MintAmount,
+			account_a,
+			account_b,
+			sender} = options
+
+		let {exchange, registry, statici} = await deploy_core_contracts()
+		let [erc721,erc20] = await deploy([TestERC721,TestERC20])
+		
+		await registry.registerProxy({from: account_a})
+		let proxy1 = await registry.proxies(account_a)
+		assert.equal(true, proxy1.length > 0, 'no proxy address for account a')
+
+		await registry.registerProxy({from: account_b})
+		let proxy2 = await registry.proxies(account_b)
+		assert.equal(true, proxy2.length > 0, 'no proxy address for account b')
+		
+		await Promise.all([erc721.setApprovalForAll(proxy1,true,{from: account_a}),erc20.approve(proxy2,erc20MintAmount,{from: account_b})])
+		await Promise.all([erc721.mint(account_a,tokenId),erc20.mint(account_b,erc20MintAmount)])
+
+		if (buyTokenId)
+			await erc721.mint(account_a,buyTokenId)
+
+		const erc721c = new web3.eth.Contract(erc721.abi, erc721.address)
+		const erc20c = new web3.eth.Contract(erc20.abi, erc20.address)
+		const selectorOne = web3.eth.abi.encodeFunctionSignature('ERC721ForERC20(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+		const selectorTwo = web3.eth.abi.encodeFunctionSignature('ERC20ForERC721(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+			
+		const paramsOne = web3.eth.abi.encodeParameters(
+			['address[2]', 'uint256[2]'],
+			[[erc721.address, erc20.address], [tokenId, sellingPrice]]
+			) 
+	
+		const paramsTwo = web3.eth.abi.encodeParameters(
+			['address[2]', 'uint256[2]'],
+			[[erc20.address, erc721.address], [buyTokenId || tokenId, buyingPrice]]
+			)
+		const one = {registry: registry.address, maker: account_a, staticTarget: statici.address, staticSelector: selectorOne, staticExtradata: paramsOne, maximumFill: 1, listingTime: '0', expirationTime: '10000000000', salt: '11'}
+		const two = {registry: registry.address, maker: account_b, staticTarget: statici.address, staticSelector: selectorTwo, staticExtradata: paramsTwo, maximumFill: buyingPrice, listingTime: '0', expirationTime: '10000000000', salt: '12'}
+
+		const firstData = erc721c.methods.transferFrom(account_a, account_b, tokenId).encodeABI()
+		const secondData = erc20c.methods.transferFrom(account_b, account_a, buyingPrice).encodeABI()
+		
+		const firstCall = {target: erc721.address, howToCall: 0, data: firstData}
+		const secondCall = {target: erc20.address, howToCall: 0, data: secondData}
+
+		let sigOne = await exchange.sign(one, account_a)
+		let sigTwo = await exchange.sign(two, account_b)
+		await exchange.atomicMatchWith(one, sigOne, firstCall, two, sigTwo, secondCall, ZERO_BYTES32,{from: sender || account_a})
+		
+		let [account_a_erc20_balance,token_owner] = await Promise.all([erc20.balanceOf(account_a),erc721.ownerOf(tokenId)])
+		assert.equal(account_a_erc20_balance.toNumber(), sellingPrice,'Incorrect ERC20 balance')
+		assert.equal(token_owner, account_b,'Incorrect token owner')
+		}
+
+	it('StaticMarket: matches erc721 <> erc20 order',async () =>
+		{
+		const price = 15000
+
+		return erc721_for_erc20_test({
+			tokenId: 10,
+			sellingPrice: price,
+			buyingPrice: price,
+			erc20MintAmount: price,
+			account_a: accounts[0],
+			account_b: accounts[6],
+			sender: accounts[1]
+			})
+		})
+
+	it('StaticMarket: does not fill erc721 <> erc20 order with different prices',async () =>
+		{
+		const price = 15000
+
+		return assertIsRejected(
+			erc721_for_erc20_test({
+				tokenId: 10,
+				sellingPrice: price,
+				buyingPrice: price-1,
+				erc20MintAmount: price,
+				account_a: accounts[0],
+				account_b: accounts[6],
+				sender: accounts[1]
+				}),
+			/Static call failed/,
+			'Order should not have matched'
+			)
+		})
+
+	it('StaticMarket: does not fill erc721 <> erc20 order if the balance is insufficient',async () =>
+		{
+		const price = 15000
+
+		return assertIsRejected(
+			erc721_for_erc20_test({
+				tokenId: 10,
+				sellingPrice: price,
+				buyingPrice: price,
+				erc20MintAmount: price-1,
+				account_a: accounts[0],
+				account_b: accounts[6],
+				sender: accounts[1]
+				}),
+			/Second call failed/,
+			'Order should not have matched'
+			)
+		})
+
+	it('StaticMarket: does not fill erc721 <> erc20 order if the token IDs are different',async () =>
+		{
+		const price = 15000
+
+		return assertIsRejected(
+			erc721_for_erc20_test({
+				tokenId: 10,
+				buyTokenId: 11,
+				sellingPrice: price,
+				buyingPrice: price,
+				erc20MintAmount: price,
+				account_a: accounts[0],
+				account_b: accounts[6],
+				sender: accounts[1]
+				}),
+			/Static call failed/,
+			'Order should not have matched'
 			)
 		})
 	})
