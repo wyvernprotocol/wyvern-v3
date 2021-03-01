@@ -2,6 +2,7 @@
 
 const WyvernAtomicizer = artifacts.require('./WyvernAtomicizer.sol')
 const WyvernStatic = artifacts.require('./WyvernStatic.sol')
+const StaticMarket = artifacts.require('./StaticMarket.sol')
 const TestERC20 = artifacts.require('./TestERC20.sol')
 const TestERC721 = artifacts.require('./TestERC721.sol')
 const TestERC1271 = artifacts.require('./TestERC1271.sol')
@@ -9,24 +10,30 @@ const TestAuthenticatedProxy = artifacts.require('./TestAuthenticatedProxy.sol')
 
 const { setConfig } = require('./config.js')
 
-module.exports = (deployer, network) => {
-  return deployer.deploy(WyvernAtomicizer).then(() => {
-    if (network !== 'development') setConfig('deployed.' + network + '.WyvernAtomicizer', WyvernAtomicizer.address)
-    return deployer.deploy(WyvernStatic, WyvernAtomicizer.address).then(() => {
-      if (network !== 'development') setConfig('deployed.' + network + '.WyvernStatic', WyvernStatic.address)
-      if (network !== 'coverage' && network !== 'development') return
-      return deployer.deploy(TestERC20).then(() => {
-        if (network !== 'development') setConfig('deployed.' + network + '.TestERC20', TestERC20.address)
-        return deployer.deploy(TestERC721).then(() => {
-          if (network !== 'development') setConfig('deployed.' + network + '.TestERC721', TestERC721.address)
-          return deployer.deploy(TestAuthenticatedProxy).then(() => {
-            if (network !== 'development') setConfig('deployed.' + network + '.TestAuthenticatedProxy', TestAuthenticatedProxy.address)
-            return deployer.deploy(TestERC1271).then(() => {
-              if (network !== 'development') setConfig('deployed.' + network + '.TestERC1271', TestERC1271.address)
-            })
-          })
-        })
-      })
-    })
-  })
+module.exports = async (deployer, network) => {
+  await deployer.deploy(WyvernAtomicizer)
+  await deployer.deploy(WyvernStatic, WyvernAtomicizer.address)
+  await deployer.deploy(StaticMarket, WyvernAtomicizer.address)
+
+  if (network !== 'development'){
+    setConfig('deployed.' + network + '.WyvernAtomicizer', WyvernAtomicizer.address)
+    setConfig('deployed.' + network + '.WyvernStatic', WyvernStatic.address)
+    setConfig('deployed.' + network + '.StaticMarket', StaticMarket.address)
+  }
+
+  if (network !== 'coverage' && network !== 'development')
+    return
+
+  await deployer.deploy(TestERC20)
+  await deployer.deploy(TestERC721)
+  await deployer.deploy(TestAuthenticatedProxy)
+  await deployer.deploy(TestERC1271)
+
+  if (network !== 'development') {
+    setConfig('deployed.' + network + '.TestERC20', TestERC20.address)
+    setConfig('deployed.' + network + '.TestERC721', TestERC721.address)
+    setConfig('deployed.' + network + '.TestAuthenticatedProxy', TestAuthenticatedProxy.address)
+    setConfig('deployed.' + network + '.TestERC1271', TestERC1271.address)
+  }
 }
+
