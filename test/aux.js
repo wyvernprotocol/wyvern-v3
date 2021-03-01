@@ -9,10 +9,17 @@ const { eip712Domain, structHash, signHash } = require('./eip712.js')
 // https://github.com/trufflesuite/truffle/issues/2090
 const assertIsRejected = (promise,error_match,message) =>
   {
+    let passed = false
     return promise
-      .then(() => assert.fail(message || 'Expected promise to be rejected'))
+      .then(() =>
+        {
+        passed = true
+        return assert.fail()
+        })
       .catch(error =>
         {
+        if (passed)
+          return assert.fail(message || 'Expected promise to be rejected')
         if (error_match)
           {
           if (typeof error_match === 'string')
