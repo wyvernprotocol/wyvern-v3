@@ -8,6 +8,7 @@ pragma solidity 0.7.5;
 
 import "./lib/EIP1271Mod.sol";
 import "./lib/ArrayUtils.sol";
+import "./registry/ProxyRegistry.sol";
 
 /**
  * @title GlobalMaker
@@ -18,6 +19,13 @@ contract GlobalMaker is ERC1271Mod {
     bytes4 constant internal SIGINVALID = 0x00000000;
 
     string public constant name = "Global Maker";
+
+    /**
+     * Construct a new GlobalMaker, creating the proxy it will require
+     */
+    constructor (ProxyRegistry registry) public {
+        registry.registerProxy();
+    }
 
     /** 
      * Check if a signature is valid
