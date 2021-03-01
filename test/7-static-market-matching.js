@@ -36,6 +36,7 @@ contract('WyvernExchange', (accounts) =>
 			sellingPrice,
 			buyingPrice,
 			buyAmount,
+			buyingDenominator,
 			erc1155MintAmount,
 			erc20MintAmount,
 			account_a,
@@ -68,13 +69,13 @@ contract('WyvernExchange', (accounts) =>
 		const selectorTwo = web3.eth.abi.encodeFunctionSignature('anyERC20ForERC1155(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
 			
 		const paramsOne = web3.eth.abi.encodeParameters(
-			['address[2]', 'uint256[2]'],
-			[[erc1155.address, erc20.address], [tokenId, sellingPrice]]
+			['address[2]', 'uint256[3]'],
+			[[erc1155.address, erc20.address], [tokenId, 1, sellingPrice]]
 			) 
 	
 		const paramsTwo = web3.eth.abi.encodeParameters(
-			['address[2]', 'uint256[2]'],
-			[[erc20.address, erc1155.address], [buyTokenId || tokenId, buyingPrice]]
+			['address[2]', 'uint256[3]'],
+			[[erc20.address, erc1155.address], [buyTokenId || tokenId, buyingPrice, buyingDenominator || 1]]
 			)
 
 		const one = {registry: registry.address, maker: account_a, staticTarget: statici.address, staticSelector: selectorOne, staticExtradata: paramsOne, maximumFill: sellAmount, listingTime: '0', expirationTime: '10000000000', salt: '11'}
@@ -212,6 +213,29 @@ contract('WyvernExchange', (accounts) =>
 				sellAmount: 1,
 				sellingPrice: price,
 				buyingPrice: price-10,
+				buyAmount: 1,
+				erc1155MintAmount: 1,
+				erc20MintAmount: price,
+				account_a: accounts[0],
+				account_b: accounts[6],
+				sender: accounts[1]
+				}),
+			/Static call failed/,
+			'Order should not match.'
+			)
+		})
+
+	it('StaticMarket: does not fill erc1155 <> erc20 order with different ratios',async () =>
+		{
+		const price = 10000
+
+		return assertIsRejected(
+			any_erc1155_for_erc20_test({
+				tokenId: 5,
+				sellAmount: 1,
+				sellingPrice: price,
+				buyingPrice: price,
+				buyingDenominator: 2,
 				buyAmount: 1,
 				erc1155MintAmount: 1,
 				erc20MintAmount: price,
