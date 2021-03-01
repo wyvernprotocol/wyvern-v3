@@ -363,14 +363,14 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
         /* EFFECTS */
 
-        /* Update first order fill, if necessary. */
+        /* Update first order fill, if necessary. When the sender is the maker, this is not done in order to save gas. */
         if (firstOrder.maker != msg.sender) {
             if (firstFill != previousFirstFill) {
                 fills[firstOrder.maker][firstHash] = firstFill;
             }
         }
 
-        /* Update second order fill, if necessary. */
+        /* Update second order fill, if necessary. When the sender is the maker, this is not done in order to save gas. */
         if (secondOrder.maker != msg.sender) {
             if (secondFill != previousSecondFill) {
                 fills[secondOrder.maker][secondHash] = secondFill;
