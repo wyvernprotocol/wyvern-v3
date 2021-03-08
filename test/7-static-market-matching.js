@@ -34,8 +34,10 @@ contract('WyvernExchange', (accounts) =>
 			buyTokenId,
 			sellAmount,
 			sellingPrice,
+			sellingNumerator,
 			buyingPrice,
 			buyAmount,
+			buyingDenominator,
 			erc1155MintAmount,
 			erc20MintAmount,
 			account_a,
@@ -68,19 +70,19 @@ contract('WyvernExchange', (accounts) =>
 		const selectorTwo = web3.eth.abi.encodeFunctionSignature('anyERC20ForERC1155(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
 			
 		const paramsOne = web3.eth.abi.encodeParameters(
-			['address[2]', 'uint256[2]'],
-			[[erc1155.address, erc20.address], [tokenId, sellingPrice]]
+			['address[2]', 'uint256[3]'],
+			[[erc1155.address, erc20.address], [tokenId, sellingNumerator || 1, sellingPrice]]
 			) 
 	
 		const paramsTwo = web3.eth.abi.encodeParameters(
-			['address[2]', 'uint256[2]'],
-			[[erc20.address, erc1155.address], [buyTokenId || tokenId, buyingPrice]]
+			['address[2]', 'uint256[3]'],
+			[[erc20.address, erc1155.address], [buyTokenId || tokenId, buyingPrice, buyingDenominator || 1]]
 			)
 
-		const one = {registry: registry.address, maker: account_a, staticTarget: statici.address, staticSelector: selectorOne, staticExtradata: paramsOne, maximumFill: sellAmount, listingTime: '0', expirationTime: '10000000000', salt: '11'}
+		const one = {registry: registry.address, maker: account_a, staticTarget: statici.address, staticSelector: selectorOne, staticExtradata: paramsOne, maximumFill: (sellingNumerator || 1) * sellAmount, listingTime: '0', expirationTime: '10000000000', salt: '11'}
 		const two = {registry: registry.address, maker: account_b, staticTarget: statici.address, staticSelector: selectorTwo, staticExtradata: paramsTwo, maximumFill: buyingPrice*buyAmount, listingTime: '0', expirationTime: '10000000000', salt: '12'}
 
-		const firstData = erc1155c.methods.safeTransferFrom(account_a, account_b, tokenId, buyAmount, "0x").encodeABI() + ZERO_BYTES32.substr(2)
+		const firstData = erc1155c.methods.safeTransferFrom(account_a, account_b, tokenId, sellingNumerator || buyAmount, "0x").encodeABI() + ZERO_BYTES32.substr(2)
 		const secondData = erc20c.methods.transferFrom(account_b, account_a, buyAmount*buyingPrice).encodeABI()
 		
 		const firstCall = {target: erc1155.address, howToCall: 0, data: firstData}
@@ -97,7 +99,7 @@ contract('WyvernExchange', (accounts) =>
 		
 		let [account_a_erc20_balance,account_b_erc1155_balance] = await Promise.all([erc20.balanceOf(account_a),erc1155.balanceOf(account_b, tokenId)])
 		assert.equal(account_a_erc20_balance.toNumber(), sellingPrice*buyAmount*txCount,'Incorrect ERC20 balance')
-		assert.equal(account_b_erc1155_balance.toNumber(), buyAmount*txCount,'Incorrect ERC1155 balance')
+		assert.equal(account_b_erc1155_balance.toNumber(), sellingNumerator || (buyAmount*txCount),'Incorrect ERC1155 balance')
 		}
 
 	it('StaticMarket: matches erc1155 <> erc20 order, 1 fill',async () =>
@@ -179,6 +181,27 @@ contract('WyvernExchange', (accounts) =>
 			})
 		})
 
+	it('StaticMarket: matches erc1155 <> erc20 order with any matching ratio',async () =>
+		{
+		const lot = 83974
+		const price = 972
+
+		return any_erc1155_for_erc20_test({
+			tokenId: 5,
+			sellAmount: 6,
+			sellingNumerator: lot,
+			sellingPrice: price,
+			buyingPrice: price,
+			buyingDenominator: lot,
+			buyAmount: 1,
+			erc1155MintAmount: lot,
+			erc20MintAmount: price,
+			account_a: accounts[0],
+			account_b: accounts[6],
+			sender: accounts[1]
+			})
+		})
+
 	it('StaticMarket: does not match erc1155 <> erc20 order beyond maximum fill',async () =>
 		{
 		const price = 10000
@@ -212,6 +235,29 @@ contract('WyvernExchange', (accounts) =>
 				sellAmount: 1,
 				sellingPrice: price,
 				buyingPrice: price-10,
+				buyAmount: 1,
+				erc1155MintAmount: 1,
+				erc20MintAmount: price,
+				account_a: accounts[0],
+				account_b: accounts[6],
+				sender: accounts[1]
+				}),
+			/Static call failed/,
+			'Order should not match.'
+			)
+		})
+
+	it('StaticMarket: does not fill erc1155 <> erc20 order with different ratios',async () =>
+		{
+		const price = 10000
+
+		return assertIsRejected(
+			any_erc1155_for_erc20_test({
+				tokenId: 5,
+				sellAmount: 1,
+				sellingPrice: price,
+				buyingPrice: price,
+				buyingDenominator: 2,
 				buyAmount: 1,
 				erc1155MintAmount: 1,
 				erc20MintAmount: price,
