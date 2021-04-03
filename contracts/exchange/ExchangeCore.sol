@@ -206,12 +206,6 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         return false;
     }
 
-    // function personalSignTest(bytes32 hash) external view returns (bytes32){
-    //     // bytes32 hash = hashOrder(order);
-    //     bytes32 calculatedHashToSign = hashToSign(hash);
-    //     return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32",calculatedHashToSign));
-    // }
-
     function encodeStaticCall(Order memory order, Call memory call, Order memory counterorder, Call memory countercall, address matcher, uint value, uint fill)
         internal
         pure
