@@ -11,16 +11,14 @@ const Web3 = require('web3')
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')
 const web3 = new Web3(provider)
 
-const {wrap,hashOrder,ZERO_BYTES32,randomUint,NULL_SIG,assertIsRejected} = require('./aux')
-
-const CHAIN_ID = 50
+const {wrap,ZERO_BYTES32,CHAIN_ID,NULL_SIG,assertIsRejected} = require('./aux')
 
 contract('WyvernExchange', (accounts) =>
 	{
 	let deploy_core_contracts = async () =>
 		{
 		let [registry,atomicizer] = await Promise.all([WyvernRegistry.new(), WyvernAtomicizer.new()])
-		let [exchange,statici] = await Promise.all([WyvernExchange.new(CHAIN_ID,[registry.address]),WyvernStatic.new(atomicizer.address)])
+		let [exchange,statici] = await Promise.all([WyvernExchange.new(CHAIN_ID,[registry.address],'0x'),WyvernStatic.new(atomicizer.address)])
 		await registry.grantInitialAuthentication(exchange.address)
 		return {registry,exchange:wrap(exchange),atomicizer,statici}
 		}

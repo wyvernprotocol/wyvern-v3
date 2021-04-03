@@ -3,7 +3,7 @@
 const WyvernExchange = artifacts.require('WyvernExchange')
 const WyvernRegistry = artifacts.require('WyvernRegistry')
 
-const {wrap, hashOrder, hashToSign, ZERO_ADDRESS, ZERO_BYTES32, assertIsRejected} = require('./aux')
+const {wrap, hashOrder, hashToSign, ZERO_ADDRESS, ZERO_BYTES32, CHAIN_ID, assertIsRejected} = require('./aux')
 
 contract('WyvernExchange',accounts => {
   const withExchangeAndRegistry = async () => {
@@ -63,12 +63,32 @@ contract('WyvernExchange',accounts => {
     assert.isFalse(await exchange.validateOrderParameters(example),'Should not have validated')
   })
 
-  it('validates valid authorization by signature',async () => {
+  it('validates valid authorization by signature (sign_typed_data)',async () => {
     let {exchange,registry} = await withExchangeAndRegistry()
     let example = {registry: registry.address,maker: accounts[1],staticTarget: exchange.inst.address,staticSelector: '0x00000000',staticExtradata: '0x',maximumFill: '1',listingTime: '0',expirationTime: '1000000000000',salt: '100230'}
     let signature = await exchange.sign(example,accounts[1])
     let hash = hashOrder(example)
-    assert.isTrue(await exchange.validateOrderAuthorization(hash,accounts[0],signature),'Should have validated')
+    assert.isTrue(await exchange.validateOrderAuthorization(hash,accounts[1],signature,{from: accounts[5]}),'Should have validated')
+  })
+
+  it('validates valid authorization by signature (personal_sign)',async () => {
+    let {exchange,registry} = await withExchangeAndRegistry()
+    let example = {registry: registry.address,maker: accounts[1],staticTarget: exchange.inst.address,staticSelector: '0x00000000',staticExtradata: '0x',maximumFill: '1',listingTime: '0',expirationTime: '1000000000000',salt: '100231'}
+    let hash = hashOrder(example)
+    let signature = await exchange.personalSign(example,accounts[1])
+    assert.isTrue(await exchange.validateOrderAuthorization(hash,accounts[1],signature, {from: accounts[5]}),'Should have validated')
+  })
+
+  it('does not validate authorization by signature with different prefix (personal_sign)',async () => {
+    const prefix = Buffer.from("\x19Bogus Signed Message:\n",'binary');
+    let registry = await WyvernRegistry.new()
+    let exchange = await WyvernExchange.new(CHAIN_ID,[registry.address],prefix)
+    await registry.grantInitialAuthentication(exchange.address)
+    let wrappedExchange = wrap(exchange)
+    let example = {registry: registry.address,maker: accounts[1],staticTarget: wrappedExchange.inst.address,staticSelector: '0x00000000',staticExtradata: '0x',maximumFill: '1',listingTime: '0',expirationTime: '1000000000000',salt: '100231'}
+    let hash = hashOrder(example)
+    let signature = await wrappedExchange.personalSign(example,accounts[1])
+    assert.isFalse(await wrappedExchange.validateOrderAuthorization(hash,accounts[1],signature, {from: accounts[5]}),'Should not have validated')
   })
 
   it('does not allow approval twice',async () => {
@@ -105,7 +125,7 @@ contract('WyvernExchange',accounts => {
     const example = {registry: registry.address, maker: accounts[1], staticTarget: exchange.inst.address, staticSelector: '0x00000000', staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '1000000000000', salt: '1'}
     const hash = hashOrder(example)
     await exchange.approveOrderHash(hash,{from: accounts[1]})
-    let valid = await exchange.validateOrderAuthorization(hash,accounts[0],{v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32});
+    let valid = await exchange.validateOrderAuthorization(hash,accounts[5],{v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}, {from: accounts[5]});
     assert.isTrue(valid,'Should have validated')
   })
 

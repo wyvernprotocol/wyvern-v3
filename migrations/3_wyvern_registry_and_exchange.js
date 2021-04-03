@@ -12,14 +12,20 @@ const chainIds = {
   main: 1
 }
 
-module.exports = (deployer, network) => {
-  return deployer.deploy(WyvernRegistry).then(() => {
-    if (network !== 'development') setConfig('deployed.' + network + '.WyvernRegistry', WyvernRegistry.address)
-    return deployer.deploy(WyvernExchange, chainIds[network], [WyvernRegistry.address, '0xa5409ec958C83C3f309868babACA7c86DCB077c1']).then(() => {
-      if (network !== 'development') setConfig('deployed.' + network + '.WyvernExchange', WyvernExchange.address)
-      return WyvernRegistry.deployed().then(registry => {
-        return registry.grantInitialAuthentication(WyvernExchange.address)
-      })
-    })
-  })
+const personalSignPrefixes = {
+  default: "\x19Ethereum Signed Message:\n",
+  klaytn: "\x19Klaytn Signed Message:\n",
+  baobab: "\x19Klaytn Signed Message:\n"
+}
+
+module.exports = async (deployer, network) => {
+  const personalSignPrefix = personalSignPrefixes[network] || personalSignPrefixes['default']
+  await deployer.deploy(WyvernRegistry)
+  await deployer.deploy(WyvernExchange, chainIds[network], [WyvernRegistry.address, '0xa5409ec958C83C3f309868babACA7c86DCB077c1'], Buffer.from(personalSignPrefix,'binary'))
+  if (network !== 'development') {
+    setConfig('deployed.' + network + '.WyvernRegistry', WyvernRegistry.address)
+    setConfig('deployed.' + network + '.WyvernExchange', WyvernExchange.address)
+  }
+  const registry = await WyvernRegistry.deployed()
+  await registry.grantInitialAuthentication(WyvernExchange.address)
 }

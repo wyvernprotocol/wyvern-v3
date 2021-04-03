@@ -106,7 +106,7 @@ const wrap = (inst) => {
       })
     },
     validateOrderParameters: (order) => inst.validateOrderParameters_.call(order.registry, order.maker, order.staticTarget, order.staticSelector, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt),
-    validateOrderAuthorization: (hash, maker, sig, misc) => inst.validateOrderAuthorization_.call(hash, maker, web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [sig.v, sig.r, sig.s]), misc),
+    validateOrderAuthorization: (hash, maker, sig, misc) => inst.validateOrderAuthorization_.call(hash, maker, web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [sig.v, sig.r, sig.s]) + (sig.suffix || ''), misc),
     approveOrderHash: (hash) => inst.approveOrderHash_(hash),
     approveOrder: (order, inclusion, misc) => inst.approveOrder_(order.registry, order.maker, order.staticTarget, order.staticSelector, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt, inclusion, misc),
     setOrderFill: (order, fill) => inst.setOrderFill_(hashOrder(order), fill),
@@ -118,8 +118,8 @@ const wrap = (inst) => {
       [call.howToCall, countercall.howToCall],
       metadata,
       web3.eth.abi.encodeParameters(['bytes', 'bytes'], [
-        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [sig.v, sig.r, sig.s]),
-        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [countersig.v, countersig.r, countersig.s])
+        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [sig.v, sig.r, sig.s]) + (sig.suffix || ''),
+        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [countersig.v, countersig.r, countersig.s]) + (countersig.suffix || '')
       ])
     ),
     atomicMatchWith: (order, sig, call, counterorder, countersig, countercall, metadata, misc) => inst.atomicMatch_(
@@ -130,8 +130,8 @@ const wrap = (inst) => {
       [call.howToCall, countercall.howToCall],
       metadata,
       web3.eth.abi.encodeParameters(['bytes', 'bytes'], [
-        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [sig.v, sig.r, sig.s]),
-        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [countersig.v, countersig.r, countersig.s])
+        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [sig.v, sig.r, sig.s]) + (sig.suffix || ''),
+        web3.eth.abi.encodeParameters(['uint8', 'bytes32', 'bytes32'], [countersig.v, countersig.r, countersig.s]) + (countersig.suffix || '')
       ]),
       misc
     )
@@ -151,6 +151,15 @@ const wrap = (inst) => {
       return sig
     })
   }
+  obj.personalSign = (order, account) => {
+    const calculatedHashToSign = hashToSign(order, inst.address)
+    return web3.eth.sign(calculatedHashToSign, account).then(sigBytes => {
+      let sig = parseSig(sigBytes)
+      sig.v += 27
+      sig.suffix = '03' // EthSign suffix like 0xProtocol
+      return sig
+    })
+  }
   return obj
 }
 
@@ -161,6 +170,7 @@ const randomUint = () => {
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000'
 const NULL_SIG = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+const CHAIN_ID = 50
 
 module.exports = {
   hashOrder,
@@ -171,5 +181,6 @@ module.exports = {
   randomUint,
   ZERO_ADDRESS,
   ZERO_BYTES32,
-  NULL_SIG
+  NULL_SIG,
+  CHAIN_ID
 }

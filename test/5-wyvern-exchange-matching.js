@@ -557,4 +557,15 @@ contract('WyvernExchange', (accounts) => {
     const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
     assert.isOk(await exchange.atomicMatchWith(one, oneSig, call, two, twoSig, call, ZERO_BYTES32, {value: 200}))
   })
+
+  it('matches orders signed with personal_sign',async () => {
+    let {exchange, registry, statici} = await withContracts()
+    const selector = web3.eth.abi.encodeFunctionSignature('any(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
+    const one = {registry: registry.address, maker: accounts[0], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '0'}
+    const two = {registry: registry.address, maker: accounts[6], staticTarget: statici.address, staticSelector: selector, staticExtradata: '0x', maximumFill: '1', listingTime: '0', expirationTime: '100000000000', salt: '1'}
+    const call = {target: statici.address, howToCall: 0, data: web3.eth.abi.encodeFunctionSignature('test()')}
+    let sigOne = await exchange.personalSign(one,accounts[0])
+    let sigTwo = await exchange.personalSign(two,accounts[6])
+    assert.isOk(await exchange.atomicMatchWith(one, sigOne, call, two, sigTwo, call, ZERO_BYTES32, {from: accounts[5]}))
+  })
 })
