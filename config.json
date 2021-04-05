@@ -21,7 +21,16 @@
       "WyvernAtomicizer": "0xb5aA89f557E2B94f2eC37e83dCB5774b74590143",
       "WyvernStatic": "0x489bA5784794A488FE791a13a8BcFDF73a9fbc1b",
       "WyvernRegistry": "0x4F9da1e9Ca5b6363D5fEf16724b3437a18B2A3f1",
-      "WyvernExchange": "0x2BfDC44a24DA6Dd8bCc632c174254B268cB11aa0"
+      "WyvernExchange": "0x2BfDC44a24DA6Dd8bCc632c174254B268cB11aa0",
+      "StaticMarket": "0xAFb1886BfF783684712de84Cc77d5f7Bd1E26F27"
+    },
+    "baobab": {
+      "Migrations": "0x294C849D78cc08457bdc3278f751789e2B2BEf5c",
+      "WyvernAtomicizer": "0xe6c0ee1209a1Dbe4A406799e9D63f1Be606CfE3E",
+      "WyvernStatic": "0xd074EbBf82806095eC784e7E00C2a44196868C4F",
+      "StaticMarket": "0xa86AF1A5bB8AF2418500AAbdacB9B7d2217F91A5",
+      "WyvernRegistry": "0x23d0a64aF6987A2d536B9c3bA72FAAf66c9D73b6",
+      "WyvernExchange": "0xDBA99cE125C6140dC4b30D48cBdDc57Bc67dc2d1"
     }
   }
 }
