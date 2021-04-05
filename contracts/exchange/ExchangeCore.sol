@@ -22,6 +22,7 @@ import "../registry/AuthenticatedProxy.sol";
 contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
     bytes4 constant internal EIP_1271_MAGICVALUE = 0x20c13b0b;
+    bytes internal personalSignPrefix = "\x19Ethereum Signed Message:\n";
 
     /* Struct definitions. */
 
@@ -183,20 +184,25 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
         /* (c): Contract-only authentication: EIP/ERC 1271. */
         if (isContract) {
-
             if (ERC1271(maker).isValidSignature(abi.encodePacked(calculatedHashToSign), signature) == EIP_1271_MAGICVALUE) {
                 return true;
             }
-
             return false;
         }
 
         /* (d): Account-only authentication: ECDSA-signed by maker. */
         (uint8 v, bytes32 r, bytes32 s) = abi.decode(signature, (uint8, bytes32, bytes32));
-        if (ecrecover(calculatedHashToSign, v, r, s) == maker) {
+
+        if (signature.length > 65 && signature[signature.length-1] == 0x03) { // EthSign byte
+            /* (d.1): Old way: order hash signed by maker using the prefixed personal_sign */
+            if (ecrecover(keccak256(abi.encodePacked(personalSignPrefix,"32",calculatedHashToSign)), v, r, s) == maker) {
+                return true;
+            }
+        }
+        /* (d.2): New way: order hash signed by maker using sign_typed_data */
+        else if (ecrecover(calculatedHashToSign, v, r, s) == maker) {
             return true;
         }
-
         return false;
     }
 

@@ -13,7 +13,7 @@ const { setConfig } = require('./config.js')
 module.exports = async (deployer, network) => {
   await deployer.deploy(WyvernAtomicizer)
   await deployer.deploy(WyvernStatic, WyvernAtomicizer.address)
-  await deployer.deploy(StaticMarket, WyvernAtomicizer.address)
+  await deployer.deploy(StaticMarket)
 
   if (network !== 'development'){
     setConfig('deployed.' + network + '.WyvernAtomicizer', WyvernAtomicizer.address)

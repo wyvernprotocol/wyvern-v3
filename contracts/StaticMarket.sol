@@ -6,21 +6,20 @@
 
 pragma solidity 0.7.5;
 
-import "./static/StaticUtil.sol";
+import "./lib/ArrayUtils.sol";
+import "./registry/AuthenticatedProxy.sol";
 
 /**
  * @title StaticMarket
  * @author Wyvern Protocol Developers
  */
-contract StaticMarket is StaticUtil {
+contract StaticMarket {
 
 	string public constant name = "Static Market";
 
-	constructor (address atomicizerAddress)
+	constructor ()
 		public
-	{
-		atomicizer = atomicizerAddress;
-	}
+	{}
 
 	function anyERC1155ForERC20(bytes memory extra,
 		address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
