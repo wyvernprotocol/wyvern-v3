@@ -172,6 +172,17 @@ const ZERO_BYTES32 = '0x00000000000000000000000000000000000000000000000000000000
 const NULL_SIG = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
 const CHAIN_ID = 50
 
+const globalMakerSigMakerOffsets = [
+  {
+    sig: web3.eth.abi.encodeFunctionSignature('transferFrom(address,address,uint256)'),
+    offset: 4
+  },
+  {
+    sig: web3.eth.abi.encodeFunctionSignature('safeTransferFrom(address,address,uint256,uint256,bytes)'),
+    offset: 4
+  }
+]
+
 module.exports = {
   hashOrder,
   hashToSign,
@@ -182,5 +193,6 @@ module.exports = {
   ZERO_ADDRESS,
   ZERO_BYTES32,
   NULL_SIG,
-  CHAIN_ID
+  CHAIN_ID,
+  globalMakerSigMakerOffsets
 }

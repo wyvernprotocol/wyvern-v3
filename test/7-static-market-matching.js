@@ -1,6 +1,5 @@
 /* global artifacts:false, it:false, contract:false, assert:false */
 
-const WyvernAtomicizer = artifacts.require('WyvernAtomicizer')
 const WyvernExchange = artifacts.require('WyvernExchange')
 const StaticMarket = artifacts.require('StaticMarket')
 const WyvernRegistry = artifacts.require('WyvernRegistry')
@@ -18,10 +17,10 @@ contract('WyvernExchange', (accounts) =>
 	{
 	let deploy_core_contracts = async () =>
 		{
-		let [registry,atomicizer] = await Promise.all([WyvernRegistry.new(), WyvernAtomicizer.new()])
+		let [registry] = await Promise.all([WyvernRegistry.new()])
 		let [exchange,statici] = await Promise.all([WyvernExchange.new(CHAIN_ID,[registry.address],'0x'),StaticMarket.new()])
 		await registry.grantInitialAuthentication(exchange.address)
-		return {registry,exchange:wrap(exchange),atomicizer,statici}
+		return {registry,exchange:wrap(exchange),statici}
 		}
 
 	let deploy = async contracts => Promise.all(contracts.map(contract => contract.new()))
@@ -66,7 +65,7 @@ contract('WyvernExchange', (accounts) =>
 		const erc20c = new web3.eth.Contract(erc20.abi, erc20.address)
 		const selectorOne = web3.eth.abi.encodeFunctionSignature('anyERC1155ForERC20(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
 		const selectorTwo = web3.eth.abi.encodeFunctionSignature('anyERC20ForERC1155(bytes,address[7],uint8[2],uint256[6],bytes,bytes)')
-			
+
 		const paramsOne = web3.eth.abi.encodeParameters(
 			['address[2]', 'uint256[3]'],
 			[[erc1155.address, erc20.address], [tokenId, sellingNumerator || 1, sellingPrice]]

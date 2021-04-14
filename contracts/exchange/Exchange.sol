@@ -46,7 +46,15 @@ contract Exchange is ExchangeCore {
         view
         returns (bool)
     {
-        return validateOrderAuthorization(hash, maker, signature);
+        return validateOrderAuthorization(hash, maker, signature, "0x");
+    }
+
+    function validateOrderAuthorization_(bytes32 hash, address maker, bytes calldata signature, bytes memory callData)
+        external
+        view
+        returns (bool)
+    {
+        return validateOrderAuthorization(hash, maker, signature, callData);
     }
 
     function approveOrderHash_(bytes32 hash)
