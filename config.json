@@ -17,12 +17,12 @@
       "WyvernExchange": "0xd7CA74fF003c90E62505D21ec7Dac36bCfD9F6f2"
     },
     "mumbai": {
-      "Migrations": "0xAF9922A95b8003ead7049b2c48E5d0F96746BE51",
-      "WyvernAtomicizer": "0xb5aA89f557E2B94f2eC37e83dCB5774b74590143",
-      "WyvernStatic": "0x489bA5784794A488FE791a13a8BcFDF73a9fbc1b",
-      "WyvernRegistry": "0x4F9da1e9Ca5b6363D5fEf16724b3437a18B2A3f1",
-      "WyvernExchange": "0x2BfDC44a24DA6Dd8bCc632c174254B268cB11aa0",
-      "StaticMarket": "0xAFb1886BfF783684712de84Cc77d5f7Bd1E26F27"
+      "Migrations": "0x6C9497bf4700c296F5Cd7031158501410040aA8A",
+      "WyvernAtomicizer": "0x9f0B24C426327ff824f999c0507943c8bda9F674",
+      "WyvernStatic": "0x2A20127Bf55aA3fbEe8E8831CCF012d1dF470B74",
+      "WyvernRegistry": "0x2a9BbBd5db91a30C2b295Bd07b8122036236BF13",
+      "WyvernExchange": "0xE4249006405365590882D4e6b3c23746252c4d1d",
+      "StaticMarket": "0xCaB85B878296B9F00c12682b2C14c281A7DBb6a5"
     },
     "baobab": {
       "Migrations": "0x294C849D78cc08457bdc3278f751789e2B2BEf5c",
