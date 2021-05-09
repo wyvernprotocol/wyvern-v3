@@ -137,7 +137,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         returns (bool)
     {
         /* Order must be listed and not be expired. */
-        if (order.listingTime > block.timestamp || order.expirationTime <= block.timestamp) {
+        if (order.listingTime > block.timestamp || (order.expirationTime != 0 && order.expirationTime <= block.timestamp)) {
             return false;
         }
 
