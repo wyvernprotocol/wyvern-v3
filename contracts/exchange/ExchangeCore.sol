@@ -42,7 +42,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         uint maximumFill;
         /* Order listing timestamp. */
         uint listingTime;
-        /* Order expiration timestamp - 0 for no expiry. */
+        /* Order expiration timestamp */
         uint expirationTime;
         /* Order salt to prevent duplicate hashes. */
         uint salt;
