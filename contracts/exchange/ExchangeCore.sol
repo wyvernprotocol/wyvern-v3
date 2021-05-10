@@ -137,7 +137,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         returns (bool)
     {
         /* Order must be listed and not be expired. */
-        if (order.listingTime > block.timestamp || order.expirationTime <= block.timestamp) {
+        if (order.listingTime > block.timestamp || (order.expirationTime != 0 && order.expirationTime <= block.timestamp)) {
             return false;
         }
 
@@ -244,10 +244,10 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
         /* Assert implementation. */
         require(delegateProxy.implementation() == registry.delegateProxyImplementation(), "Incorrect delegate proxy implementation for maker");
-      
+
         /* Typecast. */
         AuthenticatedProxy proxy = AuthenticatedProxy(address(delegateProxy));
-  
+
         /* Execute order. */
         return proxy.proxy(call.target, call.howToCall, call.data);
     }
