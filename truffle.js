@@ -33,7 +33,7 @@ module.exports = {
     development: {
       host: 'localhost',
       port: 8545,
-      network_id: '50',
+      network_id: '1630087664650',
       gas: 6700000
     },
     coverage: {
