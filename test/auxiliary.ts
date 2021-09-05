@@ -3,6 +3,7 @@ import { ethers } from 'hardhat';
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
 import { eip712Domain, structHash, signHash } from './eip712';
+import { defaultAccounts } from '@ethereum-waffle/provider';
 
 const url = 'http://localhost:8545';
 const jsonRPCProvider = new ethers.providers.JsonRpcProvider(url);
@@ -101,18 +102,12 @@ export const wrap = (inst) => {
       misc
     ),
     sign: (order, account) => {
-      const str = structToSign(order, inst.address);
-      const types = {
-        EIP712Domain: eip712Domain.fields,
-        Order: eip712Order.fields
-      }
-      return signer._signTypedData(
-        str.domain,
+      const { domain } = structToSign(order, inst.address);
+      const types = { Order: eip712Order.fields };
+      return account._signTypedData(
+        domain,
         types,
-        {
-          primaryType: 'Order',
-          message: order
-        }
+        order
       ).then(sigBytes => {
         const sig = parseSig(sigBytes)
         return sig
