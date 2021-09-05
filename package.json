@@ -8,7 +8,7 @@
     "flatten": "scripts/flatten.sh",
     "compile": "scripts/compile.sh",
     "coverage": "scripts/coverage.sh",
-    "test": "scripts/test.sh",
+    "test": "hardhat test",
     "lint": "scripts/lint.sh",
     "testrpc": "scripts/testrpc.sh"
   },
@@ -24,9 +24,6 @@
   "homepage": "https://github.com/wyvernprotocol/wyvern-v3#readme",
   "devDependencies": {
     "@babel/runtime": "^7.12.5",
-    "lodash": "^4.17.20",
-    "openzeppelin-solidity": "^3.3.0",
-    "web3": "^1.3.0",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-etherscan": "^2.1.1",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
@@ -56,15 +53,19 @@
     "hardhat-abi-exporter": "^2.2.0",
     "hardhat-contract-sizer": "^2.0.3",
     "hardhat-gas-reporter": "^1.0.4",
+    "lodash": "^4.17.20",
+    "openzeppelin-solidity": "^3.3.0",
     "prettier": "^2.1.1",
     "prettier-plugin-solidity": "^1.0.0-alpha.56",
     "solidity-coverage": "^0.7.10",
-    "truffle-flattener": "^1.4.4",
     "ts-node": "^9.0.0",
     "typechain": "^5.0.0",
-    "typescript": "^4.0.2"
+    "typescript": "^4.0.2",
+    "web3": "^1.3.0"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.2.0"
+    "@openzeppelin/contracts": "^4.2.0",
+    "i": "^0.3.6",
+    "npm": "^7.22.0"
   }
 }

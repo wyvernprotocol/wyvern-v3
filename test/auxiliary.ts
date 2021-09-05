@@ -9,7 +9,7 @@ const jsonRPCProvider = new ethers.providers.JsonRpcProvider(url);
 const decoder = new ethers.utils.AbiCoder();
 const signer = jsonRPCProvider.getSigner(0);
 
-const increaseTime = seconds => {
+export const increaseTime = seconds => {
   return new Promise(resolve =>
     jsonRPCProvider.send('evm_increaseTime', [seconds])
     )
@@ -30,7 +30,7 @@ const eip712Order = {
   ]
 }
 
-const hashOrder = (order) => {
+export const hashOrder = (order) => {
   return '0x' + structHash(eip712Order.name, eip712Order.fields, order).toString('hex')
 }
 
@@ -48,7 +48,7 @@ const structToSign = (order, exchange) => {
   }
 }
 
-const hashToSign = (order, exchange) => {
+export const hashToSign = (order, exchange) => {
   return '0x' + signHash(structToSign(order, exchange)).toString('hex')
 }
 
@@ -61,7 +61,7 @@ const parseSig = (bytes) => {
   return {v, r, s, suffix}
 }
 
-const wrap = (inst) => {
+export const wrap = (inst) => {
   var obj = {
     inst: inst,
     hashOrder: (order) => inst.hashOrder_.call(order.registry, order.maker, order.staticTarget, order.staticSelector, order.staticExtradata, order.maximumFill, order.listingTime, order.expirationTime, order.salt),
@@ -131,23 +131,11 @@ const wrap = (inst) => {
   return obj
 }
 
-const randomUint = () => {
+export const randomUint = () => {
   return Math.floor(Math.random() * 1e10)
 }
 
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
-const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000'
-const NULL_SIG = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
-const CHAIN_ID = 50
-
-module.exports = {
-  hashOrder,
-  hashToSign,
-  increaseTime,
-  wrap,
-  randomUint,
-  ZERO_ADDRESS,
-  ZERO_BYTES32,
-  NULL_SIG,
-  CHAIN_ID
-}
+export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+export const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000'
+export const NULL_SIG = {v: 27, r: ZERO_BYTES32, s: ZERO_BYTES32}
+export const CHAIN_ID = 50

@@ -9,14 +9,6 @@
     "esModuleInterop": true
   },
   "exclude": ["dist", "node_modules"],
-  "files": [
-    "./hardhat.config.ts",
-    "./scripts/**/*.ts",
-    "./test/**/*.ts",
-    "node_modules/@nomiclabs/hardhat-ethers/internal/type-extensions.d.ts",
-    "node_modules/@nomiclabs/hardhat-etherscan/dist/src/type-extensions.d.ts",
-    "node_modules/@nomiclabs/hardhat-waffle/dist/src/type-extensions.d.ts",
-    "node_modules/@typechain/hardhat/dist/type-extensions.d.ts",
-    "./index.d.ts"
-  ]
+  "include": ["./test"],
+  "files": ["./hardhat.config.ts"]
 }
