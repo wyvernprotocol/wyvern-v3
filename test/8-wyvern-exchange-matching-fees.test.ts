@@ -2,6 +2,7 @@ import { expect, assert } from 'chai';
 import { ethers } from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { Interface } from "ethers/lib/utils";
+import WyvernStaticABI from "../build/abis/WyvernStatic.json"
 import StaticUtilABI from "../build/abis/StaticUtil.json";
 import StaticERC20ABI from "../build/abis/StaticERC20.json";
 import StaticERC1155ABI from "../build/abis/StaticERC1155.json";
@@ -32,15 +33,14 @@ import {
   WyvernAtomicizer__factory,
 } from '../build/types';
 import { wrap, NULL_SIG, ZERO_ADDRESS, ZERO_BYTES32 } from './auxiliary';
+import { BigNumber } from 'ethers';
 
 describe('WyvernRegistry', () => {
   let accounts: SignerWithAddress[];
   let coder = new ethers.utils.AbiCoder();
 
   let atomicizerInterface = new Interface(AtomicizerABI);
-  let staticInterface = new Interface(StaticUtilABI);
-  let staticERC20Interface = new Interface(StaticERC20ABI);
-  let StaticERC1155Interface = new Interface(StaticERC1155ABI);
+  let staticInterface = new Interface(WyvernStaticABI);
   let ERC20Interface = new Interface(ERC20ABI);
   let ERC1155Interface = new Interface(ERC1155ABI);
 
@@ -55,17 +55,23 @@ describe('WyvernRegistry', () => {
   beforeEach(async () => {
     accounts = await ethers.getSigners();
 
-    const WyvernAtomicizer = new WyvernAtomicizer__factory(accounts[0]);
-    atomicizer = await WyvernAtomicizer.deploy();
-    await atomicizer.deployed();
-
     const WyvernRegistry = new WyvernRegistry__factory(accounts[0]);
     registry = await WyvernRegistry.deploy();
     await registry.deployed();
 
+    const WyvernAtomicizer = new WyvernAtomicizer__factory(accounts[0]);
+    atomicizer = await WyvernAtomicizer.deploy();
+    await atomicizer.deployed();
+
     const WyvernExchange = new WyvernExchange__factory(accounts[0]);
     exchange = await WyvernExchange.deploy(1337, [registry.address], "0x00");
     await exchange.deployed();
+
+    const StaticI = new WyvernStatic__factory(accounts[0]);
+    statici = await StaticI.deploy(atomicizer.address);
+    await statici.deployed();
+		
+    await registry.grantInitialAuthentication(exchange.address)
 
     const TestERC20 = new TestERC20__factory(accounts[0]);
     erc20 = await TestERC20.deploy();
@@ -75,17 +81,12 @@ describe('WyvernRegistry', () => {
     erc1155 = await TestERC1155.deploy();
     await erc1155.deployed();
 
-    const StaticI = new WyvernStatic__factory(accounts[0]);
-    statici = await StaticI.deploy(ZERO_ADDRESS);
-    await statici.deployed();
-
     wrappedExchange = wrap(exchange);
   });
 
   it('matches erc1155 + erc20 <> erc1155 orders, matched left, real static call', async () => {
     let account_a = accounts[0];
     let account_b = accounts[6];
-
     let price = 10000;
     let tokenId = 4;
         
@@ -96,20 +97,20 @@ describe('WyvernRegistry', () => {
     await registry.connect(account_b).registerProxy();
     let proxyB = await registry.proxies(account_b.address);
     assert.equal(true, proxyB.length > 0, 'no proxy address for account b');
-
+    
+    await erc20.connect(account_a).approve(proxyA, price)
+    await erc1155.connect(account_a).setApprovalForAll(proxyA, true)
+    await erc1155.connect(account_b).setApprovalForAll(proxyB, true)
     await erc20.mint(account_a.address, price);
     await erc1155['mint(address,uint256,uint256)'](account_a.address, tokenId, 1);
     await erc1155['mint(address,uint256,uint256)'](account_b.address, tokenId, 1);
 
-    await erc20.connect(account_a).approve(proxyA, price)
-    await erc1155.connect(account_a).setApprovalForAll(proxyA, true)
-    await erc1155.connect(account_b).setApprovalForAll(proxyB, true)
     const selectorOne = staticInterface.getSighash('split(bytes,address[7],uint8[2],uint256[6],bytes,bytes)');
     const selectorOneA = staticInterface.getSighash('sequenceExact(bytes,address[7],uint8,uint256[6],bytes)')
     const selectorOneB = staticInterface.getSighash('sequenceExact(bytes,address[7],uint8,uint256[6],bytes)')
-    const firstEDSelector = staticERC20Interface.getSighash('transferERC20Exact(bytes,address[7],uint8,uint256[6],bytes)')
+    const firstEDSelector = staticInterface.getSighash('transferERC20Exact(bytes,address[7],uint8,uint256[6],bytes)')
     const firstEDParams = coder.encode(['address', 'uint256'], [erc20.address, price])
-    const secondEDSelector = StaticERC1155Interface.getSighash('transferERC1155Exact(bytes,address[7],uint8,uint256[6],bytes)')
+    const secondEDSelector = staticInterface.getSighash('transferERC1155Exact(bytes,address[7],uint8,uint256[6],bytes)')
     const secondEDParams = coder.encode(['address', 'uint256', 'uint256'], [erc1155.address, tokenId, 1])
     const extradataOneA = coder.encode(
       ['address[]', 'uint256[]', 'bytes4[]', 'bytes'],
@@ -119,7 +120,7 @@ describe('WyvernRegistry', () => {
       firstEDParams + secondEDParams.slice(2)]
     )
     const bEDParams = coder.encode(['address', 'uint256', 'uint256'], [erc1155.address, tokenId, 1])
-    const bEDSelector = StaticERC1155Interface.getSighash('transferERC1155Exact(bytes,address[7],uint8,uint256[6],bytes)')
+    const bEDSelector = staticInterface.getSighash('transferERC1155Exact(bytes,address[7],uint8,uint256[6],bytes)')
     const extradataOneB = coder.encode(
       ['address[]', 'uint256[]', 'bytes4[]', 'bytes'],
       [[statici.address], [(bEDParams.length - 2) / 2], [bEDSelector], bEDParams]
@@ -150,17 +151,17 @@ describe('WyvernRegistry', () => {
       [0],
       [(secondERC1155Call.length - 2) / 2],
       secondERC1155Call
-    ])
+    ]);
     
-    const firstCall = {target: atomicizer.address, howToCall: 1, data: firstData}
-    const secondCall = {target: atomicizer.address, howToCall: 1, data: secondData}
+    const firstCall = {target: atomicizer.address, howToCall: 1, data: firstData};
+    const secondCall = {target: atomicizer.address, howToCall: 1, data: secondData};
     
-    let twoSig = await wrappedExchange.sign(two, account_b)
-    await wrappedExchange.atomicMatch(one, sig, firstCall, two, twoSig, secondCall, ZERO_BYTES32)
-    // let [new_balance1,new_balance2] = await Promise.all([erc1155.balanceOf(account_a.address, tokenId),erc1155.balanceOf(account_b.address, tokenId)])
-    // assert.isTrue(new_balance1.toNumber() > 0,'Incorrect balance')
-    // assert.isTrue(new_balance2.toNumber() > 0,'Incorrect balance')
-    // assert.equal(await erc20.balanceOf(account_b), price, 'Incorrect balance')
-    })
-
-})
+    let twoSig = await wrappedExchange.sign(two, account_b);
+    await wrappedExchange.atomicMatch(one, sig, firstCall, two, twoSig, secondCall, ZERO_BYTES32);
+    let new_balance1 = await erc1155.balanceOf(account_a.address, tokenId);
+    let new_balance2 = await erc1155.balanceOf(account_b.address, tokenId);
+    assert.isTrue(new_balance1.toNumber() > 0,'Incorrect balance');
+    assert.isTrue(new_balance2.toNumber() > 0,'Incorrect balance');
+    expect(await erc20.balanceOf(account_b.address)).to.eq(BigNumber.from(price));
+  });
+});
