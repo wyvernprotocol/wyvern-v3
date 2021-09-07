@@ -88,7 +88,7 @@ export const wrap = (inst) => {
         decoder.encode(['uint8', 'bytes32', 'bytes32'], [countersig.v, countersig.r, countersig.s]) + (countersig.suffix || '')
       ])
     ),
-    atomicMatchWith: (order, sig, call, counterorder, countersig, countercall, metadata, misc) => inst.atomicMatch_(
+    atomicMatchWith: (order, sig, call, counterorder, countersig, countercall, metadata, misc) => inst.connect(misc.from).atomicMatch_(
       [order.registry, order.maker, order.staticTarget, order.maximumFill, order.listingTime, order.expirationTime, order.salt, call.target,
         counterorder.registry, counterorder.maker, counterorder.staticTarget, counterorder.maximumFill, counterorder.listingTime, counterorder.expirationTime, counterorder.salt, countercall.target],
       [order.staticSelector, counterorder.staticSelector],
@@ -98,8 +98,7 @@ export const wrap = (inst) => {
       decoder.encode(['bytes', 'bytes'], [
         decoder.encode(['uint8', 'bytes32', 'bytes32'], [sig.v, sig.r, sig.s]) + (sig.suffix || ''),
         decoder.encode(['uint8', 'bytes32', 'bytes32'], [countersig.v, countersig.r, countersig.s]) + (countersig.suffix || '')
-      ]),
-      misc
+      ])
     ),
     sign: (order, account) => {
       const { domain } = structToSign(order, inst.address);
