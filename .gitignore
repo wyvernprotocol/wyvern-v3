@@ -1,4 +1,6 @@
 build/
+artifacts/
+cache/
 node_modules/
 .cache/
 coverageEnv/
