@@ -6,9 +6,9 @@
     "target": "ES2018",
     "outDir": "dist",
     "resolveJsonModule": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
   },
   "exclude": ["dist", "node_modules"],
-  "include": ["./test"],
+  "include": ["wrapper"],
   "files": ["./hardhat.config.ts"]
 }

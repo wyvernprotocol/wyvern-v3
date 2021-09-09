@@ -41,7 +41,7 @@ function getDefaultProviderURL(network: string) {
   return `https://${network}.infura.io/v3/${process.env.INFURA_KEY}`
 }
 
-function setupDefaultNetworkProviders(buidlerConfig) {
+function setupDefaultNetworkProviders(buidlerConfig: any) {
   for (const netConfig of networkConfigs) {
     buidlerConfig.networks[netConfig.network] = {
       chainId: netConfig.chainId,
