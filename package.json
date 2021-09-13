@@ -1,9 +1,12 @@
 {
-  "name": "wyvern-v3",
+  "name": "@nifty-island/wyvern-v3",
   "version": "3.1.0",
   "description": "Wyvern Protocol v3.1, Ethereum implementation",
-  "main": "index.js",
+  "main": "dist/wrapper/wrapper.js",
+  "types": "dist/wrapper/wrapper.d.ts",
+  "files": ["./dist", "./contracts"],
   "scripts": {
+    "prepublish": "tsc && yarn compile",
     "analyze": "scripts/analyze.sh",
     "flatten": "scripts/flatten.sh",
     "compile": "hardhat compile",
@@ -38,7 +41,7 @@
     "@typescript-eslint/parser": "^4.31.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "dotenv": "^9.0.2",
+    "dotenv": "^10.0.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-config-standard": "^14.1.1",

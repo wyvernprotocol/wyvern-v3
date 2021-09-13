@@ -19,7 +19,7 @@ import {
   WyvernAtomicizer__factory,
   StaticMarket,
   StaticMarket__factory,
-} from '../build/types';
+} from '../dist/build/types';
 import { WrappedExchange } from './wrapper';
 
 chai.use(asPromised);

@@ -1,8 +1,8 @@
 import { ethers, Signer, BigNumberish, BigNumber, Transaction } from 'ethers';
 import { Interface } from "ethers/lib/utils";
-import ERC20ABI from "../build/abis/ERC20.json"
-import ERC721ABI from "../build/abis/ERC721.json"
-import ERC1155ABI from "../build/abis/ERC1155.json"
+import ERC20ABI from "../dist/build/abis/ERC20.json"
+import ERC721ABI from "../dist/build/abis/ERC721.json"
+import ERC1155ABI from "../dist/build/abis/ERC1155.json"
 import {
   ZERO_BYTES32,
   eip712Order,
@@ -15,7 +15,8 @@ import {
 import { 
   WyvernExchange,
   WyvernExchange__factory,
-} from '../build/types';
+} from '../dist/build/types';
+import addressesByChainId from './addresses.json'
 
 const ERC20Interface = new Interface(ERC20ABI);
 const ERC721Interface = new Interface(ERC721ABI);
@@ -56,24 +57,6 @@ type EIP712Domain = {
   version: string;
   chainId: number;
   verifyingContract: string;
-}
-
-export const addressesByChainId: {[key: number]: WyvernSystem} = {
-  1: {
-    WyvernRegistry: "0xa5409ec958C83C3f309868babACA7c86DCB077c1",
-    WyvernExchange: "0xd7CA74fF003c90E62505D21ec7Dac36bCfD9F6f2",
-    StaticMarket: "",
-  },
-  4: {
-    WyvernRegistry: "0x30caa00562AD2f2B41BB4b1943d28F84832ce0D6",
-    WyvernExchange: "0xF40D3F036528Ed87b83748306c719757f22be4fE",
-    StaticMarket: "",
-  },
-  1337: {
-    WyvernRegistry: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    WyvernExchange: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-    StaticMarket: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
-  },
 }
 
 export class WrappedExchange {

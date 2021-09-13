@@ -8,4 +8,5 @@ scTopics
 temp/
 .DS_Store
 .nova/
-.env
+.env.*
+dist/

@@ -2,7 +2,6 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 
 import { HardhatUserConfig } from 'hardhat/types'
-import { task } from 'hardhat/config';
 
 // Plugins
 
@@ -55,15 +54,6 @@ function setupDefaultNetworkProviders(buidlerConfig: any) {
   }
 }
 
-// Tasks
-
-task('accounts', 'Prints the list of accounts', async (taskArgs, bre) => {
-  const accounts = await bre.ethers.getSigners()
-  for (const account of accounts) {
-    console.log(await account.getAddress())
-  }
-})
-
 // Config
 
 const config: HardhatUserConfig = {
@@ -106,11 +96,11 @@ const config: HardhatUserConfig = {
     outputFile: 'reports/gas-report.log',
   },
   typechain: {
-    outDir: 'build/types',
+    outDir: './dist/build/types',
     target: 'ethers-v5',
   },
   abiExporter: {
-    path: './build/abis',
+    path: './dist/build/abis',
     clear: false,
     flat: true,
   },

@@ -7,8 +7,9 @@
     "outDir": "dist",
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "declaration": true,
   },
-  "exclude": ["dist", "node_modules"],
+  "exclude": ["dist", "node_modules", "hardhat.config.ts"],
   "include": ["wrapper"],
   "files": ["./hardhat.config.ts"]
 }
