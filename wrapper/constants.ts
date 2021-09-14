@@ -1,5 +1,5 @@
-export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
-export const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000'
+export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+export const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
 export const eip712Order = {
   name: 'Order',
@@ -14,7 +14,7 @@ export const eip712Order = {
     { name: 'expirationTime', type: 'uint256' },
     { name: 'salt', type: 'uint256' }
   ]
-}
+};
 
 export const anyERC1155ForERC20Selector = '0x23b04789';
 export const anyERC20ForERC1155Selector = '0x7a7f30e0';

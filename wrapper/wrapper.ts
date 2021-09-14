@@ -1,8 +1,8 @@
 import { ethers, Signer, BigNumberish, BigNumber, Transaction } from 'ethers';
 import { Interface } from "ethers/lib/utils";
-import ERC20ABI from "../dist/build/abis/ERC20.json"
-import ERC721ABI from "../dist/build/abis/ERC721.json"
-import ERC1155ABI from "../dist/build/abis/ERC1155.json"
+import ERC20ABI from "../dist/build/abis/ERC20.json";
+import ERC721ABI from "../dist/build/abis/ERC721.json";
+import ERC1155ABI from "../dist/build/abis/ERC1155.json";
 import {
   ZERO_BYTES32,
   eip712Order,
@@ -16,7 +16,7 @@ import {
   WyvernExchange,
   WyvernExchange__factory,
 } from '../dist/build/types';
-import addressesByChainId from './addresses.json'
+import addressesByChainId from './addresses.json';
 
 const ERC20Interface = new Interface(ERC20ABI);
 const ERC721Interface = new Interface(ERC721ABI);
@@ -37,7 +37,7 @@ type Order = {
   maximumFill: BigNumberish;
   listingTime: string;
   expirationTime: string;
-  salt: string;
+  salt: number;
 }
 
 type Sig = {
@@ -69,17 +69,9 @@ export class WrappedExchange {
   constructor(signer: Signer, chainId: number) {
     this.signer = signer;
     this.chainId = chainId;
-    this.addresses = addressesByChainId[chainId]
+    this.addresses = addressesByChainId[chainId];
     this.exchange = WyvernExchange__factory.connect(this.addresses.WyvernExchange, signer);
-    this.EIP712Domain ={ name: 'Wyvern Exchange', version: '3.1', chainId, verifyingContract: this.exchange.address }
-  }
-
-  private parseSig(bytes: string): Sig {
-    bytes = bytes.substr(2);
-    const r = '0x' + bytes.slice(0, 64);
-    const s = '0x' + bytes.slice(64, 128);
-    const v = parseInt('0x' + bytes.slice(128, 130), 16);
-    return { v, r, s }
+    this.EIP712Domain ={ name: 'Wyvern Exchange', version: '3.1', chainId, verifyingContract: this.exchange.address };
   }
 
   private async sign(order: Order) {
@@ -89,9 +81,12 @@ export class WrappedExchange {
       { Order: eip712Order.fields },
       order
     ).then((sigBytes: string) => {
-      const sig = this.parseSig(sigBytes)
-      return sig
-    })
+      sigBytes = sigBytes.substr(2);
+      const r = '0x' + sigBytes.slice(0, 64);
+      const s = '0x' + sigBytes.slice(64, 128);
+      const v = parseInt('0x' + sigBytes.slice(128, 130), 16);
+      return { v, r, s };
+    });
   }
 
   private async atomicMatch(order: Order, sig: Sig, call: Call, counterorder: Order, countersig: Sig, countercall: Call, metadata: string) {
@@ -106,7 +101,25 @@ export class WrappedExchange {
         ethers.utils.defaultAbiCoder.encode(['uint8', 'bytes32', 'bytes32'], [sig.v, sig.r, sig.s]),
         ethers.utils.defaultAbiCoder.encode(['uint8', 'bytes32', 'bytes32'], [countersig.v, countersig.r, countersig.s])
       ])
-    )
+    );
+  }
+
+  public getOrderHash(order: Order): Promise<string> {
+    return this.exchange.hashOrder_(
+      order.registry,
+      order.maker,
+      order.staticTarget,
+      order.staticSelector,
+      order.staticExtradata,
+      order.maximumFill,
+      order.listingTime,
+      order.expirationTime,
+      order.salt
+    );
+  }
+
+  private generateSalt(): number {
+    return Math.floor(Math.random() * 10000);
   }
 
   public async offerERC721ForERC20(
@@ -133,12 +146,12 @@ export class WrappedExchange {
       maximumFill: 1,
       listingTime: '0',
       expirationTime,
-      salt: '11'
-    }
+      salt: this.generateSalt()
+    };
 
-    const signature = await this.sign(order)
+    const signature = await this.sign(order);
 
-    return { order, signature }
+    return { order, signature };
   }
   
   public async offerERC20ForERC721(
@@ -155,7 +168,7 @@ export class WrappedExchange {
         [erc20Address, erc721Address],
         [erc721Id, erc20BuyPrice]
       ]
-    )
+    );
     const order = {
       registry: this.addresses.WyvernRegistry,
       maker,
@@ -165,15 +178,15 @@ export class WrappedExchange {
       maximumFill: erc20BuyPrice,
       listingTime: '0',
       expirationTime: expirationTime,
-      salt: '12'
-    }
+      salt: this.generateSalt()
+    };
 
-    const signature = await this.sign(order)
+    const signature = await this.sign(order);
 
     return {
       order,
       signature,
-    }
+    };
   }
   
   public async matchERC721ForERC20(
@@ -182,21 +195,21 @@ export class WrappedExchange {
     buyOrder: Order,
     buySig: Sig
   ) : Promise<Transaction> {
-    const [[erc721Address, erc20Address], [tokenId, buyingPrice]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[2]'], sellOrder.staticExtradata)
-    const [[erc20AddressOther, erc721AddressOther], [tokenIdOther, buyingPriceOther]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[2]'], buyOrder.staticExtradata)
+    const [[erc721Address, erc20Address], [tokenId, buyingPrice]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[2]'], sellOrder.staticExtradata);
+    const [[erc20AddressOther, erc721AddressOther], [tokenIdOther, buyingPriceOther]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[2]'], buyOrder.staticExtradata);
     
-    if (erc721Address != erc721AddressOther) throw new Error('ERC721 Addresses don\'t match on orders')
-    if (erc20Address != erc20AddressOther) throw new Error('ERC20 Addresses don\'t match on orders')
-    if (!tokenId.eq(tokenIdOther)) throw new Error('ERC721 token IDs don\'t match on orders')
-    if (!buyingPrice.eq(buyingPriceOther)) throw new Error('ERC20 buying prices don\'t match on orders')
+    if (erc721Address != erc721AddressOther) throw new Error('ERC721 Addresses don\'t match on orders');
+    if (erc20Address != erc20AddressOther) throw new Error('ERC20 Addresses don\'t match on orders');
+    if (!tokenId.eq(tokenIdOther)) throw new Error('ERC721 token IDs don\'t match on orders');
+    if (!buyingPrice.eq(buyingPriceOther)) throw new Error('ERC20 buying prices don\'t match on orders');
 
-    const firstData = ERC721Interface.encodeFunctionData("transferFrom", [sellOrder.maker, buyOrder.maker, tokenId]) // this might be weird bc passing in BigNumbers...
-    const secondData = ERC20Interface.encodeFunctionData("transferFrom", [buyOrder.maker, sellOrder.maker, buyingPrice])
+    const firstData = ERC721Interface.encodeFunctionData("transferFrom", [sellOrder.maker, buyOrder.maker, tokenId]); // this might be weird bc passing in BigNumbers...
+    const secondData = ERC20Interface.encodeFunctionData("transferFrom", [buyOrder.maker, sellOrder.maker, buyingPrice]);
     
-    const firstCall = {target: erc721Address, howToCall: 0, data: firstData}
-    const secondCall = {target: erc20Address, howToCall: 0, data: secondData}
+    const firstCall = {target: erc721Address, howToCall: 0, data: firstData};
+    const secondCall = {target: erc20Address, howToCall: 0, data: secondData};
 
-    return await this.atomicMatch(sellOrder, sellSig, firstCall, buyOrder, buySig, secondCall, ZERO_BYTES32)
+    return await this.atomicMatch(sellOrder, sellSig, firstCall, buyOrder, buySig, secondCall, ZERO_BYTES32);
   }
 
   public async offerERC1155ForERC20(
@@ -207,7 +220,7 @@ export class WrappedExchange {
     erc20Address: string,
     erc20SellPrice: BigNumberish,
     expirationTime: string
-    ) : Promise<{ order: Order, signature: Sig }> {
+  ) : Promise<{ order: Order, signature: Sig }> {
     
     const maker = await this.signer.getAddress();
     const staticExtradata = ethers.utils.defaultAbiCoder.encode(
@@ -226,12 +239,12 @@ export class WrappedExchange {
       maximumFill: BigNumber.from(erc1155SellNumerator).mul(BigNumber.from(erc1155SellAmount)),
       listingTime: '0',
       expirationTime: expirationTime,
-      salt: '11'
-    }
+      salt: this.generateSalt()
+    };
 
-    const signature = await this.sign(order)
+    const signature = await this.sign(order);
     
-    return { order, signature }
+    return { order, signature };
   }
 
   public async offerERC20ForERC1155(
@@ -250,7 +263,7 @@ export class WrappedExchange {
         [erc20Address, erc1155Address],
         [erc1155Id, erc20BuyPrice, erc1155BuyDenominator]
       ]
-    )
+    );
     const order = {
       registry: this.addresses.WyvernRegistry,
       maker,
@@ -260,15 +273,15 @@ export class WrappedExchange {
       maximumFill: BigNumber.from(erc20BuyPrice).mul(BigNumber.from(erc1155BuyAmount)),
       listingTime: '0',
       expirationTime,
-      salt: '12'
-    }
+      salt: this.generateSalt()
+    };
 
-    const signature = await this.sign(order)
+    const signature = await this.sign(order);
 
     return {
       order,
       signature,
-    }
+    };
   }
 
   public async matchERC1155ForERC20(
@@ -278,22 +291,22 @@ export class WrappedExchange {
     buySig: Sig,
     buyAmount: BigNumberish
   ) : Promise<Transaction> {
-    const [[erc1155Address, erc20Address], [tokenId, erc1155Numerator, erc20SellPrice]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[3]'], sellOrder.staticExtradata)
-    const [[erc20AddressOther, erc1155AddressOther], [tokenIdOther, erc20BuyPrice, erc1155Denominator]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[3]'], buyOrder.staticExtradata)
+    const [[erc1155Address, erc20Address], [tokenId, erc1155Numerator, erc20SellPrice]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[3]'], sellOrder.staticExtradata);
+    const [[erc20AddressOther, erc1155AddressOther], [tokenIdOther, erc20BuyPrice, erc1155Denominator]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[3]'], buyOrder.staticExtradata);
     
-    if (erc1155Address != erc1155AddressOther) throw new Error('ERC1155 Addresses don\'t match on orders')
-    if (erc20Address != erc20AddressOther) throw new Error('ERC20 Addresses don\'t match on orders')
-    if (!tokenId.eq(tokenIdOther)) throw new Error('ERC1155 token IDs don\'t match on orders')
-    if (!erc20SellPrice.eq(erc20BuyPrice)) throw new Error('ERC20 buying prices don\'t match on orders')
-    if (!erc1155Numerator.eq(erc1155Denominator)) throw new Error('ERC1155 Numerator and Denominator don\'t match')
+    if (erc1155Address != erc1155AddressOther) throw new Error('ERC1155 Addresses don\'t match on orders');
+    if (erc20Address != erc20AddressOther) throw new Error('ERC20 Addresses don\'t match on orders');
+    if (!tokenId.eq(tokenIdOther)) throw new Error('ERC1155 token IDs don\'t match on orders');
+    if (!erc20SellPrice.eq(erc20BuyPrice)) throw new Error('ERC20 buying prices don\'t match on orders');
+    if (!erc1155Numerator.eq(erc1155Denominator)) throw new Error('ERC1155 Numerator and Denominator don\'t match');
   
-    const firstData = ERC1155Interface.encodeFunctionData("safeTransferFrom", [sellOrder.maker, buyOrder.maker, tokenId, buyAmount, "0x"]) + ZERO_BYTES32.substr(2)
-		const secondData = ERC20Interface.encodeFunctionData("transferFrom", [buyOrder.maker, sellOrder.maker, buyOrder.maximumFill]);
+    const firstData = ERC1155Interface.encodeFunctionData("safeTransferFrom", [sellOrder.maker, buyOrder.maker, tokenId, buyAmount, "0x"]) + ZERO_BYTES32.substr(2);
+    const secondData = ERC20Interface.encodeFunctionData("transferFrom", [buyOrder.maker, sellOrder.maker, buyOrder.maximumFill]);
     
-    const firstCall = { target: erc1155Address, howToCall: 0, data: firstData }
-    const secondCall = { target: erc20Address, howToCall: 0, data: secondData }
+    const firstCall = { target: erc1155Address, howToCall: 0, data: firstData };
+    const secondCall = { target: erc20Address, howToCall: 0, data: secondData };
 
-    return await this.atomicMatch(sellOrder, sellSig, firstCall, buyOrder, buySig, secondCall, ZERO_BYTES32)
+    return await this.atomicMatch(sellOrder, sellSig, firstCall, buyOrder, buySig, secondCall, ZERO_BYTES32);
   }
 
   public async offerERC20ForERC20(
@@ -322,10 +335,10 @@ export class WrappedExchange {
       maximumFill: sellAmount,
       listingTime: '0',
       expirationTime,
-      salt: '11'
-    }
+      salt: this.generateSalt()
+    };
 
-    const signature = await this.sign(order)
+    const signature = await this.sign(order);
 
     return { order, signature };
   }
@@ -337,20 +350,20 @@ export class WrappedExchange {
     buySig: Sig,
     buyAmount: BigNumberish
   ) : Promise<Transaction> {
-    const [[erc20SellerAddress, erc20BuyerAddress], [sellingPrice, buyingPrice]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[2]'], sellOrder.staticExtradata)
-    const [[erc20BuyerAddressOther, erc20SellerAddressOther], [buyingPriceOther, sellingPriceOther]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[2]'], buyOrder.staticExtradata)
+    const [[erc20SellerAddress, erc20BuyerAddress], [sellingPrice, buyingPrice]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[2]'], sellOrder.staticExtradata);
+    const [[erc20BuyerAddressOther, erc20SellerAddressOther], [buyingPriceOther, sellingPriceOther]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[2]'], buyOrder.staticExtradata);
     
-    if (erc20SellerAddress != erc20SellerAddressOther) throw new Error('ERC20 Addresses don\'t match on orders')
-    if (erc20BuyerAddress != erc20BuyerAddressOther) throw new Error('ERC20 Addresses don\'t match on orders')
-    if (!sellingPrice.eq(sellingPriceOther)) throw new Error('ERC20 selling prices don\'t match on orders')
-    if (!buyingPrice.eq(buyingPriceOther)) throw new Error('ERC20 buying prices don\'t match on orders')
+    if (erc20SellerAddress != erc20SellerAddressOther) throw new Error('ERC20 Addresses don\'t match on orders');
+    if (erc20BuyerAddress != erc20BuyerAddressOther) throw new Error('ERC20 Addresses don\'t match on orders');
+    if (!sellingPrice.eq(sellingPriceOther)) throw new Error('ERC20 selling prices don\'t match on orders');
+    if (!buyingPrice.eq(buyingPriceOther)) throw new Error('ERC20 buying prices don\'t match on orders');
 
-		const firstData = ERC20Interface.encodeFunctionData("transferFrom", [sellOrder.maker, buyOrder.maker, buyAmount]);
-		const secondData = ERC20Interface.encodeFunctionData("transferFrom", [buyOrder.maker, sellOrder.maker, BigNumber.from(buyAmount).mul(BigNumber.from(sellingPrice))])
+    const firstData = ERC20Interface.encodeFunctionData("transferFrom", [sellOrder.maker, buyOrder.maker, buyAmount]);
+    const secondData = ERC20Interface.encodeFunctionData("transferFrom", [buyOrder.maker, sellOrder.maker, BigNumber.from(buyAmount).mul(BigNumber.from(sellingPrice))]);
     
-    const firstCall = {target: erc20SellerAddress, howToCall: 0, data: firstData}
-    const secondCall = {target: erc20BuyerAddress, howToCall: 0, data: secondData}
+    const firstCall = {target: erc20SellerAddress, howToCall: 0, data: firstData};
+    const secondCall = {target: erc20BuyerAddress, howToCall: 0, data: secondData};
 
-    return await this.atomicMatch(sellOrder, sellSig, firstCall, buyOrder, buySig, secondCall, ZERO_BYTES32)
+    return await this.atomicMatch(sellOrder, sellSig, firstCall, buyOrder, buySig, secondCall, ZERO_BYTES32);
   }
 }

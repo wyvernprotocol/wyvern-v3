@@ -18,7 +18,10 @@
     "sourceType": "script"
   },
   "rules": {
-    "no-unused-vars": ["error", { "varsIgnorePattern": "^_$" }]
+    "no-unused-vars": ["error", { "varsIgnorePattern": "^_$" }],
+    "semi": [2, "always"],
+    "no-irregular-whitespace": "error",
+    "indent": ["error", 2]
   },
   "globals": {
     "network": "readonly",

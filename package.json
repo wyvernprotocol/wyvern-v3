@@ -12,7 +12,7 @@
     "compile": "hardhat compile",
     "coverage": "scripts/coverage.sh",
     "test": "hardhat test wrapper/wrapper.test.ts",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint ./wrapper --ext .ts",
     "testrpc": "scripts/testrpc.sh"
   },
   "repository": {
