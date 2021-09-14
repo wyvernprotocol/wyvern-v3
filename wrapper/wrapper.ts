@@ -35,7 +35,7 @@ type Order = {
   staticSelector: string;
   staticExtradata: string;
   maximumFill: BigNumberish;
-  listingTime: string;
+  listingTime: number;
   expirationTime: string;
   salt: number;
 }
@@ -122,6 +122,11 @@ export class WrappedExchange {
     return Math.floor(Math.random() * 10000);
   }
 
+  private async getBlockTimestamp(): Promise<number> {
+    const blockNumber = await this.signer.provider.getBlockNumber();
+    return (await this.signer.provider.getBlock(blockNumber)).timestamp;
+  }
+
   public async offerERC721ForERC20(
     erc721Address: string,
     erc721Id: BigNumberish,
@@ -144,7 +149,7 @@ export class WrappedExchange {
       staticSelector: ERC721ForERC20Selector,
       staticExtradata,
       maximumFill: 1,
-      listingTime: '0',
+      listingTime: await this.getBlockTimestamp(),
       expirationTime,
       salt: this.generateSalt()
     };
@@ -176,7 +181,7 @@ export class WrappedExchange {
       staticSelector: ERC20ForERC721Selector,
       staticExtradata,
       maximumFill: erc20BuyPrice,
-      listingTime: '0',
+      listingTime: await this.getBlockTimestamp(),
       expirationTime: expirationTime,
       salt: this.generateSalt()
     };
@@ -237,7 +242,7 @@ export class WrappedExchange {
       staticSelector: anyERC1155ForERC20Selector,
       staticExtradata,
       maximumFill: BigNumber.from(erc1155SellNumerator).mul(BigNumber.from(erc1155SellAmount)),
-      listingTime: '0',
+      listingTime: await this.getBlockTimestamp(),
       expirationTime: expirationTime,
       salt: this.generateSalt()
     };
@@ -271,7 +276,7 @@ export class WrappedExchange {
       staticSelector: anyERC20ForERC1155Selector,
       staticExtradata,
       maximumFill: BigNumber.from(erc20BuyPrice).mul(BigNumber.from(erc1155BuyAmount)),
-      listingTime: '0',
+      listingTime: await this.getBlockTimestamp(),
       expirationTime,
       salt: this.generateSalt()
     };
@@ -333,7 +338,7 @@ export class WrappedExchange {
       staticSelector: anyERC20ForERC20Selector,
       staticExtradata,
       maximumFill: sellAmount,
-      listingTime: '0',
+      listingTime: await this.getBlockTimestamp(),
       expirationTime,
       salt: this.generateSalt()
     };
