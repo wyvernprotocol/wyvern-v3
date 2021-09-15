@@ -658,4 +658,24 @@ describe('WyvernRegistry', () => {
       ).eventually.rejectedWith(/ERC721 token IDs don't match on orders/);
     });
   });
+
+  describe('hasProxy', () => {
+    let wrappedExchange;
+    beforeEach(() => {
+      wrappedExchange = new WrappedExchange(accounts[0], 1337);
+    });
+    it('returns empty string when the user does not have a proxy', async () => {
+      wrappedExchange = new WrappedExchange(accounts[0], 1337);
+      chai.expect(await wrappedExchange.hasProxy(accounts[0].address)).to.eq('');
+    });
+
+    it('returns proxy address when the user does have a proxy', async () => {
+      await registry.connect(accounts[0]).registerProxy();
+      chai.expect(
+        await wrappedExchange.hasProxy(accounts[0].address)
+      ).to.eq(
+        await registry.proxies(accounts[0].address)
+      );
+    });
+  });
 });

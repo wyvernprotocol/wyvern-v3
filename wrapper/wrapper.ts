@@ -15,6 +15,8 @@ import {
 import { 
   WyvernExchange,
   WyvernExchange__factory,
+  WyvernRegistry,
+  WyvernRegistry__factory,
 } from '../dist/build/types';
 import addressesByChainId from './addresses.json';
 
@@ -61,6 +63,7 @@ type EIP712Domain = {
 
 export class WrappedExchange {
   public exchange: WyvernExchange;
+  public registry: WyvernRegistry;
   public addresses: WyvernSystem;
   public signer: any; // Signer but also implements _signTypedData
   public chainId: number;
@@ -71,6 +74,7 @@ export class WrappedExchange {
     this.chainId = chainId;
     this.addresses = addressesByChainId[chainId];
     this.exchange = WyvernExchange__factory.connect(this.addresses.WyvernExchange, signer);
+    this.registry = WyvernRegistry__factory.connect(this.addresses.WyvernRegistry, signer);
     this.EIP712Domain ={ name: 'Wyvern Exchange', version: '3.1', chainId, verifyingContract: this.exchange.address };
   }
 
@@ -101,20 +105,6 @@ export class WrappedExchange {
         ethers.utils.defaultAbiCoder.encode(['uint8', 'bytes32', 'bytes32'], [sig.v, sig.r, sig.s]),
         ethers.utils.defaultAbiCoder.encode(['uint8', 'bytes32', 'bytes32'], [countersig.v, countersig.r, countersig.s])
       ])
-    );
-  }
-
-  public getOrderHash(order: Order): Promise<string> {
-    return this.exchange.hashOrder_(
-      order.registry,
-      order.maker,
-      order.staticTarget,
-      order.staticSelector,
-      order.staticExtradata,
-      order.maximumFill,
-      order.listingTime,
-      order.expirationTime,
-      order.salt
     );
   }
 
@@ -370,5 +360,25 @@ export class WrappedExchange {
     const secondCall = {target: erc20BuyerAddress, howToCall: 0, data: secondData};
 
     return await this.atomicMatch(sellOrder, sellSig, firstCall, buyOrder, buySig, secondCall, ZERO_BYTES32);
+  }
+
+  public async getOrderHash(order: Order): Promise<string> {
+    return this.exchange.hashOrder_(
+      order.registry,
+      order.maker,
+      order.staticTarget,
+      order.staticSelector,
+      order.staticExtradata,
+      order.maximumFill,
+      order.listingTime,
+      order.expirationTime,
+      order.salt
+    );
+  }
+
+  public async hasProxy(address: string): Promise<string> {
+    const proxy = await this.registry.proxies(address);
+    if (proxy === "0x0000000000000000000000000000000000000000") return "";
+    return proxy;
   }
 }
