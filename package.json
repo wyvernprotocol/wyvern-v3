@@ -1,6 +1,6 @@
 {
   "name": "@nifty-island/wyvern-v3",
-  "version": "3.1.2",
+  "version": "3.1.3",
   "description": "Wyvern Protocol v3.1, Ethereum implementation",
   "main": "dist/wrapper/wrapper.js",
   "types": "dist/wrapper/wrapper.d.ts",
