@@ -21,6 +21,7 @@ import {
   StaticMarket__factory,
 } from '../dist/build/types';
 import { WrappedExchange } from './wrapper';
+import { ZERO_ADDRESS } from './constants';
 
 chai.use(asPromised);
 
@@ -659,20 +660,23 @@ describe('WyvernRegistry', () => {
     });
   });
 
-  describe('hasProxy', () => {
+  describe('getOrRegisterProxy', () => {
     let wrappedExchange;
     beforeEach(() => {
       wrappedExchange = new WrappedExchange(accounts[0], 1337);
     });
-    it('returns empty string when the user does not have a proxy', async () => {
-      wrappedExchange = new WrappedExchange(accounts[0], 1337);
-      chai.expect(await wrappedExchange.hasProxy(accounts[0].address)).to.eq('');
+
+    it('creates a new proxy when the user does not have a proxy', async () => {
+      const proxy =  await wrappedExchange.getOrRegisterProxy();
+      chai.expect(
+        proxy.address === ZERO_ADDRESS
+      ).to.eq(false);
     });
 
     it('returns proxy address when the user does have a proxy', async () => {
       await registry.connect(accounts[0]).registerProxy();
       chai.expect(
-        await wrappedExchange.hasProxy(accounts[0].address)
+        (await wrappedExchange.getOrRegisterProxy()).address
       ).to.eq(
         await registry.proxies(accounts[0].address)
       );

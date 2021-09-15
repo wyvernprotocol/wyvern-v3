@@ -5,6 +5,7 @@ import ERC721ABI from "../dist/build/abis/ERC721.json";
 import ERC1155ABI from "../dist/build/abis/ERC1155.json";
 import {
   ZERO_BYTES32,
+  ZERO_ADDRESS,
   eip712Order,
   anyERC1155ForERC20Selector,
   anyERC20ForERC1155Selector,
@@ -17,6 +18,8 @@ import {
   WyvernExchange__factory,
   WyvernRegistry,
   WyvernRegistry__factory,
+  OwnableDelegateProxy,
+  OwnableDelegateProxy__factory,
 } from '../dist/build/types';
 import addressesByChainId from './addresses.json';
 
@@ -376,9 +379,13 @@ export class WrappedExchange {
     );
   }
 
-  public async hasProxy(address: string): Promise<string> {
-    const proxy = await this.registry.proxies(address);
-    if (proxy === "0x0000000000000000000000000000000000000000") return "";
-    return proxy;
+  public async getOrRegisterProxy(): Promise<OwnableDelegateProxy> {
+    const proxy = await this.registry.proxies(await this.signer.getAddress());
+    if (proxy !== ZERO_ADDRESS) {
+      return OwnableDelegateProxy__factory.connect(proxy, this.signer);
+    }
+    const tx = await this.registry.registerProxy();
+    tx.wait();
+    return this.getOrRegisterProxy();
   }
 }
