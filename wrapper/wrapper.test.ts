@@ -682,4 +682,100 @@ describe('WyvernRegistry', () => {
       );
     });
   });
+
+  describe('getOrIncreaseApproval', () => {
+    let wrappedExchange;
+    let amount;
+    let account_a;
+    let erc20;
+    let erc721;
+    let erc1155;
+    beforeEach(async () => {
+      wrappedExchange = new WrappedExchange(accounts[0], 1337);
+      amount = ethers.BigNumber.from('100');
+      account_a = accounts[0];
+      
+      const ERC20 = new TestERC20__factory(accounts[0]);
+      erc20 = await ERC20.deploy();
+      await erc20.deployed();
+
+      const ERC721 = new TestERC721__factory(accounts[0]);
+      erc721 = await ERC721.deploy();
+      await erc721.deployed();
+
+      const ERC1155 = new TestERC1155__factory(accounts[0]);
+      erc1155 = await ERC1155.deploy();
+      await erc1155.deployed();
+    });
+
+    const registerProxy = async () => {
+      await registry.connect(account_a).registerProxy();
+      return await registry.proxies(account_a.address);
+    };
+
+    it('throws if the user does not have a proxy', async () => {
+      chai.assert.isRejected(
+        wrappedExchange.getOrIncreaseApproval('ERC20', erc20.address, amount),
+        'Signer does not have a proxy registered'
+      );
+    });
+
+    it('throws if the wrong ERC is passed in', async () => {
+      await registerProxy();
+      chai.assert.isRejected(
+        wrappedExchange.getOrIncreaseApproval('ERC50', erc20.address, amount),
+        'This method only works for ERC20, 721, or 1155 tokens');
+    });
+
+    it('returns the correct ERC20 approval', async () => {
+      const proxy = await registerProxy();
+      await erc20.connect(account_a).approve(proxy, amount);
+      const approval = await wrappedExchange.getOrIncreaseApproval('ERC20', erc20.address, amount);
+      chai.expect(approval).to.eq(amount);
+    });
+
+    it('asks for ERC20 approval if not approved', async () => {
+      await registerProxy();
+      const approval = await wrappedExchange.getOrIncreaseApproval('ERC20', erc20.address, amount);
+      chai.expect(approval).to.eq(amount);
+    });
+
+    it('returns the correct ERC721 approval', async () => {
+      await erc721.mint(account_a.address, 0);
+      const proxy = await registerProxy();
+      await erc721.connect(account_a).approve(proxy, 0);
+      
+      chai.expect(
+        await wrappedExchange.getOrIncreaseApproval('ERC721', erc721.address)
+      ).to.eq(true);
+    });
+
+    it('asks for ERC721 approval if not approved', async () => {
+      await erc721.mint(account_a.address, 0);
+      await registerProxy();
+      
+      chai.expect(
+        await wrappedExchange.getOrIncreaseApproval('ERC721', erc721.address)
+      ).to.eq(true);
+    });
+
+    it('returns the correct ERC71155 approval', async () => {
+      await erc1155['mint(address,uint256,uint256)'](account_a.address, 0, 5);
+      const proxy = await registerProxy();
+      await erc1155.connect(account_a).setApprovalForAll(proxy, true);
+      
+      chai.expect(
+        await wrappedExchange.getOrIncreaseApproval('ERC1155', erc1155.address)
+      ).to.eq(true);
+    });
+
+    it('asks for ERC1155 approval if not approved', async () => {
+      await erc1155['mint(address,uint256,uint256)'](account_a.address, 0, 5);
+      await registerProxy();
+      
+      chai.expect(
+        await wrappedExchange.getOrIncreaseApproval('ERC1155', erc1155.address)
+      ).to.eq(true);
+    });
+  });
 });

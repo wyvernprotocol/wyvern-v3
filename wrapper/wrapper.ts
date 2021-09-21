@@ -12,6 +12,8 @@ import {
   anyERC20ForERC20Selector,
   ERC721ForERC20Selector,
   ERC20ForERC721Selector,
+  tokenTypes,
+  zero,
 } from './constants';
 import { 
   WyvernExchange,
@@ -20,6 +22,9 @@ import {
   WyvernRegistry__factory,
   OwnableDelegateProxy,
   OwnableDelegateProxy__factory,
+  ERC20__factory,
+  ERC721__factory,
+  ERC1155__factory,
 } from '../dist/build/types';
 import addressesByChainId from './addresses.json';
 
@@ -387,5 +392,33 @@ export class WrappedExchange {
     const tx = await this.registry.registerProxy();
     tx.wait();
     return this.getOrRegisterProxy();
+  }
+
+  public async getOrIncreaseApproval(tokenType: string, tokenAddress: string, amount?: BigNumber): Promise<boolean | BigNumber> {
+    const proxy = await this.registry.proxies(await this.signer.getAddress());
+    if (proxy === ZERO_ADDRESS) throw new Error('Signer does not have a proxy registered');
+    
+    switch (tokenType) {
+    case tokenTypes.ERC20: {
+      const contract = ERC20__factory.connect(tokenAddress, this.signer);
+      const allowance = await contract.allowance(this.signer.address, proxy);
+      if ((amount && allowance.gt(amount)) || allowance.gt(zero) ) return allowance;
+      (await contract.approve(proxy, amount)).wait();
+      return this.getOrIncreaseApproval(tokenType, tokenAddress, amount);
+    } case tokenTypes.ERC721: {
+      const contract = ERC721__factory.connect(tokenAddress, this.signer);
+      const approval = await contract.isApprovedForAll(this.signer.address, proxy);
+      if (approval) return approval;
+      (await contract.setApprovalForAll(proxy, true)).wait();
+      return this.getOrIncreaseApproval(tokenType, tokenAddress);
+    } case tokenTypes.ERC1155: {
+      const contract = ERC1155__factory.connect(tokenAddress, this.signer);
+      const approval = await contract.isApprovedForAll(this.signer.address, proxy);
+      if (approval) return approval;
+      (await contract.setApprovalForAll(proxy, true)).wait();
+      return this.getOrIncreaseApproval(tokenType, tokenAddress);
+    } default:
+      throw new Error('This method only works for ERC20, 721, or 1155 tokens');
+    }
   }
 }

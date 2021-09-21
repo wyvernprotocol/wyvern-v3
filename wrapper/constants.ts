@@ -1,3 +1,4 @@
+import { BigNumber } from 'ethers';
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 export const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
@@ -21,3 +22,11 @@ export const anyERC20ForERC1155Selector = '0x7a7f30e0';
 export const ERC721ForERC20Selector = '0xc3d3626a';
 export const ERC20ForERC721Selector = '0xa6139b58';
 export const anyERC20ForERC20Selector = '0xb9845b95';
+
+export const tokenTypes = {
+  ERC20: 'ERC20',
+  ERC721: 'ERC721',
+  ERC1155: 'ERC1155',
+};
+
+export const zero = BigNumber.from('0');
