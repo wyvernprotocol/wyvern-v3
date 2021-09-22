@@ -73,7 +73,7 @@ export class WrappedExchange {
   public exchange: WyvernExchange;
   public registry: WyvernRegistry;
   public addresses: WyvernSystem;
-  public signer: any; // Signer but also implements _signTypedData
+  public signer: Signer | any; // Signer but also implements _signTypedData
   public chainId: number;
   public EIP712Domain: EIP712Domain;
   
@@ -88,6 +88,7 @@ export class WrappedExchange {
 
   private async sign(order: Order) {
     // see https://docs.ethers.io/v5/api/signer/#Signer-signTypedData
+    
     return this.signer._signTypedData(
       this.EIP712Domain,
       { Order: eip712Order.fields },
@@ -401,19 +402,19 @@ export class WrappedExchange {
     switch (tokenType) {
     case tokenTypes.ERC20: {
       const contract = ERC20__factory.connect(tokenAddress, this.signer);
-      const allowance = await contract.allowance(this.signer.address, proxy);
+      const allowance = await contract.allowance(await this.signer.getAddress(), proxy);
       if ((amount && allowance.gt(amount)) || allowance.gt(zero) ) return allowance;
       (await contract.approve(proxy, amount)).wait();
       return this.getOrIncreaseApproval(tokenType, tokenAddress, amount);
     } case tokenTypes.ERC721: {
       const contract = ERC721__factory.connect(tokenAddress, this.signer);
-      const approval = await contract.isApprovedForAll(this.signer.address, proxy);
+      const approval = await contract.isApprovedForAll(await this.signer.getAddress(), proxy);
       if (approval) return approval;
       (await contract.setApprovalForAll(proxy, true)).wait();
       return this.getOrIncreaseApproval(tokenType, tokenAddress);
     } case tokenTypes.ERC1155: {
       const contract = ERC1155__factory.connect(tokenAddress, this.signer);
-      const approval = await contract.isApprovedForAll(this.signer.address, proxy);
+      const approval = await contract.isApprovedForAll(await this.signer.getAddress(), proxy);
       if (approval) return approval;
       (await contract.setApprovalForAll(proxy, true)).wait();
       return this.getOrIncreaseApproval(tokenType, tokenAddress);
