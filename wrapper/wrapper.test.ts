@@ -74,219 +74,6 @@ describe('WyvernRegistry', () => {
     erc1155 = await TestERC1155.deploy();
     await erc1155.deployed();
   });
-	
-  describe('erc20 <> erc20 orders', () => {
-    const any_erc20_for_erc20_test = async (options: any) => {
-      const {
-        sellAmount,
-        sellingPrice,
-        buyingPrice,
-        buyPriceOffset,
-        buyAmount,
-        erc20MintAmountSeller,
-        erc20MintAmountBuyer,
-        account_a,
-        account_b,
-        sender,
-        transactions
-      } = options;
-	
-      const txCount = transactions || 1;
-      const takerPriceOffset = buyPriceOffset || 0;
-			
-      const TestERC20 = new TestERC20__factory(accounts[0]);
-      const erc20Seller = await TestERC20.deploy();
-      await erc20Seller.deployed();
-      const erc20Buyer = await TestERC20.deploy();
-      await erc20.deployed();
-	
-      await registry.connect(account_a).registerProxy();
-      const proxyA = await registry.proxies(account_a.address);
-      chai.expect(true).to.eq(proxyA.length > 0);
-	
-      await registry.connect(account_b).registerProxy();
-      const proxyB = await registry.proxies(account_b.address);
-      chai.expect(true).to.eq(proxyB.length > 0);
-			
-      await erc20Seller.connect(account_a).approve(proxyA, erc20MintAmountSeller);
-      await erc20Buyer.connect(account_b).approve(proxyB, erc20MintAmountBuyer);
-      await erc20Seller.mint(account_a.address, erc20MintAmountSeller);
-      await erc20Buyer.mint(account_b.address, erc20MintAmountBuyer);
-	
-      const wrappedExchangeSeller = new WrappedExchange(account_a, 1337);
-      const wrappedExchangeBuyer = new WrappedExchange(account_b, 1337);
-      const wrappedExchangeSender = new WrappedExchange(sender, 1337);
-
-      const { order: sellOrder, signature: sellSig } = await wrappedExchangeSeller.offerERC20ForERC20(erc20Seller.address, sellingPrice, sellAmount, erc20Buyer.address, buyingPrice, '0');
-			
-      for (let i = 0 ; i < txCount ; ++i) {
-        const { order: buyOrder, signature: buySig } = await wrappedExchangeBuyer.offerERC20ForERC20(erc20Buyer.address, buyingPrice + takerPriceOffset, txCount*sellingPrice*buyAmount, erc20Seller.address, sellingPrice, '0');
-        await wrappedExchangeSender.matchERC20ForERC20(sellOrder, sellSig, buyOrder, buySig, buyAmount);
-        buyOrder.salt = buyOrder.salt + 1;
-      }
-			
-      const account_a_erc20_balance = await erc20Buyer.balanceOf(account_a.address);
-      const account_b_erc20_balance = await erc20Seller.balanceOf(account_b.address);
-      chai.expect(account_a_erc20_balance.toNumber()).to.eq(sellingPrice*buyAmount*txCount);
-      chai.expect(account_b_erc20_balance.toNumber()).to.eq(buyAmount*txCount);
-    };
-	
-    it('StaticMarket: matches erc20 <> erc20 order, 1 fill', async () => {
-      const price = 10000;
-	
-      return any_erc20_for_erc20_test({
-        sellAmount: 1,
-        sellingPrice: price,
-        buyingPrice: 1,
-        buyAmount: 1,
-        erc20MintAmountSeller: 1,
-        erc20MintAmountBuyer: price,
-        account_a: accounts[0],
-        account_b: accounts[6],
-        sender: accounts[1]
-      });
-    });
-
-    it('StaticMarket: matches erc20 <> erc20 order, multiple fills in 1 transaction',async () =>
-    {
-      const amount = 3;
-      const price = 10000;
-
-      return any_erc20_for_erc20_test({
-        sellAmount: amount,
-        sellingPrice: price,
-        buyingPrice: 1,
-        buyAmount: amount,
-        erc20MintAmountSeller: amount,
-        erc20MintAmountBuyer: amount*price,
-        account_a: accounts[0],
-        account_b: accounts[6],
-        sender: accounts[1]
-      });
-    });
-
-    it('StaticMarket: matches erc20 <> erc20 order, multiple fills in multiple transactions',async () =>
-    {
-      const sellAmount = 3;
-      const buyAmount = 1;
-      const price = 10000;
-      const transactions = 3;
-
-      return any_erc20_for_erc20_test({
-        sellAmount,
-        sellingPrice: price,
-        buyingPrice: 1,
-        buyAmount,
-        erc20MintAmountSeller: sellAmount,
-        erc20MintAmountBuyer: buyAmount*price*transactions,
-        account_a: accounts[0],
-        account_b: accounts[6],
-        sender: accounts[1],
-        transactions
-      });
-    });
-
-    it('StaticMarket: matches erc20 <> erc20 order, allows any partial fill',async () =>
-    {
-      const sellAmount = 30;
-      const buyAmount = 4;
-      const price = 10000;
-
-      return any_erc20_for_erc20_test({
-        sellAmount,
-        sellingPrice: price,
-        buyingPrice: 1,
-        buyAmount,
-        erc20MintAmountSeller: sellAmount,
-        erc20MintAmountBuyer: buyAmount*price,
-        account_a: accounts[0],
-        account_b: accounts[6],
-        sender: accounts[1]
-      });
-    });
-
-    it('StaticMarket: does not match erc20 <> erc20 order beyond maximum fill',async () =>
-    {
-      const price = 10000;
-
-      await chai.expect(
-        any_erc20_for_erc20_test({
-          sellAmount: 1,
-          sellingPrice: price,
-          buyingPrice: 1,
-          buyAmount: 1,
-          erc20MintAmountSeller: 2,
-          erc20MintAmountBuyer: price*2,
-          account_a: accounts[0],
-          account_b: accounts[6],
-          sender: accounts[1], // depending on who fills, it actually will allow beyond max fill because msg.sender's fill is not updated
-          transactions: 2
-        })
-      ).eventually.rejectedWith(/First order has invalid parameters/);
-    });
-
-    it('StaticMarket: does not fill erc20 <> erc20 order with different taker price',async () =>
-    {
-      const price = 10000;
-
-      await chai.expect(
-        any_erc20_for_erc20_test({
-          sellAmount: 1,
-          sellingPrice: price,
-          buyingPrice: 1,
-          buyPriceOffset: 1,
-          buyAmount: 1,
-          erc20MintAmountSeller: 2,
-          erc20MintAmountBuyer: price,
-          account_a: accounts[0],
-          account_b: accounts[6],
-          sender: accounts[1]
-        })
-      ).eventually.rejectedWith(/ERC20 buying prices don't match on orders/);
-    });
-
-    it('StaticMarket: does not fill erc20 <> erc20 order beyond maximum sell amount',async () =>
-    {
-      const sellAmount = 2;
-      const buyAmount = 3;
-      const price = 10000;
-
-      await chai.expect(
-        any_erc20_for_erc20_test({
-          sellAmount,
-          sellingPrice: price,
-          buyingPrice: 1,
-          buyAmount,
-          erc20MintAmountSeller: sellAmount,
-          erc20MintAmountBuyer: buyAmount*price,
-          account_a: accounts[0],
-          account_b: accounts[6],
-          sender: accounts[1]
-        })
-      ).eventually.rejectedWith(/First call failed/);
-    });
-
-    it('StaticMarket: does not fill erc20 <> erc20 order if balance is insufficient',async () =>
-    {
-      const sellAmount = 1;
-      const buyAmount = 1;
-      const price = 10000;
-
-      await chai.expect(
-        any_erc20_for_erc20_test({
-          sellAmount,
-          sellingPrice: price,
-          buyingPrice: 1,
-          buyAmount,
-          erc20MintAmountSeller: sellAmount,
-          erc20MintAmountBuyer: buyAmount*price-1,
-          account_a: accounts[0],
-          account_b: accounts[6],
-          sender: accounts[1]
-        })
-      ).eventually.rejectedWith(/Second call failed/);
-    });
-  });
 
   describe('erc1155 <> erc20 orders', () => {
     const any_erc1155_for_erc20_test = async (options: any) => {
@@ -329,10 +116,10 @@ describe('WyvernRegistry', () => {
       const wrappedExchangeBuyer = new WrappedExchange(account_b, 1337);
       const wrappedExchangeSender = new WrappedExchange(sender, 1337);
 			
-      const { order: sellOrder, signature: sellSig } = await wrappedExchangeSeller.offerERC1155ForERC20(erc1155.address, tokenId, sellAmount, sellingNumerator || 1, erc20.address, sellingPrice, '0');
+      const { order: sellOrder, signature: sellSig } = await wrappedExchangeSeller.placeAsk('ERC1155', erc1155.address, tokenId, erc20.address, sellingPrice, '0', sellAmount, sellingNumerator || 1);
       for (let i = 0 ; i < txCount ; ++i) {
-        const { order: buyOrder, signature: buySig } = await wrappedExchangeBuyer.offerERC20ForERC1155(erc1155.address, buyTokenId || tokenId, buyAmount, buyingDenominator || 1, erc20.address, buyingPrice, '0');
-        await wrappedExchangeSender.matchERC1155ForERC20(sellOrder, sellSig, buyOrder, buySig, sellingNumerator || buyAmount);
+        const { order: buyOrder, signature: buySig } = await wrappedExchangeBuyer.placeBid('ERC1155', erc1155.address, buyTokenId || tokenId, erc20.address, buyingPrice, '0', buyAmount, buyingDenominator || 1);
+        await wrappedExchangeSender.matchOrders('ERC1155', sellOrder, sellSig, buyOrder, buySig, sellingNumerator || buyAmount);
         buyOrder.salt = buyOrder.salt + 1;
       }
 			
@@ -590,10 +377,10 @@ describe('WyvernRegistry', () => {
       const wrappedExchangeSeller = new WrappedExchange(account_a, 1337);
       const wrappedExchangeBuyer = new WrappedExchange(account_b, 1337);
 
-      const sellData = await wrappedExchangeSeller.offerERC721ForERC20(erc721.address, tokenId, erc20.address, sellingPrice, '0');
-      const buyData = await wrappedExchangeBuyer.offerERC20ForERC721(erc721.address, buyTokenId || tokenId, erc20.address, buyingPrice, '0');
+      const sellData = await wrappedExchangeSeller.placeAsk('ERC721', erc721.address, tokenId, erc20.address, sellingPrice, '0');
+      const buyData = await wrappedExchangeBuyer.placeBid('ERC721', erc721.address, buyTokenId || tokenId, erc20.address, buyingPrice, '0');
 
-      await wrappedExchangeSeller.matchERC721ForERC20(sellData.order, sellData.signature, buyData.order, buyData.signature);
+      await wrappedExchangeSeller.matchOrders('ERC721', sellData.order, sellData.signature, buyData.order, buyData.signature);
       const account_a_erc20_balance = await erc20.balanceOf(account_a.address);
       const token_owner = await erc721.ownerOf(tokenId);
       chai.expect(account_a_erc20_balance.toNumber()).to.eq(sellingPrice);
@@ -657,6 +444,60 @@ describe('WyvernRegistry', () => {
           account_b: accounts[6],
         })
       ).eventually.rejectedWith(/ERC721 token IDs don't match on orders/);
+    });
+  });
+
+  describe('cancelOrder', () => {
+    let wrappedExchange;
+    const sellingPrice = 1000000;
+    const sellAmount = 5;
+    
+    beforeEach(() => {
+      wrappedExchange = new WrappedExchange(accounts[0], 1337);
+    });
+
+    const getOrderHash = async (order): Promise<string> => {
+      return await exchange.hashOrder_(
+        order.registry,
+        order.maker,
+        order.staticTarget,
+        order.staticSelector,
+        order.staticExtradata,
+        order.maximumFill,
+        order.listingTime,
+        order.expirationTime,
+        order.salt
+      );
+    };
+
+    it('sets the correct fill of an ERC20 order', async () => {
+      const { order } = await wrappedExchange.placeBid('ERC721', erc721.address, 0, erc20.address, sellingPrice, '0');
+      await wrappedExchange.cancelOrder(order);
+      const orderHash = await getOrderHash(order);
+      
+      chai.expect(
+        await exchange.fills(accounts[0].address, orderHash)
+      ).to.eq(sellingPrice);
+    });
+
+    it('sets the correct fill of an ERC721 order', async () => {
+      const { order } = await wrappedExchange.placeAsk('ERC721', erc721.address, 0, erc20.address, sellingPrice, '0');
+      await wrappedExchange.cancelOrder(order);
+      const orderHash = await getOrderHash(order);
+      
+      chai.expect(
+        await exchange.fills(accounts[0].address, orderHash)
+      ).to.eq(1);
+    });
+
+    it('sets the correct fill of an ERC1155 order', async () => {
+      const { order } = await wrappedExchange.placeAsk('ERC1155', erc1155.address, 0, erc20.address, sellingPrice, '0', sellAmount, 1);
+      await wrappedExchange.cancelOrder(order);
+      const orderHash = await getOrderHash(order);
+      
+      chai.expect(
+        await exchange.fills(accounts[0].address, orderHash)
+      ).to.eq(sellAmount);
     });
   });
 
@@ -778,4 +619,217 @@ describe('WyvernRegistry', () => {
       ).to.eq(true);
     });
   });
+
+  // describe('erc20 <> erc20 orders', () => {
+  //   const any_erc20_for_erc20_test = async (options: any) => {
+  //     const {
+  //       sellAmount,
+  //       sellingPrice,
+  //       buyingPrice,
+  //       buyPriceOffset,
+  //       buyAmount,
+  //       erc20MintAmountSeller,
+  //       erc20MintAmountBuyer,
+  //       account_a,
+  //       account_b,
+  //       sender,
+  //       transactions
+  //     } = options;
+	
+  //     const txCount = transactions || 1;
+  //     const takerPriceOffset = buyPriceOffset || 0;
+			
+  //     const TestERC20 = new TestERC20__factory(accounts[0]);
+  //     const erc20Seller = await TestERC20.deploy();
+  //     await erc20Seller.deployed();
+  //     const erc20Buyer = await TestERC20.deploy();
+  //     await erc20.deployed();
+	
+  //     await registry.connect(account_a).registerProxy();
+  //     const proxyA = await registry.proxies(account_a.address);
+  //     chai.expect(true).to.eq(proxyA.length > 0);
+	
+  //     await registry.connect(account_b).registerProxy();
+  //     const proxyB = await registry.proxies(account_b.address);
+  //     chai.expect(true).to.eq(proxyB.length > 0);
+			
+  //     await erc20Seller.connect(account_a).approve(proxyA, erc20MintAmountSeller);
+  //     await erc20Buyer.connect(account_b).approve(proxyB, erc20MintAmountBuyer);
+  //     await erc20Seller.mint(account_a.address, erc20MintAmountSeller);
+  //     await erc20Buyer.mint(account_b.address, erc20MintAmountBuyer);
+	
+  //     const wrappedExchangeSeller = new WrappedExchange(account_a, 1337);
+  //     const wrappedExchangeBuyer = new WrappedExchange(account_b, 1337);
+  //     const wrappedExchangeSender = new WrappedExchange(sender, 1337);
+
+  //     const { order: sellOrder, signature: sellSig } = await wrappedExchangeSeller.offerERC20ForERC20(erc20Seller.address, sellingPrice, sellAmount, erc20Buyer.address, buyingPrice, '0');
+			
+  //     for (let i = 0 ; i < txCount ; ++i) {
+  //       const { order: buyOrder, signature: buySig } = await wrappedExchangeBuyer.offerERC20ForERC20(erc20Buyer.address, buyingPrice + takerPriceOffset, txCount*sellingPrice*buyAmount, erc20Seller.address, sellingPrice, '0');
+  //       await wrappedExchangeSender.matchERC20ForERC20(sellOrder, sellSig, buyOrder, buySig, buyAmount);
+  //       buyOrder.salt = buyOrder.salt + 1;
+  //     }
+			
+  //     const account_a_erc20_balance = await erc20Buyer.balanceOf(account_a.address);
+  //     const account_b_erc20_balance = await erc20Seller.balanceOf(account_b.address);
+  //     chai.expect(account_a_erc20_balance.toNumber()).to.eq(sellingPrice*buyAmount*txCount);
+  //     chai.expect(account_b_erc20_balance.toNumber()).to.eq(buyAmount*txCount);
+  //   };
+	
+  //   it('StaticMarket: matches erc20 <> erc20 order, 1 fill', async () => {
+  //     const price = 10000;
+	
+  //     return any_erc20_for_erc20_test({
+  //       sellAmount: 1,
+  //       sellingPrice: price,
+  //       buyingPrice: 1,
+  //       buyAmount: 1,
+  //       erc20MintAmountSeller: 1,
+  //       erc20MintAmountBuyer: price,
+  //       account_a: accounts[0],
+  //       account_b: accounts[6],
+  //       sender: accounts[1]
+  //     });
+  //   });
+
+  //   it('StaticMarket: matches erc20 <> erc20 order, multiple fills in 1 transaction',async () =>
+  //   {
+  //     const amount = 3;
+  //     const price = 10000;
+
+  //     return any_erc20_for_erc20_test({
+  //       sellAmount: amount,
+  //       sellingPrice: price,
+  //       buyingPrice: 1,
+  //       buyAmount: amount,
+  //       erc20MintAmountSeller: amount,
+  //       erc20MintAmountBuyer: amount*price,
+  //       account_a: accounts[0],
+  //       account_b: accounts[6],
+  //       sender: accounts[1]
+  //     });
+  //   });
+
+  //   it('StaticMarket: matches erc20 <> erc20 order, multiple fills in multiple transactions',async () =>
+  //   {
+  //     const sellAmount = 3;
+  //     const buyAmount = 1;
+  //     const price = 10000;
+  //     const transactions = 3;
+
+  //     return any_erc20_for_erc20_test({
+  //       sellAmount,
+  //       sellingPrice: price,
+  //       buyingPrice: 1,
+  //       buyAmount,
+  //       erc20MintAmountSeller: sellAmount,
+  //       erc20MintAmountBuyer: buyAmount*price*transactions,
+  //       account_a: accounts[0],
+  //       account_b: accounts[6],
+  //       sender: accounts[1],
+  //       transactions
+  //     });
+  //   });
+
+  //   it('StaticMarket: matches erc20 <> erc20 order, allows any partial fill',async () =>
+  //   {
+  //     const sellAmount = 30;
+  //     const buyAmount = 4;
+  //     const price = 10000;
+
+  //     return any_erc20_for_erc20_test({
+  //       sellAmount,
+  //       sellingPrice: price,
+  //       buyingPrice: 1,
+  //       buyAmount,
+  //       erc20MintAmountSeller: sellAmount,
+  //       erc20MintAmountBuyer: buyAmount*price,
+  //       account_a: accounts[0],
+  //       account_b: accounts[6],
+  //       sender: accounts[1]
+  //     });
+  //   });
+
+  //   it('StaticMarket: does not match erc20 <> erc20 order beyond maximum fill',async () =>
+  //   {
+  //     const price = 10000;
+
+  //     await chai.expect(
+  //       any_erc20_for_erc20_test({
+  //         sellAmount: 1,
+  //         sellingPrice: price,
+  //         buyingPrice: 1,
+  //         buyAmount: 1,
+  //         erc20MintAmountSeller: 2,
+  //         erc20MintAmountBuyer: price*2,
+  //         account_a: accounts[0],
+  //         account_b: accounts[6],
+  //         sender: accounts[1], // depending on who fills, it actually will allow beyond max fill because msg.sender's fill is not updated
+  //         transactions: 2
+  //       })
+  //     ).eventually.rejectedWith(/First order has invalid parameters/);
+  //   });
+
+  //   it('StaticMarket: does not fill erc20 <> erc20 order with different taker price',async () =>
+  //   {
+  //     const price = 10000;
+
+  //     await chai.expect(
+  //       any_erc20_for_erc20_test({
+  //         sellAmount: 1,
+  //         sellingPrice: price,
+  //         buyingPrice: 1,
+  //         buyPriceOffset: 1,
+  //         buyAmount: 1,
+  //         erc20MintAmountSeller: 2,
+  //         erc20MintAmountBuyer: price,
+  //         account_a: accounts[0],
+  //         account_b: accounts[6],
+  //         sender: accounts[1]
+  //       })
+  //     ).eventually.rejectedWith(/ERC20 buying prices don't match on orders/);
+  //   });
+
+  //   it('StaticMarket: does not fill erc20 <> erc20 order beyond maximum sell amount',async () =>
+  //   {
+  //     const sellAmount = 2;
+  //     const buyAmount = 3;
+  //     const price = 10000;
+
+  //     await chai.expect(
+  //       any_erc20_for_erc20_test({
+  //         sellAmount,
+  //         sellingPrice: price,
+  //         buyingPrice: 1,
+  //         buyAmount,
+  //         erc20MintAmountSeller: sellAmount,
+  //         erc20MintAmountBuyer: buyAmount*price,
+  //         account_a: accounts[0],
+  //         account_b: accounts[6],
+  //         sender: accounts[1]
+  //       })
+  //     ).eventually.rejectedWith(/First call failed/);
+  //   });
+
+  //   it('StaticMarket: does not fill erc20 <> erc20 order if balance is insufficient',async () =>
+  //   {
+  //     const sellAmount = 1;
+  //     const buyAmount = 1;
+  //     const price = 10000;
+
+  //     await chai.expect(
+  //       any_erc20_for_erc20_test({
+  //         sellAmount,
+  //         sellingPrice: price,
+  //         buyingPrice: 1,
+  //         buyAmount,
+  //         erc20MintAmountSeller: sellAmount,
+  //         erc20MintAmountBuyer: buyAmount*price-1,
+  //         account_a: accounts[0],
+  //         account_b: accounts[6],
+  //         sender: accounts[1]
+  //       })
+  //     ).eventually.rejectedWith(/Second call failed/);
+  //   });
+  // });
 });

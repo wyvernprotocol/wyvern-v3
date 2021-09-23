@@ -1,8 +1,4 @@
 import { ethers, Signer, BigNumberish, BigNumber, Transaction } from 'ethers';
-import { Interface } from "ethers/lib/utils";
-import ERC20ABI from "../dist/build/abis/ERC20.json";
-import ERC721ABI from "../dist/build/abis/ERC721.json";
-import ERC1155ABI from "../dist/build/abis/ERC1155.json";
 import {
   ZERO_BYTES32,
   ZERO_ADDRESS,
@@ -12,9 +8,19 @@ import {
   anyERC20ForERC20Selector,
   ERC721ForERC20Selector,
   ERC20ForERC721Selector,
+  ERC20Interface,
+  ERC721Interface,
+  ERC1155Interface,
   tokenTypes,
   zero,
 } from './constants';
+import type {
+  WyvernSystem,
+  Order,
+  Sig,
+  Call,
+  EIP712Domain
+} from './types';
 import { 
   WyvernExchange,
   WyvernExchange__factory,
@@ -28,46 +34,6 @@ import {
 } from '../dist/build/types';
 import addressesByChainId from './addresses.json';
 
-const ERC20Interface = new Interface(ERC20ABI);
-const ERC721Interface = new Interface(ERC721ABI);
-const ERC1155Interface = new Interface(ERC1155ABI);
-
-type WyvernSystem = {
-  WyvernRegistry: string;
-  WyvernExchange: string;
-  StaticMarket: string;
-}
-
-type Order = {
-  registry: string;
-  maker: string;
-  staticTarget: string;
-  staticSelector: string;
-  staticExtradata: string;
-  maximumFill: BigNumberish;
-  listingTime: number;
-  expirationTime: string;
-  salt: number;
-}
-
-type Sig = {
-  v: number;
-  r: string;
-  s: string;
-}
-
-type Call = {
-  target: string;
-  howToCall: number;
-  data: string
-}
-
-type EIP712Domain = {
-  name: string;
-  version: string;
-  chainId: number;
-  verifyingContract: string;
-}
 
 export class WrappedExchange {
   public exchange: WyvernExchange;
@@ -83,10 +49,11 @@ export class WrappedExchange {
     this.addresses = addressesByChainId[chainId];
     this.exchange = WyvernExchange__factory.connect(this.addresses.WyvernExchange, signer);
     this.registry = WyvernRegistry__factory.connect(this.addresses.WyvernRegistry, signer);
-    this.EIP712Domain ={ name: 'Wyvern Exchange', version: '3.1', chainId, verifyingContract: this.exchange.address };
+    this.EIP712Domain = { name: 'Wyvern Exchange', version: '3.1', chainId, verifyingContract: this.exchange.address };
   }
 
-  private async sign(order: Order) {
+  // utility functions
+  private async sign(order: Order): Promise<Sig> {
     // see https://docs.ethers.io/v5/api/signer/#Signer-signTypedData
     
     return this.signer._signTypedData(
@@ -102,7 +69,15 @@ export class WrappedExchange {
     });
   }
 
-  private async atomicMatch(order: Order, sig: Sig, call: Call, counterorder: Order, countersig: Sig, countercall: Call, metadata: string) {
+  private async atomicMatch(
+    order: Order,
+    sig: Sig,
+    call: Call,
+    counterorder: Order,
+    countersig: Sig,
+    countercall: Call,
+    metadata: string
+  ) {
     return await this.exchange.atomicMatch_(
       [order.registry, order.maker, order.staticTarget, order.maximumFill, order.listingTime, order.expirationTime, order.salt, call.target,
         counterorder.registry, counterorder.maker, counterorder.staticTarget, counterorder.maximumFill, counterorder.listingTime, counterorder.expirationTime, counterorder.salt, countercall.target],
@@ -126,13 +101,27 @@ export class WrappedExchange {
     return (await this.signer.provider.getBlock(blockNumber)).timestamp;
   }
 
-  public async offerERC721ForERC20(
+  private async getOrderHash(order: Order): Promise<string> {
+    return this.exchange.hashOrder_(
+      order.registry,
+      order.maker,
+      order.staticTarget,
+      order.staticSelector,
+      order.staticExtradata,
+      order.maximumFill,
+      order.listingTime,
+      order.expirationTime,
+      order.salt
+    );
+  }
+
+  private async offerERC721ForERC20(
     erc721Address: string,
     erc721Id: BigNumberish,
     erc20Address: string,
     erc20SellPrice: BigNumberish,
     expirationTime: string
-  ) : Promise<{ order: Order, signature: Sig }> {
+  ) : Promise<{ order: Order, signature: Sig, orderHash: string }> {
     const maker = await this.signer.getAddress();
     const staticExtradata = ethers.utils.defaultAbiCoder.encode(
       ['address[2]', 'uint256[2]'],
@@ -154,17 +143,18 @@ export class WrappedExchange {
     };
 
     const signature = await this.sign(order);
+    const orderHash = await this.getOrderHash(order);
 
-    return { order, signature };
+    return { order, signature, orderHash };
   }
   
-  public async offerERC20ForERC721(
+  private async offerERC20ForERC721(
     erc721Address: string,
     erc721Id: BigNumberish,
     erc20Address: string,
     erc20BuyPrice: BigNumberish,
     expirationTime: string
-  ) : Promise<{ order: Order, signature: Sig }> {
+  ) : Promise<{ order: Order, signature: Sig, orderHash: string }> {
     const maker = await this.signer.getAddress();
     const staticExtradata = ethers.utils.defaultAbiCoder.encode(
       ['address[2]', 'uint256[2]'],
@@ -186,14 +176,12 @@ export class WrappedExchange {
     };
 
     const signature = await this.sign(order);
+    const orderHash = await this.getOrderHash(order);
 
-    return {
-      order,
-      signature,
-    };
+    return { order, signature, orderHash };
   }
   
-  public async matchERC721ForERC20(
+  private async matchERC721ForERC20(
     sellOrder: Order,
     sellSig: Sig,
     buyOrder: Order,
@@ -216,7 +204,7 @@ export class WrappedExchange {
     return await this.atomicMatch(sellOrder, sellSig, firstCall, buyOrder, buySig, secondCall, ZERO_BYTES32);
   }
 
-  public async offerERC1155ForERC20(
+  private async offerERC1155ForERC20(
     erc1155Address: string,
     erc1155Id: BigNumberish,
     erc1155SellAmount: BigNumberish,
@@ -224,7 +212,7 @@ export class WrappedExchange {
     erc20Address: string,
     erc20SellPrice: BigNumberish,
     expirationTime: string
-  ) : Promise<{ order: Order, signature: Sig }> {
+  ) : Promise<{ order: Order, signature: Sig, orderHash: string }> {
     
     const maker = await this.signer.getAddress();
     const staticExtradata = ethers.utils.defaultAbiCoder.encode(
@@ -247,11 +235,12 @@ export class WrappedExchange {
     };
 
     const signature = await this.sign(order);
-    
-    return { order, signature };
+    const orderHash = await this.getOrderHash(order);
+
+    return { order, signature, orderHash };
   }
 
-  public async offerERC20ForERC1155(
+  private async offerERC20ForERC1155(
     erc1155Address: string,
     erc1155Id: BigNumberish,
     erc1155BuyAmount: BigNumberish,
@@ -259,7 +248,7 @@ export class WrappedExchange {
     erc20Address: string,
     erc20BuyPrice: BigNumberish,
     expirationTime: string
-  ) : Promise<{ order: Order, signature: Sig }> {
+  ) : Promise<{ order: Order, signature: Sig, orderHash: string }> {
     const maker = await this.signer.getAddress();
     const staticExtradata = ethers.utils.defaultAbiCoder.encode(
       ['address[2]', 'uint256[3]'],
@@ -281,14 +270,12 @@ export class WrappedExchange {
     };
 
     const signature = await this.sign(order);
+    const orderHash = await this.getOrderHash(order);
 
-    return {
-      order,
-      signature,
-    };
+    return { order, signature, orderHash };
   }
 
-  public async matchERC1155ForERC20(
+  private async matchERC1155ForERC20(
     sellOrder: Order,
     sellSig: Sig,
     buyOrder: Order,
@@ -313,7 +300,7 @@ export class WrappedExchange {
     return await this.atomicMatch(sellOrder, sellSig, firstCall, buyOrder, buySig, secondCall, ZERO_BYTES32);
   }
 
-  public async offerERC20ForERC20(
+  private async offerERC20ForERC20(
     erc20SellerAddress: string,
     sellingPrice: BigNumberish,
     sellAmount: BigNumberish,
@@ -347,7 +334,7 @@ export class WrappedExchange {
     return { order, signature };
   }
 
-  public async matchERC20ForERC20(
+  private async matchERC20ForERC20(
     sellOrder: Order,
     sellSig: Sig,
     buyOrder: Order,
@@ -371,27 +358,117 @@ export class WrappedExchange {
     return await this.atomicMatch(sellOrder, sellSig, firstCall, buyOrder, buySig, secondCall, ZERO_BYTES32);
   }
 
-  public async getOrderHash(order: Order): Promise<string> {
-    return this.exchange.hashOrder_(
-      order.registry,
-      order.maker,
-      order.staticTarget,
-      order.staticSelector,
-      order.staticExtradata,
-      order.maximumFill,
-      order.listingTime,
-      order.expirationTime,
-      order.salt
-    );
+  // public interface
+  public async placeBid(
+    tokenType: string,
+    tokenAddress: string,
+    tokenId: BigNumberish,
+    erc20Address: string,
+    erc20BuyPrice: BigNumberish,
+    expirationTime: string,
+    erc1155BuyAmount?: BigNumberish,
+    erc1155BuyDenominator?: BigNumberish,
+  ): Promise<{order: Order; signature: Sig; orderHash: string}> {
+    switch (tokenType) {
+    case 'ERC721':
+      return this.offerERC20ForERC721(
+        tokenAddress,
+        tokenId,
+        erc20Address,
+        erc20BuyPrice,
+        expirationTime,
+      );
+    case 'ERC1155':
+      return this.offerERC20ForERC1155(
+        tokenAddress,
+        tokenId,
+        erc1155BuyAmount,
+        erc1155BuyDenominator,
+        erc20Address,
+        erc20BuyPrice,
+        expirationTime,
+      );
+    default:
+      throw Error('Wrong token type. Must be ERC721 or ERC1155');
+    }
   }
 
+  public async placeAsk(
+    tokenType: string,
+    tokenAddress: string,
+    tokenId: BigNumberish,
+    erc20Address: string,
+    erc20SellPrice: BigNumberish,
+    expirationTime: string,
+    erc1155SellAmount?: BigNumberish,
+    erc1155SellNumerator?: BigNumberish,
+  ): Promise<{order: Order; signature: Sig; orderHash: string;}> {
+    switch (tokenType) {
+    case 'ERC721':
+      return this.offerERC721ForERC20(
+        tokenAddress,
+        tokenId,
+        erc20Address,
+        erc20SellPrice,
+        expirationTime,
+      );
+    case 'ERC1155':
+      return this.offerERC1155ForERC20(
+        tokenAddress,
+        tokenId,
+        erc1155SellAmount,
+        erc1155SellNumerator,
+        erc20Address,
+        erc20SellPrice,
+        expirationTime,
+      );
+    default:
+      throw Error('Wrong token type. Must be ERC721 or ERC1155');
+    }
+  }
+
+  public async matchOrders(
+    tokenType: string,
+    sellOrder: Order,
+    sellSig: Sig,
+    buyOrder: Order,
+    buySig: Sig,
+    buyAmount?: BigNumberish
+  ): Promise<Transaction>  {
+    switch (tokenType) {
+    case 'ERC721':
+      return this.matchERC721ForERC20(
+        sellOrder,
+        sellSig,
+        buyOrder,
+        buySig,
+      );
+    case 'ERC1155':
+      return this.matchERC1155ForERC20(
+        sellOrder,
+        sellSig,
+        buyOrder,
+        buySig,
+        buyAmount,
+      );
+    default:
+      throw Error('Wrong token type. Must be ERC721 or ERC1155');
+    }
+  }
+
+  public async cancelOrder(order: Order): Promise<Transaction> {
+    const orderHash = await this.getOrderHash(order);
+    return this.exchange.setOrderFill_(orderHash, order.maximumFill);
+  }
+
+  // utility chain calls for the frontend
   public async getOrRegisterProxy(): Promise<OwnableDelegateProxy> {
     const proxy = await this.registry.proxies(await this.signer.getAddress());
     if (proxy !== ZERO_ADDRESS) {
       return OwnableDelegateProxy__factory.connect(proxy, this.signer);
     }
     const tx = await this.registry.registerProxy();
-    tx.wait();
+    await tx.wait();
     return this.getOrRegisterProxy();
   }
 
@@ -404,19 +481,22 @@ export class WrappedExchange {
       const contract = ERC20__factory.connect(tokenAddress, this.signer);
       const allowance = await contract.allowance(await this.signer.getAddress(), proxy);
       if ((amount && allowance.gt(amount)) || allowance.gt(zero) ) return allowance;
-      (await contract.approve(proxy, amount)).wait();
+      const tx = await contract.approve(proxy, amount);
+      await tx.wait();
       return this.getOrIncreaseApproval(tokenType, tokenAddress, amount);
     } case tokenTypes.ERC721: {
       const contract = ERC721__factory.connect(tokenAddress, this.signer);
       const approval = await contract.isApprovedForAll(await this.signer.getAddress(), proxy);
       if (approval) return approval;
-      (await contract.setApprovalForAll(proxy, true)).wait();
+      const tx = await contract.setApprovalForAll(proxy, true);
+      await tx.wait();
       return this.getOrIncreaseApproval(tokenType, tokenAddress);
     } case tokenTypes.ERC1155: {
       const contract = ERC1155__factory.connect(tokenAddress, this.signer);
       const approval = await contract.isApprovedForAll(await this.signer.getAddress(), proxy);
       if (approval) return approval;
-      (await contract.setApprovalForAll(proxy, true)).wait();
+      const tx = await contract.setApprovalForAll(proxy, true);
+      await tx.wait();
       return this.getOrIncreaseApproval(tokenType, tokenAddress);
     } default:
       throw new Error('This method only works for ERC20, 721, or 1155 tokens');
