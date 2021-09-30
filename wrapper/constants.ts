@@ -27,6 +27,8 @@ export const anyERC20ForERC1155Selector = '0x7a7f30e0';
 export const ERC721ForERC20Selector = '0xc3d3626a';
 export const ERC20ForERC721Selector = '0xa6139b58';
 export const anyERC20ForERC20Selector = '0xb9845b95';
+export const LazyERC721ForERC20Selector = '0x418c3221';
+export const LazyERC20ForERC721Selector = '0x74d6407a';
 
 export const ERC20Interface = new Interface(ERC20ABI);
 export const ERC721Interface = new Interface(ERC721ABI);
