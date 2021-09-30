@@ -212,14 +212,16 @@ export class WrappedExchange {
     erc20Address: string,
     erc20SellPrice: BigNumberish,
     expirationTime: string,
+    tokenURI: string,
     mintSignature: string,
   ) : Promise<{ order: Order, signature: Sig, orderHash: string }> {
     const maker = await this.signer.getAddress();
     const staticExtradata = ethers.utils.defaultAbiCoder.encode(
-      ['address[2]', 'uint256[2]', 'bytes'],
+      ['address[2]', 'uint256[2]', 'string', 'bytes'],
       [
         [erc721Address, erc20Address],
         [erc721Id, erc20SellPrice],
+        tokenURI,
         mintSignature
       ]
     );
@@ -247,14 +249,16 @@ export class WrappedExchange {
     erc20Address: string,
     erc20BuyPrice: BigNumberish,
     expirationTime: string,
+    tokenURI: string,
     mintSignature: string
   ) : Promise<{ order: Order, signature: Sig, orderHash: string }> {
     const maker = await this.signer.getAddress();
     const staticExtradata = ethers.utils.defaultAbiCoder.encode(
-      ['address[2]', 'uint256[2]', 'bytes'],
+      ['address[2]', 'uint256[2]', 'string', 'bytes'],
       [
         [erc20Address, erc721Address],
         [erc721Id, erc20BuyPrice],
+        tokenURI,
         mintSignature
       ]
     );
@@ -464,6 +468,7 @@ export class WrappedExchange {
     expirationTime: string,
     erc1155BuyAmount?: BigNumberish,
     erc1155BuyDenominator?: BigNumberish,
+    lazyTokenURI?: string,
     lazySignature?: string,
   ): Promise<{order: Order; signature: Sig; orderHash: string}> {
     switch (tokenType) {
@@ -476,12 +481,15 @@ export class WrappedExchange {
         expirationTime,
       );
     case 'LazyERC721':
+      if (!lazyTokenURI) throw new Error('Must include param lazyTokenURI for lazy mint');
+      if (!lazySignature) throw new Error('Must include param lazySignature for lazy mint');
       return this.offerERC20ForLazyERC721(
         tokenAddress,
         tokenId,
         erc20Address,
         erc20BuyPrice,
         expirationTime,
+        lazyTokenURI,
         lazySignature
       );
     case 'ERC1155':
@@ -508,6 +516,7 @@ export class WrappedExchange {
     expirationTime: string,
     erc1155SellAmount?: BigNumberish,
     erc1155SellNumerator?: BigNumberish,
+    lazyTokenURI?: string,
     lazySignature?: string,
   ): Promise<{order: Order; signature: Sig; orderHash: string;}> {
     switch (tokenType) {
@@ -520,12 +529,15 @@ export class WrappedExchange {
         expirationTime,
       );
     case 'LazyERC721':
+      if (!lazyTokenURI) throw new Error('Must include param lazyTokenURI for lazy mint');
+      if (!lazySignature) throw new Error('Must include param lazySignature for lazy mint');
       return this.offerLazyERC721ForERC20(
         tokenAddress,
         tokenId,
         erc20Address,
         erc20SellPrice,
         expirationTime,
+        lazyTokenURI,
         lazySignature
       );
     case 'ERC1155':

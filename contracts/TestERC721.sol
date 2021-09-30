@@ -3,6 +3,7 @@
   << TestERC721 >>
 
 */
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 pragma solidity 0.7.5;
 
@@ -25,4 +26,11 @@ contract TestERC721 is ERC721("test", "TST") {
         return true;
     }
 
+    function mintAndTransfer(address from, address to, uint256 id, string tokenURI, bytes signature) {
+        // if sig recovers => mint
+        // might also need to add a URI param in as a string but whatever
+        bytes32 hash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(id, tokenURI)));
+        require(ECDSA.recover(hash, signature) == _signer, "Signature failed to recover");
+        _mint(to, 0, id, "");
+    }
 }
