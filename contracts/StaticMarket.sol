@@ -174,7 +174,7 @@ contract StaticMarket {
 		require(tokenIdAndPrice[1] > 0,"LazyERC721ForERC20: ERC721 price must be larger than zero");
 		require(addresses[2] == tokenGiveGet[0], "ERC721ForERC20: call target must equal address of token to give");
 		require(addresses[5] == tokenGiveGet[1], "ERC721ForERC20: countercall target must equal address of token to get");
-		require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("mintAndTransfer(address,address,uint256,string,bytes)", addresses[1], addresses[4], tokenIdAndPrice[0], signature)));
+		require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("mintAndTransfer(address,address,uint256,string,bytes)", addresses[1], addresses[4], tokenIdAndPrice[0], tokenURI, signature)));
 		require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[4], addresses[1], tokenIdAndPrice[1])));
 		return 1;
 	}
@@ -199,7 +199,7 @@ contract StaticMarket {
 		require(tokenIdAndPrice[1] > 0,"ERC20ForERC721: ERC721 price must be larger than zero");
 		require(addresses[2] == tokenGiveGet[0], "ERC20ForERC721: call target must equal address of token to give");
 		require(addresses[5] == tokenGiveGet[1], "ERC20ForERC721: countercall target must equal address of token to get");
-		require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("mintAndTransfer(address,address,uint256,bytes)", addresses[4], addresses[1], tokenIdAndPrice[0], signature)));
+		require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("mintAndTransfer(address,address,uint256,string,bytes)", addresses[4], addresses[1], tokenIdAndPrice[0], tokenURI, signature)));
 		require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[1], addresses[4], tokenIdAndPrice[1])));
 		return 1;
 	}

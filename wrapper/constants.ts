@@ -1,7 +1,7 @@
 import { BigNumber } from 'ethers';
 import { Interface } from "ethers/lib/utils";
 import ERC20ABI from "../dist/build/abis/ERC20.json";
-import ERC721ABI from "../dist/build/abis/ERC721.json";
+import ERC721ABI from "../dist/build/abis/TestERC721.json"; // should be a forge ERC721 contract
 import ERC1155ABI from "../dist/build/abis/ERC1155.json";
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';

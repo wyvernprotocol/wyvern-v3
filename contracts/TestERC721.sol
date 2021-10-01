@@ -3,11 +3,11 @@
   << TestERC721 >>
 
 */
+
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-
-pragma solidity 0.7.5;
-
-import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 
 contract TestERC721 is ERC721("test", "TST") {
 
@@ -26,11 +26,9 @@ contract TestERC721 is ERC721("test", "TST") {
         return true;
     }
 
-    function mintAndTransfer(address from, address to, uint256 id, string tokenURI, bytes signature) {
-        // if sig recovers => mint
-        // might also need to add a URI param in as a string but whatever
-        bytes32 hash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(id, tokenURI)));
-        require(ECDSA.recover(hash, signature) == _signer, "Signature failed to recover");
-        _mint(to, 0, id, "");
+    function mintAndTransfer(address from, address to, uint256 id, string calldata uri, bytes calldata signature) public {
+        bytes32 hash = ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(id, uri)));
+        require(ECDSA.recover(hash, signature) == from, "Signature failed to recover");
+        _mint(to, id);
     }
 }
