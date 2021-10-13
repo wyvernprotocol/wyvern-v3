@@ -1,7 +1,7 @@
-import * as dotenv from 'dotenv'
-dotenv.config()
+import * as dotenv from 'dotenv';
+dotenv.config();
 
-import { HardhatUserConfig } from 'hardhat/types'
+import { HardhatUserConfig } from 'hardhat/types';
 
 // Plugins
 
@@ -30,14 +30,14 @@ const networkConfigs: NetworkConfig[] = [
   { network: 'ropsten', chainId: 3 },
   { network: 'rinkeby', chainId: 4 },
   { network: 'kovan', chainId: 42 },
-]
+];
 
 function getAccountMnemonic() {
-  return process.env.MNEMONIC || ''
+  return process.env.MNEMONIC || '';
 }
 
 function getDefaultProviderURL(network: string) {
-  return `https://${network}.infura.io/v3/${process.env.INFURA_KEY}`
+  return `https://${network}.infura.io/v3/${process.env.INFURA_KEY}`;
 }
 
 function setupDefaultNetworkProviders(buidlerConfig: any) {
@@ -50,7 +50,7 @@ function setupDefaultNetworkProviders(buidlerConfig: any) {
       accounts: {
         mnemonic: getAccountMnemonic(),
       },
-    }
+    };
   }
 }
 
@@ -66,6 +66,15 @@ const config: HardhatUserConfig = {
     compilers: [
       {
         version: '0.7.5',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: '0.8.0',
         settings: {
           optimizer: {
             enabled: true,
@@ -109,8 +118,8 @@ const config: HardhatUserConfig = {
     runOnCompile: false,
     disambiguatePaths: true,
   },
-}
+};
 
-setupDefaultNetworkProviders(config)
+setupDefaultNetworkProviders(config);
 
-export default config
+export default config;

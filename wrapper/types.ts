@@ -1,5 +1,3 @@
-import { BigNumberish } from 'ethers';
-
 export type WyvernSystem = {
   WyvernRegistry: string;
   WyvernExchange: string;
@@ -12,7 +10,7 @@ export type Order = {
   staticTarget: string;
   staticSelector: string;
   staticExtradata: string;
-  maximumFill: BigNumberish;
+  maximumFill: string;
   listingTime: number;
   expirationTime: string;
   salt: number;

@@ -81,6 +81,72 @@ contract StaticMarket {
 		return new_fill;
 	}
 
+	function LazyERC1155ForERC20(bytes memory extra,
+		address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
+		bytes memory data, bytes memory counterdata)
+		public
+		pure
+		returns (uint)
+	{
+		require(uints[0] == 0,"lazyERC1155ForERC20: Zero value required");
+		require(howToCalls[0] == AuthenticatedProxy.HowToCall.Call, "lazyERC1155ForERC20: call must be a direct call");
+
+		(
+			address[2] memory tokenGiveGet,
+			uint256[3] memory tokenIdAndNumeratorDenominator,
+			string memory tokenURI
+		) = abi.decode(extra, (address[2], uint256[3], string));
+
+		require(tokenIdAndNumeratorDenominator[1] > 0,"lazyERC1155ForERC20: numerator must be larger than zero");
+		require(tokenIdAndNumeratorDenominator[2] > 0,"lazyERC1155ForERC20: denominator must be larger than zero");
+		require(addresses[2] == tokenGiveGet[0], "lazyERC1155ForERC20: call target must equal address of token to give");
+		require(addresses[5] == tokenGiveGet[1], "lazyERC1155ForERC20: countercall target must equal address of token to get");
+
+		uint256[2] memory call_amounts = [
+			abi.decode(ArrayUtils.arraySlice(data,68,32),(uint256)),
+			getERC20AmountFromCalldata(counterdata)
+		];
+		uint256 new_fill = SafeMath.add(uints[5],call_amounts[0]);
+		require(new_fill <= uints[1],"anyERC1155ForERC20: new fill exceeds maximum fill");
+		require(SafeMath.mul(tokenIdAndNumeratorDenominator[1], call_amounts[1]) == SafeMath.mul(tokenIdAndNumeratorDenominator[2], call_amounts[0]),"lazyERC1155ForERC20: wrong ratio");
+		require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("mint(address,uint256,uint256,string)", addresses[4], tokenIdAndNumeratorDenominator[0], call_amounts[0], tokenURI)));
+		require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[4], addresses[1], call_amounts[1])));
+		return new_fill;
+	}
+
+	function LazyERC20ForERC1155(bytes memory extra,
+		address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
+		bytes memory data, bytes memory counterdata)
+		public
+		pure
+		returns (uint)
+	{
+		require(uints[0] == 0,"lazyERC20ForERC1155: Zero value required");
+		require(howToCalls[0] == AuthenticatedProxy.HowToCall.Call, "lazyERC20ForERC1155: call must be a direct call");
+
+		(
+			address[2] memory tokenGiveGet,
+			uint256[3] memory tokenIdAndNumeratorDenominator,
+			string memory tokenURI
+		) = abi.decode(extra, (address[2], uint256[3], string));
+
+		require(tokenIdAndNumeratorDenominator[1] > 0,"lazyERC20ForERC1155: numerator must be larger than zero");
+		require(tokenIdAndNumeratorDenominator[2] > 0,"lazyERC20ForERC1155: denominator must be larger than zero");
+		require(addresses[2] == tokenGiveGet[0], "lazyERC20ForERC1155: call target must equal address of token to get");
+		require(addresses[5] == tokenGiveGet[1], "lazyERC20ForERC1155: countercall target must equal address of token to give");
+
+		uint256[2] memory call_amounts = [
+			abi.decode(ArrayUtils.arraySlice(counterdata,68,32),(uint256)),
+			getERC20AmountFromCalldata(data)
+		];
+		uint256 new_fill = SafeMath.add(uints[5],call_amounts[1]);
+		require(new_fill <= uints[1],"lazyERC20ForERC1155: new fill exceeds maximum fill");
+		require(SafeMath.mul(tokenIdAndNumeratorDenominator[1], call_amounts[0]) == SafeMath.mul(tokenIdAndNumeratorDenominator[2], call_amounts[1]),"lazyERC20ForERC1155: wrong ratio");
+		require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("mint(address,uint256,uint256,string)", addresses[1], tokenIdAndNumeratorDenominator[0], call_amounts[0], tokenURI)));
+		require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[1], addresses[4], call_amounts[1])));
+		return new_fill;
+	}
+
 	function anyERC20ForERC20(bytes memory extra,
 		address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
 		bytes memory data, bytes memory counterdata)
@@ -152,6 +218,53 @@ contract StaticMarket {
 		checkERC721Side(counterdata,addresses[4],addresses[1],tokenIdAndPrice[0]);
 		checkERC20Side(data,addresses[1],addresses[4],tokenIdAndPrice[1]);
 		
+		return 1;
+	}
+
+	function LazyERC721ForERC20(bytes memory extra,
+		address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
+		bytes memory data, bytes memory counterdata)
+		public
+		pure
+		returns (uint)
+	{
+		require(uints[0] == 0,"LazyERC721ForERC20: Zero value required");
+		require(howToCalls[0] == AuthenticatedProxy.HowToCall.Call, "ERC721ForERC20: call must be a direct call");
+		(
+			address[2] memory tokenGiveGet,
+			uint256[2] memory tokenIdAndPrice,
+			string memory tokenURI
+		) = abi.decode(extra, (address[2], uint256[2], string));
+
+		require(tokenIdAndPrice[1] > 0,"LazyERC721ForERC20: ERC721 price must be larger than zero");
+		require(addresses[2] == tokenGiveGet[0], "ERC721ForERC20: call target must equal address of token to give");
+		require(addresses[5] == tokenGiveGet[1], "ERC721ForERC20: countercall target must equal address of token to get");
+		require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("mint(address,uint256,string)", addresses[4], tokenIdAndPrice[0], tokenURI)));
+		require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[4], addresses[1], tokenIdAndPrice[1])));
+		return 1;
+	}
+
+	function LazyERC20ForERC721(bytes memory extra,
+		address[7] memory addresses, AuthenticatedProxy.HowToCall[2] memory howToCalls, uint[6] memory uints,
+		bytes memory data, bytes memory counterdata)
+		public
+		pure
+		returns (uint)
+	{
+		require(uints[0] == 0,"ERC20ForERC721: Zero value required");
+		require(howToCalls[0] == AuthenticatedProxy.HowToCall.Call, "ERC20ForERC721: call must be a direct call");
+
+		(
+			address[2] memory tokenGiveGet,
+			uint256[2] memory tokenIdAndPrice,
+			string memory tokenURI
+		) = abi.decode(extra, (address[2], uint256[2], string));
+
+		require(tokenIdAndPrice[1] > 0,"ERC20ForERC721: ERC721 price must be larger than zero");
+		require(addresses[2] == tokenGiveGet[0], "ERC20ForERC721: call target must equal address of token to give");
+		require(addresses[5] == tokenGiveGet[1], "ERC20ForERC721: countercall target must equal address of token to get");
+		require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("mint(address,uint256,string)", addresses[1], tokenIdAndPrice[0], tokenURI)));
+		require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[1], addresses[4], tokenIdAndPrice[1])));
 		return 1;
 	}
 

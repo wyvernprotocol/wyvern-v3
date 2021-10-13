@@ -4,9 +4,10 @@
 
 */
 
-pragma solidity 0.7.5;
+pragma solidity ^0.8.0;
 
-import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract TestERC721 is ERC721("test", "TST") {
 
@@ -25,4 +26,9 @@ contract TestERC721 is ERC721("test", "TST") {
         return true;
     }
 
+    function mint(address to, uint256 tokenId, string memory uri) public {
+        address creator = address(uint160(tokenId >> 96));
+        require(creator == msg.sender || super.isApprovedForAll(creator, msg.sender), "Sender not authorized to mint this token");
+        _safeMint(to, tokenId);
+    }
 }
