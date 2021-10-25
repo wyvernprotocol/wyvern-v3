@@ -26,7 +26,7 @@ contract TestERC1155 is ERC1155("http://test/{id}.json") {
 		return true;
 	}
 
-	function mint(address to, uint256 id, uint256 amount, string memory uri)
+	function mint(address to, uint256 id, uint256 amount, bytes memory extraBytes)
 			public
 	{
 			address creator = address(uint160(id >> 96));

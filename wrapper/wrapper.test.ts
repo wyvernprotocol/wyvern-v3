@@ -366,7 +366,7 @@ describe('WyvernRegistry', () => {
         account_b,
         sender,
         transactions,
-        lazyTokenURI,
+        extraBytes,
       } = options;
 	
       const txCount = transactions || 1;
@@ -390,9 +390,9 @@ describe('WyvernRegistry', () => {
       const wrappedExchangeBuyer = new WrappedExchange(account_b, 1337);
       const wrappedExchangeSender = new WrappedExchange(sender, 1337);
 
-      const { order: sellOrder, signature: sellSig } = await wrappedExchangeSeller.placeAsk('LazyERC1155', erc1155.address, tokenId, erc20.address, sellingPrice, '0', {erc1155SellAmount: sellAmount, erc1155SellNumerator: sellingNumerator || 1, lazyTokenURI});
+      const { order: sellOrder, signature: sellSig } = await wrappedExchangeSeller.placeAsk('LazyERC1155', erc1155.address, tokenId, erc20.address, sellingPrice, '0', {erc1155SellAmount: sellAmount, erc1155SellNumerator: sellingNumerator || 1, extraBytes});
       for (let i = 0 ; i < txCount ; ++i) {
-        const { order: buyOrder, signature: buySig } = await wrappedExchangeBuyer.placeBid('LazyERC1155', erc1155.address, buyTokenId || tokenId, erc20.address, buyingPrice, '0', {erc1155BuyAmount: buyAmount, erc1155BuyDenominator: buyingDenominator || 1, lazyTokenURI});
+        const { order: buyOrder, signature: buySig } = await wrappedExchangeBuyer.placeBid('LazyERC1155', erc1155.address, buyTokenId || tokenId, erc20.address, buyingPrice, '0', {erc1155BuyAmount: buyAmount, erc1155BuyDenominator: buyingDenominator || 1, extraBytes});
         await wrappedExchangeSender.matchOrders('LazyERC1155', sellOrder, sellSig, buyOrder, buySig, sellingNumerator || buyAmount);
         buyOrder.salt = buyOrder.salt + 1;
       }
@@ -418,7 +418,7 @@ describe('WyvernRegistry', () => {
         account_a: accounts[0],
         account_b: accounts[6],
         sender: accounts[0],
-        lazyTokenURI: 'tokenuri.com'
+        extraBytes: '0x',
       });
     });
 	
@@ -440,7 +440,7 @@ describe('WyvernRegistry', () => {
         account_b: accounts[6],
         sender: accounts[0],
         transactions,
-        lazyTokenURI: 'tokenuri.com'
+        extraBytes: '0x',
       });
     });
 	
@@ -460,7 +460,7 @@ describe('WyvernRegistry', () => {
         account_a: accounts[0],
         account_b: accounts[6],
         sender: accounts[0],
-        lazyTokenURI: 'tokenuri.com'
+        extraBytes: '0x',
       });
     });
 	
@@ -481,7 +481,7 @@ describe('WyvernRegistry', () => {
         account_a: accounts[0],
         account_b: accounts[6],
         sender: accounts[0],
-        lazyTokenURI: 'tokenuri.com'
+        extraBytes: '0x',
       });
     });
 	
@@ -500,7 +500,7 @@ describe('WyvernRegistry', () => {
         account_b: accounts[6],
         sender: accounts[0],
         transactions: 2,
-        lazyTokenURI: 'tokenuri.com'
+        extraBytes: '0x',
       });
     });
 
@@ -520,7 +520,7 @@ describe('WyvernRegistry', () => {
           account_b: accounts[6],
           sender: accounts[6],
           transactions: 2,
-          lazyTokenURI: 'tokenuri.com'
+          extraBytes: '0x',
         })
       ).eventually.rejectedWith(/First order has invalid parameters/);
     });
@@ -540,7 +540,7 @@ describe('WyvernRegistry', () => {
           account_a: accounts[0],
           account_b: accounts[6],
           sender: accounts[0],
-          lazyTokenURI: 'tokenuri.com'
+          extraBytes: '0x',
         })
       ).eventually.rejectedWith(/ERC20 buying prices don't match on orders/,);
     });
@@ -561,7 +561,7 @@ describe('WyvernRegistry', () => {
           account_a: accounts[0],
           account_b: accounts[6],
           sender: accounts[0],
-          lazyTokenURI: 'tokenuri.com'
+          extraBytes: '0x',
         }),
       ).eventually.rejectedWith(/ERC1155 Numerator and Denominator don't match/,);
     });
@@ -583,7 +583,7 @@ describe('WyvernRegistry', () => {
           account_a: accounts[0],
           account_b: accounts[6],
           sender: accounts[0],
-          lazyTokenURI: 'tokenuri.com'
+          extraBytes: '0x',
         })
       ).eventually.rejectedWith(/Static call failed/);
     });
@@ -605,7 +605,7 @@ describe('WyvernRegistry', () => {
           account_a: accounts[0],
           account_b: accounts[6],
           sender: accounts[0],
-          lazyTokenURI: 'tokenuri.com'
+          extraBytes: '0x',
         })
       ).eventually.rejectedWith(/Second call failed/);
     });
@@ -626,7 +626,7 @@ describe('WyvernRegistry', () => {
           account_a: accounts[0],
           account_b: accounts[6],
           sender: accounts[0],
-          lazyTokenURI: 'tokenuri.com'
+          extraBytes: '0x',
         })
       ).eventually.rejectedWith(/ERC1155 token IDs don't match on orders/);
     });
@@ -742,7 +742,7 @@ describe('WyvernRegistry', () => {
         erc20MintAmount,
         account_a,
         account_b,
-        lazyTokenURI
+        extraBytes
       } = options;
 
       await registry.connect(account_a).registerProxy();
@@ -761,8 +761,8 @@ describe('WyvernRegistry', () => {
       const wrappedExchangeSeller = new WrappedExchange(account_a, 1337);
       const wrappedExchangeBuyer = new WrappedExchange(account_b, 1337);
 
-      const sellData = await wrappedExchangeSeller.placeAsk('LazyERC721', erc721.address, tokenId, erc20.address, sellingPrice, '0', {lazyTokenURI});
-      const buyData = await wrappedExchangeBuyer.placeBid('LazyERC721', erc721.address, buyTokenId || tokenId, erc20.address, buyingPrice, '0', {lazyTokenURI});
+      const sellData = await wrappedExchangeSeller.placeAsk('LazyERC721', erc721.address, tokenId, erc20.address, sellingPrice, '0', {extraBytes});
+      const buyData = await wrappedExchangeBuyer.placeBid('LazyERC721', erc721.address, buyTokenId || tokenId, erc20.address, buyingPrice, '0', {extraBytes});
 
       await wrappedExchangeSeller.matchOrders('LazyERC721', sellData.order, sellData.signature, buyData.order, buyData.signature);
       const account_a_erc20_balance = await erc20.balanceOf(account_a.address);
@@ -781,7 +781,7 @@ describe('WyvernRegistry', () => {
         erc20MintAmount: price,
         account_a: accounts[1],
         account_b: accounts[6],
-        lazyTokenURI: 'tokenUri.com',
+        extraBytes: '0x',
       });
     });
 
@@ -796,7 +796,7 @@ describe('WyvernRegistry', () => {
           erc20MintAmount: price,
           account_a: accounts[1],
           account_b: accounts[6],
-          lazyTokenURI: 'tokenUri.com',
+          extraBytes: '0x',
         })
       ).eventually.rejectedWith(/ERC20 buying prices don't match on orders/);
     });
@@ -812,7 +812,7 @@ describe('WyvernRegistry', () => {
           erc20MintAmount: price-1,
           account_a: accounts[1],
           account_b: accounts[6],
-          lazyTokenURI: 'tokenUri.com',
+          extraBytes: '0x',
         })
       ).eventually.rejectedWith(/Second call failed/);
     });
@@ -829,7 +829,7 @@ describe('WyvernRegistry', () => {
           erc20MintAmount: price,
           account_a: accounts[1],
           account_b: accounts[6],
-          lazyTokenURI: 'tokenUri.com',
+          extraBytes: '0x',
         })
       ).eventually.rejectedWith(/ERC721 token IDs don't match on orders/);
     });
@@ -845,7 +845,7 @@ describe('WyvernRegistry', () => {
           erc20MintAmount: price,
           account_a: accounts[1],
           account_b: accounts[6],
-          lazyTokenURI: 'tokenUri.com',
+          extraBytes: '0x',
         })
       ).eventually.rejectedWith(/First call failed/);
     });

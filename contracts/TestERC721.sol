@@ -26,7 +26,7 @@ contract TestERC721 is ERC721("test", "TST") {
         return true;
     }
 
-    function mint(address to, uint256 tokenId, string memory uri) public {
+    function mint(address to, uint256 tokenId, bytes memory extraBytes) public {
         address creator = address(uint160(tokenId >> 96));
         require(creator == msg.sender || super.isApprovedForAll(creator, msg.sender), "Sender not authorized to mint this token");
         _safeMint(to, tokenId);

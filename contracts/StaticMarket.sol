@@ -94,8 +94,8 @@ contract StaticMarket {
 		(
 			address[2] memory tokenGiveGet,
 			uint256[3] memory tokenIdAndNumeratorDenominator,
-			string memory tokenURI
-		) = abi.decode(extra, (address[2], uint256[3], string));
+			bytes memory extraBytes
+		) = abi.decode(extra, (address[2], uint256[3], bytes));
 
 		require(tokenIdAndNumeratorDenominator[1] > 0,"lazyERC1155ForERC20: numerator must be larger than zero");
 		require(tokenIdAndNumeratorDenominator[2] > 0,"lazyERC1155ForERC20: denominator must be larger than zero");
@@ -109,7 +109,7 @@ contract StaticMarket {
 		uint256 new_fill = SafeMath.add(uints[5],call_amounts[0]);
 		require(new_fill <= uints[1],"anyERC1155ForERC20: new fill exceeds maximum fill");
 		require(SafeMath.mul(tokenIdAndNumeratorDenominator[1], call_amounts[1]) == SafeMath.mul(tokenIdAndNumeratorDenominator[2], call_amounts[0]),"lazyERC1155ForERC20: wrong ratio");
-		require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("mint(address,uint256,uint256,string)", addresses[4], tokenIdAndNumeratorDenominator[0], call_amounts[0], tokenURI)));
+		require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("mint(address,uint256,uint256,bytes)", addresses[4], tokenIdAndNumeratorDenominator[0], call_amounts[0], extraBytes)));
 		require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[4], addresses[1], call_amounts[1])));
 		return new_fill;
 	}
@@ -127,8 +127,8 @@ contract StaticMarket {
 		(
 			address[2] memory tokenGiveGet,
 			uint256[3] memory tokenIdAndNumeratorDenominator,
-			string memory tokenURI
-		) = abi.decode(extra, (address[2], uint256[3], string));
+			bytes memory extraBytes
+		) = abi.decode(extra, (address[2], uint256[3], bytes));
 
 		require(tokenIdAndNumeratorDenominator[1] > 0,"lazyERC20ForERC1155: numerator must be larger than zero");
 		require(tokenIdAndNumeratorDenominator[2] > 0,"lazyERC20ForERC1155: denominator must be larger than zero");
@@ -142,7 +142,7 @@ contract StaticMarket {
 		uint256 new_fill = SafeMath.add(uints[5],call_amounts[1]);
 		require(new_fill <= uints[1],"lazyERC20ForERC1155: new fill exceeds maximum fill");
 		require(SafeMath.mul(tokenIdAndNumeratorDenominator[1], call_amounts[0]) == SafeMath.mul(tokenIdAndNumeratorDenominator[2], call_amounts[1]),"lazyERC20ForERC1155: wrong ratio");
-		require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("mint(address,uint256,uint256,string)", addresses[1], tokenIdAndNumeratorDenominator[0], call_amounts[0], tokenURI)));
+		require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("mint(address,uint256,uint256,bytes)", addresses[1], tokenIdAndNumeratorDenominator[0], call_amounts[0], extraBytes)));
 		require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[1], addresses[4], call_amounts[1])));
 		return new_fill;
 	}
@@ -233,13 +233,13 @@ contract StaticMarket {
 		(
 			address[2] memory tokenGiveGet,
 			uint256[2] memory tokenIdAndPrice,
-			string memory tokenURI
-		) = abi.decode(extra, (address[2], uint256[2], string));
+			bytes memory extraBytes
+		) = abi.decode(extra, (address[2], uint256[2], bytes));
 
 		require(tokenIdAndPrice[1] > 0,"LazyERC721ForERC20: ERC721 price must be larger than zero");
 		require(addresses[2] == tokenGiveGet[0], "ERC721ForERC20: call target must equal address of token to give");
 		require(addresses[5] == tokenGiveGet[1], "ERC721ForERC20: countercall target must equal address of token to get");
-		require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("mint(address,uint256,string)", addresses[4], tokenIdAndPrice[0], tokenURI)));
+		require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("mint(address,uint256,bytes)", addresses[4], tokenIdAndPrice[0], extraBytes)));
 		require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[4], addresses[1], tokenIdAndPrice[1])));
 		return 1;
 	}
@@ -257,13 +257,13 @@ contract StaticMarket {
 		(
 			address[2] memory tokenGiveGet,
 			uint256[2] memory tokenIdAndPrice,
-			string memory tokenURI
-		) = abi.decode(extra, (address[2], uint256[2], string));
+			bytes memory extraBytes
+		) = abi.decode(extra, (address[2], uint256[2], bytes));
 
 		require(tokenIdAndPrice[1] > 0,"ERC20ForERC721: ERC721 price must be larger than zero");
 		require(addresses[2] == tokenGiveGet[0], "ERC20ForERC721: call target must equal address of token to give");
 		require(addresses[5] == tokenGiveGet[1], "ERC20ForERC721: countercall target must equal address of token to get");
-		require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("mint(address,uint256,string)", addresses[1], tokenIdAndPrice[0], tokenURI)));
+		require(ArrayUtils.arrayEq(counterdata, abi.encodeWithSignature("mint(address,uint256,bytes)", addresses[1], tokenIdAndPrice[0], extraBytes)));
 		require(ArrayUtils.arrayEq(data, abi.encodeWithSignature("transferFrom(address,address,uint256)", addresses[1], addresses[4], tokenIdAndPrice[1])));
 		return 1;
 	}
