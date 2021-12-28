@@ -3,7 +3,14 @@
   << Wyvern Atomicizer >>
 
   Execute multiple transactions, in order, atomically (if any fails, all revert).
+  
+  This can be used for implementing fees and royalties. E.g. instead of trading one
+  ERC20 transferFrom() call for an ERC721 transferFrom() call, you can trade multiple
+  ERC20 transferFrom() calls bundled into one call using this atomicizer (e.g. one 
+  transferFrom() to the owner of the exchange, one to the creator of the NFT, and one
+  to the current owne), for one ERC721 transferFrom() call.
 
+  See `TestAtomicizer.sol` if you want this in contract form for deployment
 */
 
 pragma solidity 0.7.5;
