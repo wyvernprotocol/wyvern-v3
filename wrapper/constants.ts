@@ -22,6 +22,7 @@ export const eip712Order = {
   ]
 };
 
+// 4 byte static selectors for the StaticMarket.sol contract
 export const anyERC1155ForERC20Selector = '0x23b04789';
 export const anyERC20ForERC1155Selector = '0x7a7f30e0';
 export const ERC721ForERC20Selector = '0xc3d3626a';
