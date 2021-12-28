@@ -1,15 +1,15 @@
 {
   "name": "@nifty-island/wyvern-v3",
-  "version": "3.1.7",
+  "version": "3.1.18",
   "description": "Wyvern Protocol v3.1, Ethereum implementation",
   "main": "dist/wrapper/wrapper.js",
   "types": "dist/wrapper/wrapper.d.ts",
   "files": [
-    "./dist",
-    "./contracts"
+    "dist",
+    "contracts"
   ],
   "scripts": {
-    "prepublish": "tsc && yarn compile",
+    "prepublish": "yarn compile && yarn hardhat typechain && tsc",
     "analyze": "scripts/analyze.sh",
     "flatten": "scripts/flatten.sh",
     "compile": "hardhat compile",

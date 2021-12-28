@@ -231,7 +231,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         returns (bool)
     {
         /* Assert valid registry. */
-        require(registries[address(registry)]);
+        require(registries[address(registry)], "registry not added");
 
         /* Assert target exists. */
         require(exists(call.target), "Call target does not exist");

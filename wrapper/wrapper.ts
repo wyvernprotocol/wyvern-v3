@@ -1,4 +1,4 @@
-import { ethers, Signer, BigNumber, Transaction } from 'ethers';
+import { ethers, Signer, BigNumber, Transaction, ContractTransaction } from 'ethers';
 import {
   ZERO_BYTES32,
   ZERO_ADDRESS,
@@ -81,7 +81,7 @@ export class WrappedExchange {
     countersig: Sig,
     countercall: Call,
     metadata: string
-  ) {
+  ): Promise<ContractTransaction> {
     return await this.exchange.atomicMatch_(
       [order.registry, order.maker, order.staticTarget, order.maximumFill, order.listingTime, order.expirationTime, order.salt, call.target,
         counterorder.registry, counterorder.maker, counterorder.staticTarget, counterorder.maximumFill, counterorder.listingTime, counterorder.expirationTime, counterorder.salt, countercall.target],
@@ -734,7 +734,9 @@ export class WrappedExchange {
 
   public async cancelOrder(order: Order): Promise<Transaction> {
     const orderHash = await this.getOrderHash(order);
-    return this.exchange.setOrderFill_(orderHash, order.maximumFill);
+    const tx = await this.exchange.setOrderFill_(orderHash, order.maximumFill);
+    tx.wait();
+    return tx;
   }
 
   // utility chain calls for the frontend

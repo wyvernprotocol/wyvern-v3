@@ -4,12 +4,12 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "ES2018",
-    "outDir": "dist",
+    "outDir": "./dist",
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "declaration": true,
   },
-  "exclude": ["dist", "node_modules", "hardhat.config.ts"],
+  "exclude": ["dist", "node_modules"],
   "include": ["wrapper"],
   "files": ["./hardhat.config.ts"]
 }

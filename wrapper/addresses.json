@@ -1,12 +1,12 @@
 {
   "1": {
-    "WyvernRegistry": "0xa5409ec958C83C3f309868babACA7c86DCB077c1",
-    "WyvernExchange": "0xd7CA74fF003c90E62505D21ec7Dac36bCfD9F6f2",
-    "StaticMarket": ""
+    "WyvernRegistry": "0x9a6971F42C49e03B40944EA461894bE186673d94",
+    "WyvernExchange": "0xc633bf4a6620DaA086d32A4829a00817A8509DCd",
+    "StaticMarket": "0x9c904c64952770214E56F6a94E89E7936d3c3F4D"
   },
   "4": {
-    "WyvernRegistry": "0x30caa00562AD2f2B41BB4b1943d28F84832ce0D6",
-    "WyvernExchange": "0xF40D3F036528Ed87b83748306c719757f22be4fE",
+    "WyvernRegistry": "0xe557210c3e435EAE4e0e34819A17fC0FbBAaBd32",
+    "WyvernExchange": "0xAedaE39FF45479cBfa5F63162AB118BF3135f9B3",
     "StaticMarket": "0x4776ef2201dDd1112328D1A7071aebB4a6159110"
   },
   "1337": {

@@ -16,46 +16,6 @@ import '@openzeppelin/hardhat-upgrades';
 import '@typechain/hardhat';
 
 
-// Networks
-
-interface NetworkConfig {
-  network: string
-  chainId: number
-  gas?: number | 'auto'
-  gasPrice?: number | 'auto'
-}
-
-const networkConfigs: NetworkConfig[] = [
-  { network: 'mainnet', chainId: 1 },
-  { network: 'ropsten', chainId: 3 },
-  { network: 'rinkeby', chainId: 4 },
-  { network: 'kovan', chainId: 42 },
-];
-
-function getAccountMnemonic() {
-  return process.env.MNEMONIC || '';
-}
-
-function getDefaultProviderURL(network: string) {
-  return `https://${network}.infura.io/v3/${process.env.INFURA_KEY}`;
-}
-
-function setupDefaultNetworkProviders(buidlerConfig: any) {
-  for (const netConfig of networkConfigs) {
-    buidlerConfig.networks[netConfig.network] = {
-      chainId: netConfig.chainId,
-      url: getDefaultProviderURL(netConfig.network),
-      gas: netConfig.gasPrice || 'auto',
-      gasPrice: netConfig.gasPrice || 'auto',
-      accounts: {
-        mnemonic: getAccountMnemonic(),
-      },
-    };
-  }
-}
-
-// Config
-
 const config: HardhatUserConfig = {
   paths: {
     sources: './contracts',
@@ -94,6 +54,12 @@ const config: HardhatUserConfig = {
       blockGasLimit: 12000000,
       hardfork: "berlin"
     },
+    rinkeby: {
+      url: `https://rinkeby.infura.io/v3/${process.env.RPC_ENDPOINT}`,  // process.env.RPC_ENDPOINT,
+    },
+    mainnet: {
+      url: `https://mainnet.infura.io/v3/${process.env.RPC_ENDPOINT}`,
+    }
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
@@ -119,7 +85,5 @@ const config: HardhatUserConfig = {
     disambiguatePaths: true,
   },
 };
-
-setupDefaultNetworkProviders(config);
 
 export default config;
