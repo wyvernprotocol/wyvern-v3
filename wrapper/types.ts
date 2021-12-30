@@ -5,7 +5,7 @@ export type WyvernSystem = {
   WyvernRegistry: string;
   WyvernExchange: string;
   StaticMarket: string;
-}
+};
 
 /**
  * @param registry address of the WyvernRegistry.sol contract
@@ -26,9 +26,9 @@ export type Order = {
   staticExtradata: string;
   maximumFill: string;
   listingTime: number;
-  expirationTime: string;
+  expirationTime: number;
   salt: number;
-}
+};
 
 /**
  * split ECDSA signature
@@ -37,7 +37,7 @@ export type Sig = {
   v: number;
   r: string;
   s: string;
-}
+};
 
 /**
  * @param target address of the contract that will be called
@@ -47,8 +47,8 @@ export type Sig = {
 export type Call = {
   target: string;
   howToCall: number;
-  data: string
-}
+  data: string;
+};
 
 /**
  * see https://eips.ethereum.org/EIPS/eip-712 for more detailsa
@@ -58,4 +58,4 @@ export type EIP712Domain = {
   version: string;
   chainId: number;
   verifyingContract: string;
-}
+};
