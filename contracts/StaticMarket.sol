@@ -12,6 +12,28 @@ import "./registry/AuthenticatedProxy.sol";
 /**
  * @title StaticMarket
  * @author Wyvern Protocol Developers
+ * @dev each public here has the same parameters:
+ * @param addresses an array of addresses, with each corresponding to the following:
+		[0] order registry
+		[1] order maker
+		[2] call target
+		[3] counterorder registry
+		[4] counterorder maker
+		[5] countercall target
+		[6] matcher
+ * @param howToCalls an array of enums: { Call | DelegateCall }
+		[0] for the call
+		[1] for the countercall
+ * @param uints an array of 6 uints corresponding to the following:
+		[0] value (eth value)
+		[1] call max fill
+		[2] order listing time
+		[3] order expiration time
+		[4] counterorder listing time
+		[5] previous fill
+ * @param data The data that you pass into the proxied function call. The static calls verify that the order placed actually matches up with the calldata passed to the proxied call
+ * @param counterdata Same as data but for the countercall
+ * @return the new order fill
  */
 contract StaticMarket {
 
@@ -268,6 +290,7 @@ contract StaticMarket {
 		return 1;
 	}
 
+	// internal helper functions
 	function getERC1155AmountFromCalldata(bytes memory data)
 		internal
 		pure

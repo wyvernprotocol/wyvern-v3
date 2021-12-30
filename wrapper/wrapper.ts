@@ -73,6 +73,17 @@ export class WrappedExchange {
     });
   }
 
+  /**
+   * Reorganises the order and signature structs for the atomicMatch_() call on Exchange.sol
+   * @param order 
+   * @param sig 
+   * @param call The function call being proxied by  wyvern, often a transferFrom() or safeTransferFrom()
+   * @param counterorder 
+   * @param countersig 
+   * @param countercall The function call being proxied by  wyvern, often a transferFrom() or safeTransferFrom()
+   * @param metadata 
+   * @returns on-chain transaction details
+   */
   private async atomicMatch(
     order: Order,
     sig: Sig,
@@ -100,6 +111,11 @@ export class WrappedExchange {
     return Math.floor(Math.random() * 10000);
   }
 
+  /**
+   * returns the exact timestamp of the latest block
+   * another way to do this is to just grab the current unix timestamp from javascript `~~(Date.now()/1000)`
+   * @returns unix timestamp of the last blocknumber
+   */
   private async getBlockTimestamp(): Promise<number> {
     const blockNumber = await this.signer.provider.getBlockNumber();
     return (await this.signer.provider.getBlock(blockNumber)).timestamp;
@@ -127,6 +143,8 @@ export class WrappedExchange {
     expirationTime: string
   ) : Promise<{ order: Order, signature: Sig, orderHash: string }> {
     const maker = await this.signer.getAddress();
+    
+    // static extradata for both the order and counter order are checked during the StaticMarket calls
     const staticExtradata = ethers.utils.defaultAbiCoder.encode(
       ['address[2]', 'uint256[2]'],
       [
@@ -146,7 +164,7 @@ export class WrappedExchange {
       salt: this.generateSalt()
     };
 
-    const signature = await this.sign(order);
+    const signature = await this.sign(order); // calls out to the signer (wallet, often Metamask)
     const orderHash = await this.getOrderHash(order);
 
     return { order, signature, orderHash };
@@ -160,6 +178,8 @@ export class WrappedExchange {
     expirationTime: string
   ) : Promise<{ order: Order, signature: Sig, orderHash: string }> {
     const maker = await this.signer.getAddress();
+    
+    // static extradata for both the order and counter order are checked during the StaticMarket calls
     const staticExtradata = ethers.utils.defaultAbiCoder.encode(
       ['address[2]', 'uint256[2]'],
       [
@@ -179,7 +199,7 @@ export class WrappedExchange {
       salt: this.generateSalt()
     };
 
-    const signature = await this.sign(order);
+    const signature = await this.sign(order); // calls out to the signer (wallet, often Metamask)
     const orderHash = await this.getOrderHash(order);
 
     return { order, signature, orderHash };
@@ -194,6 +214,7 @@ export class WrappedExchange {
     const [[erc721Address, erc20Address], [tokenId, buyingPrice]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[2]'], sellOrder.staticExtradata);
     const [[erc20AddressOther, erc721AddressOther], [tokenIdOther, buyingPriceOther]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[2]'], buyOrder.staticExtradata);
     
+    // these checks are also performed within the static calls on StaticMarket, but we check here before going on chain
     if (erc721Address != erc721AddressOther) throw new Error('ERC721 Addresses don\'t match on orders');
     if (erc20Address != erc20AddressOther) throw new Error('ERC20 Addresses don\'t match on orders');
     if (!tokenId.eq(tokenIdOther)) throw new Error('ERC721 token IDs don\'t match on orders');
@@ -252,6 +273,8 @@ export class WrappedExchange {
     extraBytes: string,
   ) : Promise<{ order: Order, signature: Sig, orderHash: string }> {
     const maker = await this.signer.getAddress();
+
+    // static extradata for both the order and counter order are checked during the StaticMarket calls
     const staticExtradata = ethers.utils.defaultAbiCoder.encode(
       ['address[2]', 'uint256[2]', 'bytes'],
       [
@@ -286,7 +309,8 @@ export class WrappedExchange {
   ) {
     const [[erc721Address, erc20Address], [tokenId, buyingPrice], extraBytes] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[2]', 'bytes'], sellOrder.staticExtradata);
     const [[erc20AddressOther, erc721AddressOther], [tokenIdOther, buyingPriceOther], extraBytesOther] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[2]', 'bytes'], buyOrder.staticExtradata);
-
+    
+    // these checks are also performed within the static calls on StaticMarket, but we check here before going on chain
     if (erc721Address != erc721AddressOther) throw new Error('ERC721 Addresses don\'t match on orders');
     if (erc20Address != erc20AddressOther) throw new Error('ERC20 Addresses don\'t match on orders');
     if (!tokenId.eq(tokenIdOther)) throw new Error('ERC721 token IDs don\'t match on orders');
@@ -314,6 +338,8 @@ export class WrappedExchange {
   ) : Promise<{ order: Order, signature: Sig, orderHash: string }> {
     
     const maker = await this.signer.getAddress();
+
+    // static extradata for both the order and counter order are checked during the StaticMarket calls
     const staticExtradata = ethers.utils.defaultAbiCoder.encode(
       ['address[2]', 'uint256[3]'],
       [
@@ -349,6 +375,8 @@ export class WrappedExchange {
     expirationTime: string
   ) : Promise<{ order: Order, signature: Sig, orderHash: string }> {
     const maker = await this.signer.getAddress();
+
+    // static extradata for both the order and counter order are checked during the StaticMarket calls
     const staticExtradata = ethers.utils.defaultAbiCoder.encode(
       ['address[2]', 'uint256[3]'],
       [
@@ -368,7 +396,7 @@ export class WrappedExchange {
       salt: this.generateSalt()
     };
 
-    const signature = await this.sign(order);
+    const signature = await this.sign(order); // calls out to the signer (wallet, often Metamask)
     const orderHash = await this.getOrderHash(order);
 
     return { order, signature, orderHash };
@@ -384,6 +412,7 @@ export class WrappedExchange {
     const [[erc1155Address, erc20Address], [tokenId, erc1155Numerator, erc20SellPrice]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[3]'], sellOrder.staticExtradata);
     const [[erc20AddressOther, erc1155AddressOther], [tokenIdOther, erc20BuyPrice, erc1155Denominator]] = ethers.utils.defaultAbiCoder.decode(['address[2]', 'uint256[3]'], buyOrder.staticExtradata);
     
+    // these checks are also performed within the static calls on StaticMarket, but we check here before going on chain
     if (erc1155Address != erc1155AddressOther) throw new Error('ERC1155 Addresses don\'t match on orders');
     if (erc20Address != erc20AddressOther) throw new Error('ERC20 Addresses don\'t match on orders');
     if (!tokenId.eq(tokenIdOther)) throw new Error('ERC1155 token IDs don\'t match on orders');
@@ -431,7 +460,7 @@ export class WrappedExchange {
       salt: this.generateSalt()
     };
 
-    const signature = await this.sign(order);
+    const signature = await this.sign(order); // calls out to the signer (wallet, often Metamask)
     const orderHash = await this.getOrderHash(order);
 
     return { order, signature, orderHash };
@@ -468,7 +497,7 @@ export class WrappedExchange {
       salt: this.generateSalt()
     };
 
-    const signature = await this.sign(order);
+    const signature = await this.sign(order); // calls out to the signer (wallet, often Metamask)
     const orderHash = await this.getOrderHash(order);
 
     return { order, signature, orderHash };
@@ -558,7 +587,17 @@ export class WrappedExchange {
     return await this.atomicMatch(sellOrder, sellSig, firstCall, buyOrder, buySig, secondCall, ZERO_BYTES32);
   }
 
-  // public interface
+  /**
+   * Generates the order and signature by prompting the signer
+   * @param tokenType enum ERC721 | LazyERC721 | ERC1155 | LazyERC155
+   * @param tokenAddress NFT contract address
+   * @param tokenId NFT id
+   * @param erc20Address ERC20 contract address
+   * @param erc20BuyPrice ERC20 bid amount in Wei (fully expanded decimals)
+   * @param expirationTime Unix timestamp in seconds
+   * @param optionalParams ERC1155 bids require a buy amount and buy denominator, and lazy bids require an extraBytes string 
+   * @returns order struct, signed order, and the order hash
+   */
   public async placeBid(
     tokenType: string,
     tokenAddress: string,
@@ -625,6 +664,17 @@ export class WrappedExchange {
     }
   }
 
+  /**
+   * Generates the order and signature by prompting the signer
+   * @param tokenType enum ERC721 | LazyERC721 | ERC1155 | LazyERC155
+   * @param tokenAddress NFT contract address
+   * @param tokenId NFT id
+   * @param erc20Address ERC20 contract address
+   * @param erc20SellPrice ERC20 bid amount in Wei (fully expanded decimals)
+   * @param expirationTime Unix timestamp in seconds
+   * @param optionalParams ERC1155 asks require a sell amount and buy numerator, and lazy asks require an extraBytes string 
+   * @returns order struct, signed order, and the order hash
+   */
   public async placeAsk(
     tokenType: string,
     tokenAddress: string,
@@ -688,6 +738,16 @@ export class WrappedExchange {
     }
   }
 
+  /**
+   * If compatible, matches the two orders on chain and exchanges the tokens
+   * @param tokenType enum ERC721 | LazyERC721 | ERC1155 | LazyERC155
+   * @param sellOrder order struct for the NFT (sell side)
+   * @param sellSig the signed sellOrder
+   * @param buyOrder order struct for the ERC20 (buy side)
+   * @param buySig the signed buyOrder
+   * @param buyAmount if 1155 token, the amount of tokens being bought
+   * @returns transaction details
+   */
   public async matchOrders(
     tokenType: string,
     sellOrder: Order,
@@ -732,6 +792,11 @@ export class WrappedExchange {
     }
   }
 
+  /**
+   * Clears an order on chain so that it cannot be reused. Not necessary, but safe.
+   * @param order order struct (buy or sell)
+   * @returns transaction details
+   */
   public async cancelOrder(order: Order): Promise<Transaction> {
     const orderHash = await this.getOrderHash(order);
     const tx = await this.exchange.setOrderFill_(orderHash, order.maximumFill);
