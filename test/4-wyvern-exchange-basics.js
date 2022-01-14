@@ -3,7 +3,7 @@
 const WyvernExchange = artifacts.require('WyvernExchange')
 const WyvernRegistry = artifacts.require('WyvernRegistry')
 
-const {wrap, hashOrder, hashToSign, ZERO_ADDRESS, ZERO_BYTES32, CHAIN_ID, assertIsRejected} = require('./aux')
+const {wrap, hashOrder, hashToSign, ZERO_ADDRESS, ZERO_BYTES32, CHAIN_ID, assertIsRejected} = require('./util')
 
 contract('WyvernExchange',accounts => {
   const withExchangeAndRegistry = async () => {

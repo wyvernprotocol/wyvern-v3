@@ -12,7 +12,7 @@ const Web3 = require('web3')
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')
 const web3 = new Web3(provider)
 
-const { wrap,hashOrder,ZERO_BYTES32,randomUint,NULL_SIG,assertIsRejected} = require('./aux')
+const { wrap,hashOrder,ZERO_BYTES32,randomUint,NULL_SIG,assertIsRejected} = require('./util')
 
 contract('WyvernExchange', (accounts) => {
   const deploy = async contracts => Promise.all(contracts.map(contract => contract.deployed()))
