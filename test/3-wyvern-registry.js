@@ -10,7 +10,7 @@ const Web3 = require('web3')
 const provider = new Web3.providers.HttpProvider('http://localhost:8545')
 const web3 = new Web3(provider)
 
-const {increaseTime,increaseTimePromise,assertIsRejected} = require('./aux')
+const {increaseTime,increaseTimePromise,assertIsRejected} = require('./util')
 
 contract('WyvernRegistry',accounts => {
   it('is deployed',async () => {
