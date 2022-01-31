@@ -28,21 +28,20 @@ contract TestERC1271 is ERC1271 {
     /**
      * Check if a signature is valid
      *
-     * @param _data Data signed over
-     * @param _signature Encoded signature
+     * @param _hash Hash of the data to be signed
+     * @param _signature Signature encoded as (bytes32 r, bytes32 s, uint8 v)
      * @return magicValue Magic value if valid, zero-value otherwise
      */
     function isValidSignature(
-        bytes memory _data,
+        bytes32 _hash,
         bytes memory _signature)
         override
         public
         view
         returns (bytes4 magicValue)
     {
-        bytes32 hash = abi.decode(_data, (bytes32));
         (uint8 v, bytes32 r, bytes32 s) = abi.decode(_signature, (uint8, bytes32, bytes32));
-        if (owner == ecrecover(hash, v, r, s)) {
+        if (owner == ecrecover(_hash, v, r, s)) {
             return MAGICVALUE;
         } else {
             return SIGINVALID;

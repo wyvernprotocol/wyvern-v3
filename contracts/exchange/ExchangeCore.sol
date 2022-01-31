@@ -21,7 +21,7 @@ import "../registry/AuthenticatedProxy.sol";
  */
 contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
-    bytes4 constant internal EIP_1271_MAGICVALUE = 0x20c13b0b;
+    bytes4 constant internal EIP_1271_MAGICVALUE = 0x1626ba7e;
     bytes internal personalSignPrefix = "\x19Ethereum Signed Message:\n";
 
     /* Struct definitions. */
@@ -184,7 +184,7 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
 
         /* (c): Contract-only authentication: EIP/ERC 1271. */
         if (isContract) {
-            if (ERC1271(maker).isValidSignature(abi.encodePacked(calculatedHashToSign), signature) == EIP_1271_MAGICVALUE) {
+            if (ERC1271(maker).isValidSignature(calculatedHashToSign, signature) == EIP_1271_MAGICVALUE) {
                 return true;
             }
             return false;
