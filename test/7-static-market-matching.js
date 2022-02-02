@@ -615,7 +615,7 @@ contract('WyvernExchange', (accounts) =>
 			[[erc20.address, erc721.address], [buyTokenId || tokenId, buyingPrice]]
 			)
 		const one = {registry: registry.address, maker: account_a, staticTarget: statici.address, staticSelector: selectorOne, staticExtradata: paramsOne, maximumFill: 1, listingTime: '0', expirationTime: '10000000000', salt: '11'}
-		const two = {registry: registry.address, maker: account_b, staticTarget: statici.address, staticSelector: selectorTwo, staticExtradata: paramsTwo, maximumFill: buyingPrice, listingTime: '0', expirationTime: '10000000000', salt: '12'}
+		const two = {registry: registry.address, maker: account_b, staticTarget: statici.address, staticSelector: selectorTwo, staticExtradata: paramsTwo, maximumFill: 1, listingTime: '0', expirationTime: '10000000000', salt: '12'}
 
 		const firstData = erc721c.methods.transferFrom(account_a, account_b, tokenId).encodeABI()
 		const secondData = erc20c.methods.transferFrom(account_b, account_a, buyingPrice).encodeABI()
