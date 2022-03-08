@@ -338,7 +338,9 @@ contract ExchangeCore is ReentrancyGuarded, StaticCaller, EIP712 {
         /* Transfer any msg.value.
            This is the first "asymmetric" part of order matching: if an order requires Ether, it must be the first order. */
         if (msg.value > 0) {
-            address(uint160(firstOrder.maker)).transfer(msg.value);
+            /* Reentrancy prevented by reentrancyGuard modifier */
+            (bool success,) = address(uint160(firstOrder.maker)).call{value: msg.value}("");
+            require(success, "native token transfer failed.");
         }
 
         /* Execute first call, assert success.
