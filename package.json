@@ -33,7 +33,7 @@
     "solidity-coverage": "^0.7.12",
     "solium": "^1.2.5",
     "standard": "^16.0.3",
-    "truffle": "^5.1.55",
+    "truffle": "^5.7.1",
     "truffle-flattener": "^1.5.0",
     "truffle-hdwallet-provider": "^1.0.17",
     "dotenv": "^8.2.0",
